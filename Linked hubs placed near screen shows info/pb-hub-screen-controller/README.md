@@ -32,6 +32,12 @@ container inventory contents and also allows that Hub to work without a Core.
 The Screen cannot read the Databank directly; the PB reads stored records and
 sends Screen configuration or cell updates.
 
+When a directly linked Hub contains items, its cell shows the container content
+and capacity. When a Hub is an Industry output discovered through the Core, its
+cell shows the Industry product; that information may not always refresh
+immediately. Using both link types allows the controller to combine all
+available product information.
+
 ## Build and install
 
 Run from this directory:
