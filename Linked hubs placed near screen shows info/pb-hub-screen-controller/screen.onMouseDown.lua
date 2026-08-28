@@ -1,0 +1,2 @@
+-- Clicks are captured directly by the Screen RenderScript.
+-- This filter is intentionally unused.
