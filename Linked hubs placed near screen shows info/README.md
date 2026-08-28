@@ -15,4 +15,6 @@ cd "pb-hub-screen-controller"
 ```
 
 Paste the result with the Programming Board action **Paste Lua configuration
-from clipboard**.
+from clipboard**. After pasting, review the exported debug parameters and adjust
+the four grid-margin parameters for the physical size and usable area of your
+Screen.

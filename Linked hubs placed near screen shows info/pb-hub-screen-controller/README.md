@@ -48,6 +48,12 @@ when `-CopyToClipboard` is supplied. It never reads
 Paste the result through **Paste Lua configuration from clipboard** on the PB,
 verify the physical links, and start the PB.
 
+After pasting, review the exported parameters in the PB. Keep the five debug
+parameters disabled for normal operation and enable only the diagnostics you
+need. Adjust `hscGridMarginLeftMeters`, `hscGridMarginRightMeters`,
+`hscGridMarginTopMeters`, and `hscGridMarginBottomMeters` to match the physical
+Screen bezel and the area where the grid should appear.
+
 To write elsewhere without copying:
 
 ```powershell
