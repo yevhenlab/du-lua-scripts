@@ -1,11 +1,11 @@
 hscRows = 3 --export
 hscColumns = 5 --export
 hscScreenTitle = "Hub Production Overview" --export
-hscScreenVersion = "0.1.83" --export
+hscScreenVersion = "0.2.6" --export
 hscReserveTopTextArea = true --export
 hscReserveBottomTextArea = false --export
 hscReservedTextAreaFraction = 0.12 --export
-hscSearchRadiusMeters = 20 --export
+hscSearchRadiusMeters = 8 --export
 hscMaxDepthMeters = 5 --export
 hscGridMarginLeftMeters = 0.3 --export
 hscGridMarginRightMeters = 0.3 --export
@@ -21,11 +21,14 @@ hscClickDebounceSeconds = 0.25 --export
 hscScreenInputMaxCharacters = 1024 --export
 hscHubContentRefreshSeconds = 30 --export
 hscContainerRefreshSeconds = 5 --export
+hscIndustryIndexBatchSize = 50 --export
 hscDebugScreen = false --export
 hscDebugElements = false --export
 hscDebugIndustries = false --export
 hscDebugContainers = false --export
 hscDebugDatabank = false --export
+debugCellAssociation = true --export
+debugIndustryHubNameSearch = "1550" --export
 
 hsc = hsc or {}
 
@@ -40,11 +43,8 @@ function hsc.onLinkedHubContentUpdate(element)
 
     if localId == nil then return end
 
-    local linkedElement = hsc.getLinkedElementsByLocalId()[localId]
-
-    if linkedElement ~= nil
-        and hsc.getMethod(linkedElement, "getContent") ~= nil
-        and hsc.getMethod(linkedElement, "updateContent") ~= nil then
+    if hsc.getMethod(element, "getContent") ~= nil
+        and hsc.getMethod(element, "updateContent") ~= nil then
         if hscDebugContainers then
             hsc.print("Container content event received for hub "
                 .. tostring(localId))
@@ -54,28 +54,57 @@ function hsc.onLinkedHubContentUpdate(element)
 end
 
 function hsc.getSlots()
-    return {
-        { name = "slot1", element = slot1 },
-        { name = "slot2", element = slot2 },
-        { name = "slot3", element = slot3 },
-        { name = "slot4", element = slot4 },
-        { name = "slot5", element = slot5 },
-        { name = "slot6", element = slot6 },
-        { name = "slot7", element = slot7 },
-        { name = "slot8", element = slot8 },
-        { name = "slot9", element = slot9 },
-        { name = "slot10", element = slot10 },
-        { name = "core", element = core },
-        { name = "databank", element = databank },
-        { name = "db", element = db },
-        { name = "screen", element = screen }
+    local elements = {
+        slot1, slot2, slot3, slot4, slot5, slot6, slot7, slot8, slot9, slot10,
+        slot11, slot12, slot13, slot14, slot15, slot16, slot17, slot18, slot19, slot20,
+        slot21, slot22, slot23, slot24, slot25, slot26, slot27, slot28, slot29, slot30,
+        slot31, slot32, slot33, slot34, slot35, slot36, slot37, slot38, slot39, slot40,
+        slot41, slot42, slot43, slot44, slot45, slot46, slot47, slot48, slot49, slot50,
+        slot51, slot52, slot53, slot54, slot55, slot56, slot57, slot58, slot59, slot60,
+        slot61, slot62, slot63, slot64, slot65, slot66, slot67, slot68, slot69, slot70,
+        slot71, slot72, slot73, slot74, slot75, slot76, slot77, slot78, slot79, slot80,
+        slot81, slot82, slot83, slot84, slot85, slot86, slot87, slot88, slot89, slot90,
+        slot91, slot92, slot93, slot94, slot95, slot96, slot97, slot98, slot99, slot100
     }
+    local slots = {}
+
+    for slotIndex = 1, 100 do
+        slots[#slots + 1] = {
+            name = "slot" .. tostring(slotIndex),
+            slotIndex = slotIndex,
+            element = elements[slotIndex]
+        }
+    end
+
+    slots[#slots + 1] = { name = "core", element = core }
+    slots[#slots + 1] = { name = "databank", element = databank }
+    slots[#slots + 1] = { name = "db", element = db }
+    slots[#slots + 1] = { name = "screen", element = screen }
+    return slots
 end
 
-function hsc.getLinkedElementsByLocalId()
+function hsc.getOrderedLinkedSlots(slots)
+    local linkedSlots = {}
+    local seen = {}
+
+    for _, candidate in ipairs(slots or hsc.getSlots()) do
+        if candidate.slotIndex ~= nil and candidate.element ~= nil then
+            local localId = hsc.getLocalId(candidate.element)
+
+            if localId ~= nil and not seen[localId] then
+                seen[localId] = true
+                linkedSlots[#linkedSlots + 1] = candidate
+            end
+        end
+    end
+
+    return linkedSlots
+end
+
+function hsc.getLinkedElementsByLocalId(slots)
     local linkedElements = {}
 
-    for _, candidate in ipairs(hsc.getSlots()) do
+    for _, candidate in ipairs(slots or hsc.getSlots()) do
         local element = candidate.element
         local localId = hsc.getLocalId(element)
 
@@ -126,14 +155,14 @@ function hsc.getClassName(element)
     )
 end
 
-function hsc.discoverLinkedElements()
+function hsc.discoverLinkedElements(slots)
     local result = {
         core = nil,
         databank = nil,
         screen = nil
     }
 
-    local slots = hsc.getSlots()
+    slots = slots or hsc.getSlots()
 
     for _, candidate in ipairs(slots) do
         local element = candidate.element
@@ -223,7 +252,43 @@ function hsc.getElementDescription(core, localId)
     return table.concat(parts, " ")
 end
 
+function hsc.getCoreElementClassName(core, localId)
+    hsc.coreElementClassCache = hsc.coreElementClassCache or {}
+
+    if hsc.coreElementClassCache[localId] == nil then
+        hsc.coreElementClassCache[localId] = string.lower(tostring(
+            hsc.call(core, "getElementClassById", localId) or ""
+        ))
+    end
+
+    return hsc.coreElementClassCache[localId]
+end
+
+function hsc.isIndustryClassName(className)
+    className = string.lower(tostring(className or ""))
+
+    return className == "industryunit"
+        or string.find(className, "industry", 1, true) ~= nil
+        or string.match(className, "^industry%d*$") ~= nil
+        or string.match(className, "^industryunit%d+$") ~= nil
+end
+
 function hsc.isContainerHub(core, localId)
+    local className = hsc.getCoreElementClassName(core, localId)
+    local compactClass = string.gsub(className, "[%s_%-]", "")
+
+    if string.find(compactClass, "containerhub", 1, true) ~= nil
+        or string.find(compactClass, "containerrelay", 1, true) ~= nil then
+        return true
+    end
+
+    -- Most construct elements can be rejected with one cheap class lookup.
+    -- Only generic Container classes need the slower item-description probe.
+    if compactClass ~= ""
+        and string.find(compactClass, "container", 1, true) == nil then
+        return false
+    end
+
     local description = hsc.getElementDescription(core, localId)
     local compact = string.gsub(description, "[%s_%-]", "")
 
@@ -243,12 +308,64 @@ function hsc.isDirectContainerHub(element)
         or string.find(compact, "containerrelay", 1, true) ~= nil
 end
 
+function hsc.isDirectContainer(element)
+    if element == nil or hsc.isDirectContainerHub(element) then
+        return false
+    end
+
+    local description = string.lower(table.concat({
+        tostring(hsc.call(element, "getClass") or ""),
+        tostring(hsc.call(element, "getDisplayName") or ""),
+        tostring(hsc.call(element, "getName") or "")
+    }, " "))
+    local compact = string.gsub(description, "[%s_%-]", "")
+
+    return string.find(compact, "container", 1, true) ~= nil
+        and hsc.getMethod(element, "getContent") ~= nil
+end
+
+function hsc.isDirectIndustry(element, core, localId)
+    if element == nil then return false end
+
+    local description = string.lower(table.concat({
+        tostring(hsc.call(element, "getClass") or ""),
+        tostring(hsc.call(element, "getDisplayName") or ""),
+        tostring(hsc.call(element, "getName") or ""),
+        tostring(hsc.call(core, "getElementClassById", localId) or "")
+    }, " "))
+    local compact = string.gsub(description, "[%s_%-]", "")
+
+    return string.find(compact, "industry", 1, true) ~= nil
+end
+
+function hsc.isInfrastructureElement(element)
+    if element == nil then return false end
+
+    local className = string.lower(hsc.getClassName(element))
+
+    return string.find(className, "core", 1, true) ~= nil
+        or string.find(className, "screen", 1, true) ~= nil
+        or string.find(className, "databank", 1, true) ~= nil
+        or string.find(className, "data bank", 1, true) ~= nil
+        or hsc.getMethod(element, "getElementIdList") ~= nil
+        or hsc.getMethod(element, "setRenderScript") ~= nil
+        or hsc.getMethod(element, "setStringValue") ~= nil
+end
+
+function hsc.getDirectElementKind(element, core, localId)
+    if hsc.isInfrastructureElement(element) then return nil end
+    if hsc.isDirectContainerHub(element) then return "hub" end
+    if hsc.isDirectContainer(element) then return "container" end
+    if hsc.isDirectIndustry(element, core, localId) then return "industry" end
+    return nil
+end
+
 function hsc.getDirectElementName(element, localId)
     local name = hsc.call(element, "getName")
         or hsc.call(element, "getDisplayName")
 
     if name == nil or tostring(name) == "" then
-        return "Hub " .. tostring(localId)
+        return "Element " .. tostring(localId)
     end
 
     return tostring(name)
@@ -275,21 +392,25 @@ function hsc.getConnectedElementIds(core, methodName, localId)
     local plugs = hsc.call(core, methodName, localId)
     local elementIds = {}
     local seen = {}
+    local visitedTables = {}
+    local visitedCount = 0
+    local maximumVisitedEntries = 64
+    local idFieldNames = {
+        elementId = true, elementID = true, element_id = true,
+        localId = true, localID = true, local_id = true,
+        id = true, item = true
+    }
 
     if type(plugs) ~= "table" then
         return elementIds
     end
 
-    for _, plug in pairs(plugs) do
-        local elementId = plug
-
-        if type(plug) == "table" then
-            elementId = plug.elementId or plug.elementID or plug.element_id
-                or plug.localId or plug.localID or plug.local_id
-                or plug.id or plug[1]
+    local function addElementId(value)
+        if type(value) ~= "number" and type(value) ~= "string" then
+            return
         end
 
-        elementId = tonumber(elementId) or elementId
+        local elementId = tonumber(value)
 
         if elementId ~= nil and not seen[elementId] then
             seen[elementId] = true
@@ -297,22 +418,78 @@ function hsc.getConnectedElementIds(core, methodName, localId)
         end
     end
 
+    local function visit(value, depth)
+        depth = depth or 0
+
+        if depth > 4 or visitedCount >= maximumVisitedEntries then
+            return
+        end
+
+        if type(value) ~= "table" then
+            addElementId(value)
+            return
+        end
+
+        if visitedTables[value] then return end
+        visitedTables[value] = true
+        visitedCount = visitedCount + 1
+
+        addElementId(value.elementId)
+        addElementId(value.elementID)
+        addElementId(value.element_id)
+        addElementId(value.localId)
+        addElementId(value.localID)
+        addElementId(value.local_id)
+        addElementId(value.id)
+
+        for key, nestedValue in pairs(value) do
+            -- Server plug maps may be flat, arrays, or nested maps. Collect
+            -- every connected value and validate the resulting IDs by class
+            -- afterwards instead of keeping only the first nested entry. A
+            -- boolean map uses element IDs as keys; array indices are ignored.
+            if type(nestedValue) == "boolean" then
+                if nestedValue then addElementId(key) end
+            elseif type(nestedValue) == "table" then
+                visit(nestedValue, depth + 1)
+            elseif idFieldNames[key]
+                or (
+                    type(key) == "string"
+                    and (
+                        string.find(key, "IN%-") ~= nil
+                        or string.find(key, "OUT%-") ~= nil
+                    )
+                ) then
+                addElementId(nestedValue)
+            end
+
+            visitedCount = visitedCount + 1
+            if visitedCount >= maximumVisitedEntries then break end
+        end
+    end
+
+    visit(plugs, 0)
+
     return elementIds
 end
 
 function hsc.isIndustryElement(core, localId)
-    if type(hsc.call(core, "getElementIndustryInfoById", localId)) == "table" then
+    hsc.industryElementCache = hsc.industryElementCache or {}
+
+    if hsc.industryElementCache[localId] ~= nil then
+        return hsc.industryElementCache[localId]
+    end
+
+    local className = hsc.getCoreElementClassName(core, localId)
+
+    if hsc.isIndustryClassName(className) then
+        hsc.industryElementCache[localId] = true
         return true
     end
 
-    local className = string.lower(tostring(
-        hsc.call(core, "getElementClassById", localId) or ""
-    ))
-
-    return className == "industryunit"
-        or string.find(className, "industry", 1, true) ~= nil
-        or string.match(className, "^industry%d*$") ~= nil
-        or string.match(className, "^industryunit%d+$") ~= nil
+    -- Relationship tables also contain item IDs and plug metadata. Only a
+    -- construct element whose Core class is an Industry may become a source.
+    hsc.industryElementCache[localId] = false
+    return false
 end
 
 function hsc.getIndustryName(core, localId)
@@ -420,8 +597,10 @@ function hsc.getProductFromItem(itemId, quantity)
     }
 end
 
-function hsc.getIndustryProduct(core, localId)
+function hsc.getIndustryProduct(core, localId, industryElement)
     local info = hsc.call(core, "getElementIndustryInfoById", localId)
+        or hsc.call(industryElement, "getInfo")
+        or hsc.call(industryElement, "getIndustryInfo")
 
     if type(info) ~= "table" then
         return nil
@@ -615,7 +794,7 @@ function hsc.requestNextHubContent()
     end
 
     local candidates = {}
-    local linkedById = hsc.getLinkedElementsByLocalId()
+    local linkedById = hsc.runtime.linkedElementsByLocalId or {}
 
     for _, projectedHub in ipairs(hsc.runtime.hubs or {}) do
         local hub = linkedById[projectedHub.id]
@@ -761,9 +940,17 @@ function hsc.findOutputIndustriesForHub(core, hubId)
         hubId
     )
     local industries = {}
+    local seen = {}
+
+    for _, indexedIndustryId in ipairs(
+        (hsc.industryOutputsByTarget or {})[hubId] or {}
+    ) do
+        industryIds[#industryIds + 1] = indexedIndustryId
+    end
 
     for _, industryId in ipairs(industryIds) do
-        if hsc.isIndustryElement(core, industryId) then
+        if not seen[industryId] and hsc.isIndustryElement(core, industryId) then
+            seen[industryId] = true
             industries[#industries + 1] = {
                 id = industryId,
                 name = hsc.getIndustryName(core, industryId)
@@ -776,6 +963,248 @@ function hsc.findOutputIndustriesForHub(core, hubId)
     end)
 
     return industries
+end
+
+function hsc.prepareIndustryOutputIndex(core, elementIds)
+    hsc.industryOutputsByTarget = {}
+    hsc.industryIndexCore = core
+    hsc.industryIndexElementIds = elementIds or {}
+    hsc.industryIndexCursor = 0
+    hsc.industryIndexComplete = core == nil or #hsc.industryIndexElementIds == 0
+end
+
+function hsc.advanceIndustryOutputIndex()
+    if hsc.industryIndexComplete then return false end
+
+    local core = hsc.industryIndexCore
+    local elementIds = hsc.industryIndexElementIds or {}
+    local batchSize = math.max(1, math.floor(
+        tonumber(hscIndustryIndexBatchSize) or 50
+    ))
+    local changed = false
+
+    for _ = 1, batchSize do
+        local nextIndex = (hsc.industryIndexCursor or 0) + 1
+        local industryId = elementIds[nextIndex]
+
+        if industryId == nil then
+            hsc.industryIndexComplete = true
+            break
+        end
+
+        hsc.industryIndexCursor = nextIndex
+
+        if hsc.isIndustryClassName(
+            hsc.getCoreElementClassName(core, industryId)
+        ) then
+            for _, targetId in ipairs(hsc.getConnectedElementIds(
+                core,
+                "getElementOutPlugsById",
+                industryId
+            )) do
+                local targetIndustries = hsc.industryOutputsByTarget[targetId]
+
+                if targetIndustries == nil then
+                    targetIndustries = {}
+                    hsc.industryOutputsByTarget[targetId] = targetIndustries
+                end
+
+                local alreadyAdded = false
+                for _, existingId in ipairs(targetIndustries) do
+                    if existingId == industryId then
+                        alreadyAdded = true
+                        break
+                    end
+                end
+
+                if not alreadyAdded then
+                    targetIndustries[#targetIndustries + 1] = industryId
+                    changed = true
+                end
+            end
+        end
+    end
+
+    if (hsc.industryIndexCursor or 0) >= #elementIds then
+        hsc.industryIndexComplete = true
+
+        if debugCellAssociation then
+            hsc.print("Industry output relationship scan complete.")
+        end
+    end
+
+    return changed
+end
+
+function hsc.buildStorageSource(
+    core,
+    linkedElement,
+    localId,
+    sourceKind,
+    linkedElementsByLocalId
+)
+    local industries = core ~= nil
+        and hsc.findOutputIndustriesForHub(core, localId)
+        or {}
+    local sourceName = core ~= nil
+        and hsc.getElementName(core, localId)
+        or hsc.getDirectElementName(linkedElement, localId)
+    local inventory = hsc.getHubInventoryMetrics(linkedElement, nil, localId)
+    local containerProducts = {}
+    local productLabels = {}
+    local productionDetails = {}
+    local iconPath = nil
+
+    if inventory ~= nil then
+        for itemId, quantity in pairs(inventory.items or {}) do
+            containerProducts[#containerProducts + 1] = hsc.getProductFromItem(
+                itemId,
+                quantity
+            )
+        end
+
+        table.sort(containerProducts, function(left, right)
+            return (tonumber(left.containerQuantity) or 0)
+                > (tonumber(right.containerQuantity) or 0)
+        end)
+    end
+
+    for _, industry in ipairs(industries) do
+        local directIndustry = linkedElementsByLocalId ~= nil
+            and linkedElementsByLocalId[industry.id]
+            or nil
+        industry.product = hsc.getIndustryProduct(
+            core,
+            industry.id,
+            directIndustry
+        )
+
+        if industry.product ~= nil then
+            industry.product.inventory = inventory
+            local productLabel = hsc.getProductDisplayLabel(
+                industry.product,
+                inventory
+            )
+            productLabels[#productLabels + 1] = productLabel
+            iconPath = iconPath or industry.product.iconPath
+            productionDetails[#productionDetails + 1] = string.format(
+                "%s -> %s (state=%s, produced=%s, remaining=%s)",
+                industry.name,
+                productLabel,
+                tostring(industry.product.state),
+                tostring(industry.product.unitsProduced),
+                tostring(industry.product.remainingTime)
+            )
+        end
+    end
+
+    local industrySearch = string.lower(tostring(
+        debugIndustryHubNameSearch or ""
+    ))
+    local matchesIndustryDebug = industrySearch ~= ""
+        and string.find(
+            string.lower(tostring(sourceName)),
+            industrySearch,
+            1,
+            true
+        ) ~= nil
+
+    hsc.announcedIndustryRelations = hsc.announcedIndustryRelations or {}
+    hsc.announcedIndustryCounts = hsc.announcedIndustryCounts or {}
+
+    if debugCellAssociation and matchesIndustryDebug then
+        local announcedRelations = hsc.announcedIndustryRelations[localId] or {}
+        hsc.announcedIndustryRelations[localId] = announcedRelations
+
+        if hsc.announcedIndustryCounts[localId] ~= #industries then
+            hsc.announcedIndustryCounts[localId] = #industries
+            hsc.print(string.format(
+                "Hub %s [%s] related industries: %d",
+                tostring(sourceName),
+                tostring(localId),
+                #industries
+            ))
+        end
+
+        for _, industry in ipairs(industries) do
+            local product = industry.product
+            local productName = product ~= nil
+                and tostring(product.name or product.label or "no product")
+                or "no product"
+            local amount = product ~= nil
+                and hsc.formatQuantity(product.cycleQuantity)
+                or nil
+            local productId = product ~= nil and product.itemId or nil
+            local productText = productName
+
+            if amount ~= nil then productText = productText .. " x" .. amount end
+            if productId ~= nil then
+                productText = productText .. " [" .. tostring(productId) .. "]"
+            end
+            local relationFingerprint = tostring(industry.name)
+                .. "|" .. productText
+
+            if announcedRelations[industry.id] ~= relationFingerprint then
+                announcedRelations[industry.id] = relationFingerprint
+                hsc.print(string.format(
+                    "industry %s [%s] -> %s",
+                    tostring(industry.name),
+                    tostring(industry.id),
+                    productText
+                ))
+            end
+        end
+    end
+
+    return {
+        id = localId,
+        name = sourceName,
+        sourceKind = sourceKind or "hub",
+        industryIds = industries,
+        productionDetails = productionDetails,
+        label = #productLabels > 0
+            and table.concat(productLabels, " / ")
+            or sourceName,
+        iconPath = iconPath,
+        inventory = inventory,
+        containerProducts = containerProducts
+    }
+end
+
+function hsc.buildIndustrySource(core, industryElement, localId)
+    local sourceName = core ~= nil
+        and hsc.getIndustryName(core, localId)
+        or hsc.getDirectElementName(industryElement, localId)
+    local product = hsc.getIndustryProduct(core, localId, industryElement)
+    local industry = {
+        id = localId,
+        name = sourceName,
+        product = product
+    }
+    local label = product ~= nil
+        and hsc.getProductDisplayLabel(product, nil)
+        or sourceName
+
+    return {
+        id = localId,
+        name = sourceName,
+        sourceKind = "industry",
+        industryIds = { industry },
+        productionDetails = product ~= nil and {
+            string.format(
+                "%s -> %s (state=%s, produced=%s, remaining=%s)",
+                sourceName,
+                label,
+                tostring(product.state),
+                tostring(product.unitsProduced),
+                tostring(product.remainingTime)
+            )
+        } or {},
+        label = label,
+        iconPath = product ~= nil and product.iconPath or nil,
+        inventory = nil,
+        containerProducts = {}
+    }
 end
 
 function hsc.discoverNearbyHubs(core, screen, linkedElementsByLocalId)
@@ -824,7 +1253,7 @@ function hsc.discoverNearbyHubs(core, screen, linkedElementsByLocalId)
         table.sort(elementIds)
     end
 
-    local hubs = {}
+    local nearbyHubs = {}
 
     for _, localId in ipairs(elementIds) do
         local linkedHub = linkedElementsByLocalId ~= nil
@@ -847,70 +1276,9 @@ function hsc.discoverNearbyHubs(core, screen, linkedElementsByLocalId)
 
                 if math.abs(depth) <= hscMaxDepthMeters
                     and planarDistance <= hscSearchRadiusMeters then
-                    local industries = core ~= nil
-                        and hsc.findOutputIndustriesForHub(core, localId)
-                        or {}
-                    local productLabels = {}
-                    local productionDetails = {}
-                    local iconPath = nil
-                    local hubInventory = hsc.getHubInventoryMetrics(
-                        linkedHub,
-                        nil,
-                        localId
-                    )
-                    local containerProducts = {}
-
-                    if hubInventory ~= nil then
-                        for itemId, quantity in pairs(hubInventory.items or {}) do
-                            containerProducts[#containerProducts + 1] = hsc.getProductFromItem(
-                                itemId,
-                                quantity
-                            )
-                        end
-
-                        table.sort(containerProducts, function(left, right)
-                            return (tonumber(left.containerQuantity) or 0)
-                                > (tonumber(right.containerQuantity) or 0)
-                        end)
-                    end
-
-                    for _, industry in ipairs(industries) do
-                        industry.product = hsc.getIndustryProduct(core, industry.id)
-
-                        if industry.product ~= nil then
-                            industry.product.inventory = hubInventory
-                            local productLabel = hsc.getProductDisplayLabel(
-                                industry.product,
-                                hubInventory
-                            )
-                            productLabels[#productLabels + 1] = productLabel
-                            iconPath = iconPath or industry.product.iconPath
-                            productionDetails[#productionDetails + 1] = string.format(
-                                "%s -> %s (state=%s, produced=%s, remaining=%s)",
-                                industry.name,
-                                productLabel,
-                                tostring(industry.product.state),
-                                tostring(industry.product.unitsProduced),
-                                tostring(industry.product.remainingTime)
-                            )
-                        end
-                    end
-
-                    local label = #industries == 0 and "no indy"
-                        or (#productLabels > 0
-                            and table.concat(productLabels, " / ")
-                            or "no product")
-                    hubs[#hubs + 1] = {
+                    nearbyHubs[#nearbyHubs + 1] = {
                         id = localId,
-                        name = core ~= nil
-                            and hsc.getElementName(core, localId)
-                            or hsc.getDirectElementName(linkedHub, localId),
-                        industryIds = industries,
-                        productionDetails = productionDetails,
-                        label = label,
-                        iconPath = iconPath,
-                        inventory = hubInventory,
-                        containerProducts = containerProducts,
+                        linkedElement = linkedHub,
                         position = position,
                         x = x,
                         y = y,
@@ -921,6 +1289,24 @@ function hsc.discoverNearbyHubs(core, screen, linkedElementsByLocalId)
         end
     end
 
+    hsc.prepareIndustryOutputIndex(core, elementIds)
+    local hubs = {}
+
+    for _, nearbyHub in ipairs(nearbyHubs) do
+        local source = hsc.buildStorageSource(
+            core,
+            nearbyHub.linkedElement,
+            nearbyHub.id,
+            "hub",
+            linkedElementsByLocalId
+        )
+        source.position = nearbyHub.position
+        source.x = nearbyHub.x
+        source.y = nearbyHub.y
+        source.depth = nearbyHub.depth
+        hubs[#hubs + 1] = source
+    end
+
     return {
         screenId = screenId,
         screenWidth = screenWidth,
@@ -929,38 +1315,265 @@ function hsc.discoverNearbyHubs(core, screen, linkedElementsByLocalId)
     }
 end
 
+function hsc.getAssociatedElementIds(projected)
+    local associated = {}
+
+    for _, cell in ipairs(projected or {}) do
+        associated[cell.id] = true
+
+        for _, industry in ipairs(cell.industryIds or {}) do
+            associated[industry.id] = true
+        end
+    end
+
+    return associated
+end
+
+function hsc.getUnassociatedLinkedSources(
+    core,
+    projected,
+    orderedSlots,
+    linkedElementsByLocalId
+)
+    local associated = hsc.getAssociatedElementIds(projected)
+    orderedSlots = orderedSlots or hsc.getOrderedLinkedSlots()
+    local linkedKinds = {}
+    local absorbedIndustries = {}
+
+    for _, candidate in ipairs(orderedSlots) do
+        local localId = hsc.getLocalId(candidate.element)
+        local kind = hsc.getDirectElementKind(candidate.element, core, localId)
+
+        if kind ~= nil then
+            linkedKinds[localId] = kind
+
+            if kind == "hub" or kind == "container" then
+                for _, industry in ipairs(
+                    core ~= nil and hsc.findOutputIndustriesForHub(core, localId) or {}
+                ) do
+                    absorbedIndustries[industry.id] = true
+                end
+            end
+        end
+    end
+
+    local sources = {}
+    local counts = { hub = 0, container = 0, industry = 0 }
+
+    for _, candidate in ipairs(orderedSlots) do
+        local element = candidate.element
+        local localId = hsc.getLocalId(element)
+        local kind = linkedKinds[localId]
+        local source = nil
+
+        if kind ~= nil and not associated[localId] then
+            if kind == "industry" and not absorbedIndustries[localId] then
+                source = hsc.buildIndustrySource(core, element, localId)
+            elseif kind == "hub" or kind == "container" then
+                source = hsc.buildStorageSource(
+                    core,
+                    element,
+                    localId,
+                    kind,
+                    linkedElementsByLocalId
+                )
+            end
+        end
+
+        if source ~= nil then
+            source.slotIndex = candidate.slotIndex
+            sources[#sources + 1] = source
+            counts[kind] = counts[kind] + 1
+        end
+    end
+
+    return sources, counts
+end
+
+function hsc.getEmptyCells(projected)
+    local occupied = {}
+    local emptyCells = {}
+
+    for _, cell in ipairs(projected or {}) do
+        occupied[tostring(cell.cellColumn) .. ":" .. tostring(cell.cellRow)] = true
+    end
+
+    for row = 1, hscRows do
+        for column = 1, hscColumns do
+            local key = tostring(column) .. ":" .. tostring(row)
+
+            if not occupied[key] then
+                emptyCells[#emptyCells + 1] = { column = column, row = row }
+            end
+        end
+    end
+
+    return emptyCells
+end
+
+function hsc.assignLinkedSourcesToEmptyCells(
+    projected,
+    core,
+    width,
+    height,
+    orderedSlots,
+    linkedElementsByLocalId
+)
+    local emptyCells = hsc.getEmptyCells(projected)
+    local sources, counts = hsc.getUnassociatedLinkedSources(
+        core,
+        projected,
+        orderedSlots,
+        linkedElementsByLocalId
+    )
+    local awaiting = {}
+
+    if debugCellAssociation then
+        hsc.print("Cells available after nearby Hub association: "
+            .. tostring(#emptyCells))
+        hsc.print(string.format(
+            "Linked elements available for cells: %d container(s), %d hub(s), %d industry unit(s).",
+            counts.container,
+            counts.hub,
+            counts.industry
+        ))
+    end
+
+    for sourceIndex, source in ipairs(sources) do
+        local target = emptyCells[sourceIndex]
+
+        if target ~= nil then
+            projected[#projected + 1] = hscScreen.createAssignedCell(
+                source,
+                target.column,
+                target.row,
+                width,
+                height,
+                { manuallyAssociated = true }
+            )
+
+            if debugCellAssociation then
+                hsc.print(string.format(
+                    "cell (%d, %d) - %s [%s]",
+                    target.column,
+                    target.row,
+                    tostring(source.name),
+                    tostring(source.id)
+                ))
+            end
+        else
+            awaiting[#awaiting + 1] = source
+        end
+    end
+
+    if debugCellAssociation then
+        local remainingCells = math.max(0, #emptyCells - #sources)
+        hsc.print("Free cells after linked-element association: "
+            .. tostring(remainingCells))
+
+        if #awaiting > 0 then
+            hsc.print("Linked elements awaiting a cell: " .. tostring(#awaiting))
+
+            for _, source in ipairs(awaiting) do
+                hsc.print("awaiting cell - " .. tostring(source.name)
+                    .. " [" .. tostring(source.id) .. "]")
+            end
+        end
+    end
+
+    table.sort(projected, function(left, right)
+        if left.cellRow ~= right.cellRow then
+            return left.cellRow < right.cellRow
+        end
+
+        return left.cellColumn < right.cellColumn
+    end)
+
+    return projected
+end
+
+function hsc.makeCellAssignments(projected)
+    local assignments = {}
+
+    for _, cell in ipairs(projected or {}) do
+        assignments[#assignments + 1] = {
+            id = cell.id,
+            sourceKind = cell.sourceKind or "hub",
+            cellColumn = cell.cellColumn,
+            cellRow = cell.cellRow,
+            screenX = cell.screenX,
+            screenY = cell.screenY,
+            x = cell.x,
+            y = cell.y,
+            depth = cell.depth,
+            position = cell.position,
+            surfaceDistance = cell.surfaceDistance,
+            inside = cell.inside,
+            manuallyAssociated = cell.manuallyAssociated == true
+        }
+    end
+
+    return assignments
+end
+
+function hsc.rebuildAssignedCells()
+    local linkedById = hsc.runtime.linkedElementsByLocalId or {}
+    local rebuilt = {}
+
+    for _, assignment in ipairs(hsc.runtime.cellAssignments or {}) do
+        local linkedElement = linkedById[assignment.id]
+        local source
+
+        if assignment.sourceKind == "industry" then
+            source = hsc.buildIndustrySource(
+                hsc.runtime.core,
+                linkedElement,
+                assignment.id
+            )
+        else
+            source = hsc.buildStorageSource(
+                hsc.runtime.core,
+                linkedElement,
+                assignment.id,
+                assignment.sourceKind,
+                linkedById
+            )
+        end
+
+        source.position = hsc.call(
+            hsc.runtime.core,
+            "getElementPositionById",
+            assignment.id
+        ) or hsc.call(linkedElement, "getPosition") or assignment.position
+
+        rebuilt[#rebuilt + 1] = hscScreen.createAssignedCell(
+            source,
+            assignment.cellColumn,
+            assignment.cellRow,
+            hsc.runtime.screenWidth,
+            hsc.runtime.screenHeight,
+            assignment
+        )
+    end
+
+    return rebuilt
+end
+
 
 function hsc.refreshDiscovery()
     if hsc.runtime == nil then
         return
     end
 
-    local discovery, discoveryError = hsc.discoverNearbyHubs(
-        hsc.runtime.core,
-        hsc.runtime.screen,
-        hsc.getLinkedElementsByLocalId()
-    )
-
-    if discovery == nil then
-        hsc.print("Discovery refresh failed: " .. tostring(discoveryError))
-        return
-    end
-
-    local projected, width, height = hscScreen.projectHubsToScreen(
-        discovery.hubs,
-        discovery.screenWidth,
-        discovery.screenHeight
-    )
+    local projected = hsc.rebuildAssignedCells()
     local dirtyHubs = hscStorage.syncHubs(
         hsc.runtime.databank,
         hsc.runtime.screenId,
         projected
     )
+    hsc.runtime.hubs = projected
 
     if #dirtyHubs > 0 then
-        hsc.runtime.hubs = projected
-        hsc.runtime.screenWidth = width
-        hsc.runtime.screenHeight = height
         hscStorage.saveHubCells(hsc.runtime.databank, hsc.runtime.screenId, projected)
         hscScreen.queueDirtyCells(dirtyHubs)
         hsc.printDebugDetails(dirtyHubs)
@@ -1054,10 +1667,17 @@ function hsc.onContainerTimer()
     hsc.runtime.contentElapsedSeconds = (hsc.runtime.contentElapsedSeconds or 0)
         + hscContainerRefreshSeconds
     hsc.requestNextHubContent()
+    hsc.advanceIndustryOutputIndex()
     hsc.refreshDiscovery()
 end
 
 function hsc.run()
+    hsc.industryElementCache = {}
+    hsc.coreElementClassCache = {}
+    hsc.industryOutputsByTarget = {}
+    hsc.announcedIndustryRelations = {}
+    hsc.announcedIndustryCounts = {}
+
     if hscStorage == nil then
         error("Storage library is missing. Add library.onStart.storage.lua to Library > onStart.")
     end
@@ -1066,7 +1686,10 @@ function hsc.run()
         error("Screen library is missing. Add library.onStart.screen.lua to Library > onStart.")
     end
 
-    local linked = hsc.discoverLinkedElements()
+    local slots = hsc.getSlots()
+    local linked = hsc.discoverLinkedElements(slots)
+    local linkedElementsByLocalId = hsc.getLinkedElementsByLocalId(slots)
+    local orderedLinkedSlots = hsc.getOrderedLinkedSlots(slots)
 
     if linked.databank == nil then
         error("No linked Databank was detected.")
@@ -1083,11 +1706,16 @@ function hsc.run()
     local discovery, discoveryError = hsc.discoverNearbyHubs(
         linked.core,
         linked.screen,
-        hsc.getLinkedElementsByLocalId()
+        linkedElementsByLocalId
     )
 
     if discovery == nil then
         error(discoveryError)
+    end
+
+    if debugCellAssociation then
+        hsc.print("Nearby Hub discovery complete: "
+            .. tostring(#(discovery.hubs or {})) .. " candidate(s).")
     end
 
     local projected, width, height = hscScreen.projectHubsToScreen(
@@ -1095,6 +1723,21 @@ function hsc.run()
         discovery.screenWidth,
         discovery.screenHeight
     )
+
+    if debugCellAssociation then
+        hsc.print("Nearby Hub projection complete: "
+            .. tostring(#(projected or {})) .. " cell(s) occupied.")
+    end
+
+    projected = hsc.assignLinkedSourcesToEmptyCells(
+        projected,
+        linked.core,
+        width,
+        height,
+        orderedLinkedSlots,
+        linkedElementsByLocalId
+    )
+    local cellAssignments = hsc.makeCellAssignments(projected)
     local dirtyHubs = hscStorage.syncHubs(
         linked.databank,
         discovery.screenId,
@@ -1113,6 +1756,8 @@ function hsc.run()
         screenId = discovery.screenId,
         screenWidth = width,
         screenHeight = height,
+        linkedElementsByLocalId = linkedElementsByLocalId,
+        cellAssignments = cellAssignments,
         clickMarkers = {},
         nextClickIndex = 0,
         lastClickOutput = nil,

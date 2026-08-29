@@ -18,6 +18,92 @@ function hscScreen.getGridBounds(width, height)
     return left, right, top, bottom
 end
 
+function hscScreen.buildProducts(source)
+    local products = {}
+    local productsByItemId = {}
+
+    for _, product in ipairs(source.containerProducts or {}) do
+        product.source = "container"
+        product.primaryAmount = tonumber(product.containerQuantity) or 0
+        productsByItemId[product.itemId] = product
+        products[#products + 1] = product
+    end
+
+    for _, industry in ipairs(source.industryIds or {}) do
+        local product = industry.product
+
+        if product ~= nil and product.itemId ~= nil then
+            local existing = productsByItemId[product.itemId]
+
+            if existing ~= nil then
+                existing.industryAmount = tonumber(product.cycleQuantity)
+                existing.hasIndustrySource = true
+            else
+                product.source = "industry"
+                product.primaryAmount = tonumber(product.cycleQuantity) or 0
+                productsByItemId[product.itemId] = product
+                products[#products + 1] = product
+            end
+        end
+    end
+
+    table.sort(products, function(left, right)
+        return (tonumber(left.primaryAmount) or 0)
+            > (tonumber(right.primaryAmount) or 0)
+    end)
+
+    return products
+end
+
+function hscScreen.createAssignedCell(source, column, row, width, height, coordinates)
+    local gridLeft, gridRight, gridTop, gridBottom = hscScreen.getGridBounds(
+        width,
+        height
+    )
+    local gridWidth = 1 - gridLeft - gridRight
+    local gridHeight = 1 - gridTop - gridBottom
+    local screenX = gridLeft + (column - 0.5) * gridWidth / hscColumns
+    local screenY = gridTop + (row - 0.5) * gridHeight / hscRows
+    local horizontal = screenX - 0.5
+    local vertical = 0.5 - screenY
+
+    if hscReverseColumns then horizontal = -horizontal end
+    if hscReverseRows then vertical = -vertical end
+
+    coordinates = coordinates or {}
+    local inside = true
+
+    if coordinates.inside ~= nil then
+        inside = coordinates.inside
+    end
+
+    return {
+        id = source.id,
+        name = source.label,
+        hubName = source.name,
+        sourceKind = source.sourceKind,
+        industryIds = source.industryIds,
+        productionDetails = source.productionDetails,
+        containerProducts = source.containerProducts,
+        iconPath = source.iconPath,
+        screenX = coordinates.screenX or screenX,
+        screenY = coordinates.screenY or screenY,
+        gridX = (screenX - gridLeft) / gridWidth,
+        gridY = (screenY - gridTop) / gridHeight,
+        x = coordinates.x or horizontal * width,
+        y = coordinates.y or vertical * height,
+        depth = coordinates.depth or 0,
+        position = source.position or coordinates.position or { 0, 0, 0 },
+        cellColumn = column,
+        cellRow = row,
+        products = hscScreen.buildProducts(source),
+        inventory = source.inventory,
+        inside = inside,
+        surfaceDistance = coordinates.surfaceDistance or 0,
+        manuallyAssociated = coordinates.manuallyAssociated == true
+    }
+end
+
 function hscScreen.projectHubsToScreen(hubs, width, height)
     width = tonumber(width)
     height = tonumber(height)
@@ -55,38 +141,7 @@ function hscScreen.projectHubsToScreen(hubs, width, height)
         local outsideX = math.max(math.abs(hub.x) - width / 2, 0)
         local outsideY = math.max(math.abs(hub.y) - height / 2, 0)
 
-        local products = {}
-        local productsByItemId = {}
-
-        for _, product in ipairs(hub.containerProducts or {}) do
-            product.source = "container"
-            product.primaryAmount = tonumber(product.containerQuantity) or 0
-            productsByItemId[product.itemId] = product
-            products[#products + 1] = product
-        end
-
-        for _, industry in ipairs(hub.industryIds or {}) do
-            local product = industry.product
-
-            if product ~= nil and product.itemId ~= nil then
-                local existing = productsByItemId[product.itemId]
-
-                if existing ~= nil then
-                    existing.industryAmount = tonumber(product.cycleQuantity)
-                    existing.hasIndustrySource = true
-                else
-                    product.source = "industry"
-                    product.primaryAmount = tonumber(product.cycleQuantity) or 0
-                    productsByItemId[product.itemId] = product
-                    products[#products + 1] = product
-                end
-            end
-        end
-
-        table.sort(products, function(left, right)
-            return (tonumber(left.primaryAmount) or 0)
-                > (tonumber(right.primaryAmount) or 0)
-        end)
+        local products = hscScreen.buildProducts(hub)
 
         local column = math.max(1, math.min(
             hscColumns,
@@ -101,7 +156,10 @@ function hscScreen.projectHubsToScreen(hubs, width, height)
             id = hub.id,
             name = hub.label,
             hubName = hub.name,
+            sourceKind = hub.sourceKind or "hub",
             industryIds = hub.industryIds,
+            productionDetails = hub.productionDetails,
+            containerProducts = hub.containerProducts,
             iconPath = hub.iconPath,
             screenX = screenX,
             screenY = screenY,

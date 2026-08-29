@@ -1,6 +1,6 @@
 # PB Hub Screen Controller
 
-Version 0.1.83 renders a 3-row by 5-column production overview on a Dual
+Version 0.2.6 renders a 3-row by 5-column production overview on a Dual
 Universe Screen. Hub positions are orthographically projected onto the actual
 Screen plane, so the Screen may be mounted vertically, horizontally, or at an
 arbitrary angle.
@@ -11,6 +11,10 @@ arbitrary angle.
   linked directly to the Programming Board when no Core is available.
 - Projects every Hub onto the Screen and selects the closest Hub when multiple
   Hubs occupy the same grid cell.
+- At PB startup, assigns directly linked remote Container Hubs, Containers, and
+  Industry Units to remaining cells in PB slot order.
+- Keeps an Industry in the same cell as a linked Hub or Container receiving its
+  output when a linked Core exposes that connection.
 - Reads products from linked Industry Units through the Core.
 - Reads container contents only from Container Hubs linked directly to the PB.
 - Combines and sorts product quantities, chooses the largest quantity as the
@@ -25,10 +29,13 @@ Link the Programming Board to:
 
 - one Screen Unit;
 - one Databank;
-- either a Core Unit, one or more Container Hubs, or both.
+- either a Core Unit, one or more storage/Industry elements, or both.
 
 A Core discovers nearby Hubs and Industry links. A direct Hub link provides
 container inventory contents and also allows that Hub to work without a Core.
+Directly linked remote Hubs, Containers, and Industries fill cells left unused
+by nearby Hubs. Cell association happens once when the PB starts; restart the
+PB after changing links.
 The Screen cannot read the Databank directly; the PB reads stored records and
 sends Screen configuration or cell updates.
 
@@ -101,11 +108,12 @@ RenderScript handles Screen input internally.
 | `hscRows` / `hscColumns` | `3` / `5` | Grid dimensions |
 | `hscGridMarginLeftMeters` / `RightMeters` | `0.3` / `0.3` | Horizontal physical margins |
 | `hscGridMarginTopMeters` / `BottomMeters` | `1` / `0.5` | Vertical physical margins |
-| `hscSearchRadiusMeters` | `20` | Maximum planar Hub distance from Screen center |
+| `hscSearchRadiusMeters` | `8` | Maximum planar Hub distance from Screen center |
 | `hscMaxDepthMeters` | `5` | Maximum distance from the Screen plane |
 | `hscScreenPollSeconds` | `0.2` | Dirty-cell delivery interval |
 | `hscHubContentRefreshSeconds` | `30` | Minimum content request interval per Hub |
 | `hscContainerRefreshSeconds` | `5` | Staggered container refresh timer |
+| `hscIndustryIndexBatchSize` | `50` | Construct elements checked per Industry relationship timer batch |
 | `hscScreenInputMaxCharacters` | `1024` | Maximum Screen input size |
 
 `hscReverseColumns` and `hscReverseRows` reverse grid mapping when desired.
@@ -121,6 +129,12 @@ All debug options default to `false`:
 - `hscDebugIndustries`: Industry discovery and product logs.
 - `hscDebugContainers`: container request, event, capacity, and content logs.
 - `hscDebugDatabank`: Databank reads, writes, and dirty-state changes.
+
+`debugCellAssociation` prints startup cell availability, linked-element counts,
+each remote assignment, and elements awaiting a cell. It defaults to `true`
+while this feature is under development.
+`debugIndustryHubNameSearch` defaults to `1550`; matching Hub names print every
+related Industry and its current output product during PB startup.
 
 ## Databank records
 
