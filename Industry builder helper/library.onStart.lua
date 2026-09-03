@@ -1,7 +1,6 @@
 debugElements = true --export
 debugPbStartInfo = false --export
 newElementSearchSeconds = 3 --export
-elementGroupMinimumGapSeconds = 30 --export
 arEnabled = true --export
 showArRectanglePrisms = false --export
 reduceArFrequencyOnFpsDrop = true --export
@@ -16,12 +15,11 @@ arFullSpeedDegreesPerSecond = 45 --export
 arFullPlayerSpeedMetersPerSecond = 5 --export
 arMotionCurveExponent = 0.5 --export
 databankKey = "ibh:v1:added-elements" --export
-version = "0.0.81" --export
+version = "0.0.100" --export
 
 ibhDebugElements = debugElements
 ibhDebugPbStartInfo = debugPbStartInfo
 ibhNewElementSearchSeconds = newElementSearchSeconds
-ibhElementGroupMinimumGapSeconds = elementGroupMinimumGapSeconds
 ibhArEnabled = arEnabled
 ibhShowArRectanglePrisms = showArRectanglePrisms
 ibhReduceArFrequencyOnFpsDrop = reduceArFrequencyOnFpsDrop
@@ -40,7 +38,6 @@ ibhVersion = version
 
 ibh = ibh or {}
 ibh.addedElementGroups = ibh.addedElementGroups or {}
-ibh.addedElementIntervals = ibh.addedElementIntervals or {}
 ibh.performance = ibh.performance or {
     frameCount = 0,
     sampleStartedAt = nil,
@@ -65,8 +62,8 @@ ibh.knownIndustryOutputLinks = ibh.knownIndustryOutputLinks or {}
 ibh.knownDirectOutputLinks = ibh.knownDirectOutputLinks or {}
 ibh.knownPbContainerLinks = ibh.knownPbContainerLinks or {}
 ibh.knownRunningIndustries = {}
-ibh.announcedDoneButtons = {}
 ibh.directContainerCapacityById = {}
+ibh.containerHubLinkedIdsById = ibh.containerHubLinkedIdsById or {}
 ibh.containerCapacityCatalog = {}
 ibh.loadedUnknownContainerKeys = {}
 ibh.legacyContainerCapacityRows = {}
@@ -218,7 +215,8 @@ function ibh.serializeTrackedElements()
                 y or 0,
                 z or 0,
                 element.addedAt or group.lastAddedAt or 0,
-                element.unitMass or ""
+                element.unitMass or "",
+                element.itemId or ""
             }
             for index, value in ipairs(fields) do
                 fields[index] = ibh.encodeStorageField(value)
@@ -273,31 +271,47 @@ function ibh.loadTrackedElements()
                     tonumber(fields[9]) or 0
                 )
                 local className = fields[5] or ""
-                local positionKey = ibh.getElementPositionKey(position)
-                group.elements[#group.elements + 1] = {
-                    id = localId,
-                    className = className,
-                    name = fields[6] or className,
-                    position = position,
-                    positionKey = positionKey,
-                    identityKey = tostring(localId) .. "|" .. className
-                        .. "|" .. positionKey,
-                    addedAt = tonumber(fields[10]) or group.lastAddedAt,
-                    unitMass = tonumber(fields[11]),
-                    removed = false
-                }
-                restored = restored + 1
+                if ibh.isEllipseIndustryClassName(className) then
+                    local positionKey = ibh.getElementPositionKey(position)
+                    group.elements[#group.elements + 1] = {
+                        id = localId,
+                        className = className,
+                        name = fields[6] or className,
+                        position = position,
+                        positionKey = positionKey,
+                        identityKey = tostring(localId) .. "|" .. className
+                            .. "|" .. positionKey,
+                        addedAt = tonumber(fields[10]) or group.lastAddedAt,
+                        unitMass = tonumber(fields[11]),
+                        itemId = tonumber(fields[12]) or fields[12],
+                        removed = false
+                    }
+                    restored = restored + 1
+                end
             end
         end
     end
 
-    ibh.addedElementGroups = {}
+    local flatGroup = {
+        firstAddedAt = nil,
+        lastAddedAt = nil,
+        elements = {}
+    }
     for groupIndex = 1, 5 do
-        if groupsByIndex[groupIndex] ~= nil then
-            ibh.addedElementGroups[#ibh.addedElementGroups + 1]
-                = groupsByIndex[groupIndex]
+        local group = groupsByIndex[groupIndex]
+        if group ~= nil then
+            flatGroup.firstAddedAt = flatGroup.firstAddedAt == nil
+                and group.firstAddedAt
+                or math.min(flatGroup.firstAddedAt, group.firstAddedAt)
+            flatGroup.lastAddedAt = flatGroup.lastAddedAt == nil
+                and group.lastAddedAt
+                or math.max(flatGroup.lastAddedAt, group.lastAddedAt)
+            for _, element in ipairs(group.elements or {}) do
+                flatGroup.elements[#flatGroup.elements + 1] = element
+            end
         end
     end
+    ibh.addedElementGroups = #flatGroup.elements > 0 and { flatGroup } or {}
     return restored
 end
 
@@ -496,6 +510,9 @@ function ibh.getCoreElementSnapshot(localId)
     local position = ibh.call(ibh.core, "getElementPositionById", localId)
     local positionKey = ibh.getElementPositionKey(position)
     local classId = ibh.call(ibh.core, "getElementClassIdById", localId)
+    local itemId = ibh.isEllipseIndustryClassName(className)
+        and ibh.call(ibh.core, "getElementItemIdById", localId)
+        or nil
     local item = classId ~= nil and ibh.call(system, "getItem", classId) or nil
     local unitMass = tonumber(ibh.call(
         ibh.core,
@@ -510,6 +527,7 @@ function ibh.getCoreElementSnapshot(localId)
         id = localId,
         className = className,
         classId = classId,
+        itemId = itemId,
         displayName = ibh.getCoreElementDisplayName(localId),
         unitMass = unitMass,
         position = position,
@@ -569,6 +587,7 @@ function ibh.refreshTrackedElements(currentById)
                 if isPresent then
                     element.name = ibh.getCoreElementName(element.id)
                     element.unitMass = current.unitMass or element.unitMass
+                    element.itemId = current.itemId or element.itemId
                 end
             end
         end
@@ -602,6 +621,23 @@ function ibh.isIndustryClassName(className)
     return string.find(compact, "industry", 1, true) ~= nil
 end
 
+function ibh.isEllipseIndustryClassName(className)
+    local compact = string.lower(tostring(className or ""))
+        :gsub("[%s_%-]", "")
+    return string.match(compact, "^industry[1-5]") ~= nil
+        or string.match(compact, "^industryunit") ~= nil
+end
+
+function ibh.getTrackedIndustryArOpacity(element, now)
+    local age = math.max(
+        0,
+        (tonumber(now) or system.getArkTime())
+            - (tonumber(element and element.addedAt) or 0)
+    )
+    local reductionSteps = math.floor(age / 30)
+    return 0.99 ^ reductionSteps
+end
+
 function ibh.getFirstTableEntry(values)
     if type(values) ~= "table" then return nil end
     if type(values[1]) == "table" then return values[1] end
@@ -633,10 +669,21 @@ function ibh.getItemDetails(itemId)
         or item.className
         or "Unknown"
 
+    local scale = tostring(item.scale or item.size or "")
+    local name = tostring(item.displayName or item.name or itemId)
+    if scale ~= "" then
+        local scaleLabel = string.upper(scale)
+        local escapedScale = scaleLabel:gsub("([^%w])", "%%%1")
+        if not string.match(string.upper(name), "%s" .. escapedScale .. "$") then
+            name = name .. " " .. scaleLabel
+        end
+    end
+
     return {
         id = itemId,
-        name = tostring(item.displayName or item.name or itemId),
+        name = name,
         className = tostring(className),
+        scale = scale,
         unitVolume = tonumber(item.unitVolume),
         unitMass = tonumber(item.unitMass),
         iconPath = item.iconPath
@@ -897,6 +944,28 @@ function ibh.refreshArElements()
     end
 end
 
+function ibh.refreshArSetupCandidates(snapshotsById)
+    ibh.arSetupCandidates = {}
+    if not ibhArEnabled then return end
+
+    local trackedIds, trackedItemIds = {}, {}
+    for _, element in ipairs(ibh.arElements or {}) do
+        trackedIds[tostring(element.id)] = true
+        if element.itemId ~= nil then
+            trackedItemIds[tostring(element.itemId)] = true
+        end
+    end
+    if next(trackedItemIds) == nil then return end
+
+    for _, snapshot in pairs(snapshotsById or {}) do
+        if not trackedIds[tostring(snapshot.id)]
+            and ibh.isEllipseIndustryClassName(snapshot.className)
+            and trackedItemIds[tostring(snapshot.itemId)] then
+            ibh.arSetupCandidates[#ibh.arSetupCandidates + 1] = snapshot
+        end
+    end
+end
+
 function ibh.getConnectedElementIds(methodName, localId)
     local plugs = ibh.call(ibh.core, methodName, localId)
     local ids, seen, visited = {}, {}, {}
@@ -907,8 +976,25 @@ function ibh.getConnectedElementIds(methodName, localId)
         item = true
     }
 
-    local function add(value)
-        local id = tonumber(value)
+    local function add(value, scanNumericTokens)
+        local valueType = type(value)
+        local id = (valueType == "number" or valueType == "string")
+            and tonumber(value) or nil
+        if id == nil and valueType == "string" then
+            for embeddedId in value:gmatch("%[(%d+)%]") do
+                add(embeddedId)
+            end
+            if scanNumericTokens then
+                for embeddedId in value:gmatch("%d+") do
+                    add(embeddedId)
+                end
+            end
+            return
+        end
+        if id ~= nil and ibh.knownElementsById ~= nil
+            and ibh.getSnapshotById(ibh.knownElementsById, id) == nil then
+            return
+        end
         if id ~= nil and not seen[id] then
             seen[id] = true
             ids[#ids + 1] = id
@@ -916,7 +1002,7 @@ function ibh.getConnectedElementIds(methodName, localId)
     end
 
     local function visit(value, depth)
-        if depth > 4 or visitedCount >= 64 then return end
+        if depth > 6 or visitedCount >= 256 then return end
         if type(value) ~= "table" then add(value) return end
         if visited[value] then return end
         visited[value] = true
@@ -931,6 +1017,7 @@ function ibh.getConnectedElementIds(methodName, localId)
         add(value.id)
 
         for key, nested in pairs(value) do
+            add(key)
             if type(nested) == "boolean" then
                 if nested then add(key) end
             elseif type(nested) == "table" then
@@ -939,10 +1026,15 @@ function ibh.getConnectedElementIds(methodName, localId)
                 or (type(key) == "string"
                     and (string.find(key, "IN%-") ~= nil
                         or string.find(key, "OUT%-") ~= nil)) then
+                add(nested, true)
+            elseif (type(nested) == "number" or type(nested) == "string")
+                and tonumber(nested) ~= nil then
                 add(nested)
+            elseif type(nested) == "string" then
+                add(nested, true)
             end
             visitedCount = visitedCount + 1
-            if visitedCount >= 64 then break end
+            if visitedCount >= 256 then break end
         end
     end
 
@@ -969,13 +1061,29 @@ function ibh.countTableEntries(values)
     return count
 end
 
-function ibh.getContainerHubCapacity(hubId, snapshotsById, visited)
-    visited = visited or {}
-    local visitKey = tostring(hubId)
-    if visited[visitKey] then return 0 end
-    visited[visitKey] = true
+function ibh.getSnapshotById(snapshotsById, localId)
+    if type(snapshotsById) ~= "table" then return nil end
+    return snapshotsById[localId]
+        or snapshotsById[tonumber(localId)]
+        or snapshotsById[tostring(localId)]
+end
 
-    local linkedIds, seen = {}, {}
+function ibh.getContainerHubLinkedSnapshots(hubId, snapshotsById)
+    local linkedContainers, seen = {}, {}
+    local function addContainer(localId)
+        local snapshot = ibh.getSnapshotById(snapshotsById, localId)
+        if snapshot == nil or not ibh.isContainerClassName(snapshot.className)
+            or ibh.isContainerHubElement(snapshot) then
+            return
+        end
+        local key = tostring(snapshot.id)
+        if not seen[key] then
+            seen[key] = true
+            linkedContainers[#linkedContainers + 1] = snapshot
+        end
+    end
+
+    -- Prefer the Hub's own relationship map.
     for _, methodName in ipairs({
         "getElementInPlugsById",
         "getElementOutPlugsById"
@@ -984,36 +1092,53 @@ function ibh.getContainerHubCapacity(hubId, snapshotsById, visited)
             methodName,
             hubId
         )) do
-            local key = tostring(linkedId)
-            if not seen[key] then
-                seen[key] = true
-                linkedIds[#linkedIds + 1] = linkedId
-            end
+            addContainer(linkedId)
         end
     end
 
-    local total = 0
-    for _, linkedId in ipairs(linkedIds) do
-        local snapshot = snapshotsById[linkedId]
-        if snapshot ~= nil and ibh.isContainerClassName(snapshot.className) then
-            local capacity
-            if ibh.isContainerHubClassName(snapshot.className) then
-                capacity = ibh.getContainerHubCapacity(
-                    linkedId,
-                    snapshotsById,
-                    visited
-                )
-            else
-                capacity = tonumber(
-                    ibh.directContainerCapacityById[tostring(linkedId)]
-                )
-                    or ibh.getSavedContainerCapacity(snapshot.className)
-            end
-            if capacity == nil then return nil end
-            total = total + capacity
-        end
+    -- Merge the reverse links found incrementally by the frame-budgeted scan.
+    for _, linkedId in ipairs(
+        ibh.containerHubLinkedIdsById[tostring(hubId)] or {}
+    ) do
+        addContainer(linkedId)
     end
-    return total
+
+    table.sort(linkedContainers, function(left, right)
+        return tonumber(left.id) < tonumber(right.id)
+    end)
+    return linkedContainers
+end
+
+function ibh.getContainerHubCapacity(hubId, snapshotsById)
+    local linkedContainers = ibh.getContainerHubLinkedSnapshots(
+        hubId,
+        snapshotsById
+    )
+    local total = 0
+    for _, container in ipairs(linkedContainers) do
+        local capacity = ibh.getKnownContainerCapacity(container)
+        if capacity == nil then return nil, linkedContainers end
+        total = total + capacity
+    end
+    if #linkedContainers == 0 then
+        local cached = ibh.containerHubCapacityById
+            and ibh.containerHubCapacityById[tostring(hubId)] or nil
+        return tonumber(cached), linkedContainers
+    end
+    ibh.containerHubCapacityById = ibh.containerHubCapacityById or {}
+    ibh.containerHubCapacityById[tostring(hubId)] = total
+    return total, linkedContainers
+end
+
+function ibh.getKnownContainerCapacity(container)
+    if type(container) ~= "table" then return nil end
+    local capacity = tonumber(container.maxVolume) or tonumber(
+        ibh.directContainerCapacityById[tostring(container.id)]
+    ) or ibh.getSavedContainerCapacity(container.className)
+    if capacity ~= nil then return capacity end
+
+    local directElement = ibh.findDirectLinkedElement(container.id)
+    return tonumber(ibh.call(directElement, "getMaxVolume"))
 end
 
 function ibh.collectOutputContainerInfo(
@@ -1022,7 +1147,7 @@ function ibh.collectOutputContainerInfo(
     knownDirectElement,
     knownSlotName
 )
-    local snapshot = snapshotsById[containerId]
+    local snapshot = ibh.getSnapshotById(snapshotsById, containerId)
     if snapshot == nil or not ibh.isContainerClassName(snapshot.className) then
         return nil
     end
@@ -1059,7 +1184,7 @@ function ibh.collectOutputContainerInfo(
         info.maxVolume = tonumber(ibh.call(directElement, "getMaxVolume"))
         info.content = ibh.call(directElement, "getContent")
     end
-    if ibh.isContainerHubClassName(info.className) then
+    if ibh.isContainerHubElement(info) then
         info.maxVolume = ibh.getContainerHubCapacity(
             containerId,
             snapshotsById
@@ -1179,7 +1304,7 @@ function ibh.recordUnknownContainerClasses(snapshotsById)
     local changed = false
     for _, snapshot in pairs(snapshotsById or {}) do
         if ibh.isContainerClassName(snapshot.className)
-            and not ibh.isContainerHubClassName(snapshot.className) then
+            and not ibh.isContainerHubElement(snapshot) then
             changed = ibh.rememberUnknownContainerClass(snapshot.className)
                 or changed
         end
@@ -1209,7 +1334,7 @@ function ibh.refreshLinkedPbContainers(snapshotsById, announce)
                 slot.name
             )
             if container ~= nil then
-                if not ibh.isContainerHubClassName(container.className) then
+                if not ibh.isContainerHubElement(container) then
                     ibh.directContainerCapacityById[tostring(localId)]
                         = container.maxVolume
                     capacityChanged = ibh.rememberContainerCapacity(
@@ -1229,7 +1354,7 @@ function ibh.refreshLinkedPbContainers(snapshotsById, announce)
     if #announcedContainers > 0 then
         ibh.print("Linked elements:")
         for _, container in ipairs(announcedContainers) do
-            if ibh.isContainerHubClassName(container.className) then
+            if ibh.isContainerHubElement(container) then
                 container.maxVolume = ibh.getContainerHubCapacity(
                     container.id,
                     snapshotsById
@@ -1243,6 +1368,7 @@ end
 function ibh.refreshTrackedIndustryConnections(snapshotsById)
     local currentOutputLinks = {}
     local currentDirectLinks = {}
+    local outputInfoById = {}
     for _, group in ipairs(ibh.addedElementGroups) do
         for _, element in ipairs(group.elements or {}) do
             if type(element) == "table" and not element.removed
@@ -1262,10 +1388,17 @@ function ibh.refreshTrackedIndustryConnections(snapshotsById)
                     "getElementOutPlugsById",
                     element.id
                 )) do
-                    local container = ibh.collectOutputContainerInfo(
-                        outputId,
-                        snapshotsById
-                    )
+                    local outputKey = tostring(outputId)
+                    local container = outputInfoById[outputKey]
+                    if container == nil then
+                        container = ibh.collectOutputContainerInfo(
+                            outputId,
+                            snapshotsById
+                        )
+                        outputInfoById[outputKey] = container or false
+                    elseif container == false then
+                        container = nil
+                    end
                     if container ~= nil then
                         element.outputContainers[#element.outputContainers + 1]
                             = container
@@ -1293,10 +1426,24 @@ function ibh.isContainerClassName(className)
     return string.find(compact, "container", 1, true) ~= nil
 end
 
+function ibh.isContainerHubElement(value)
+    local values = type(value) == "table" and {
+        value.className,
+        value.displayName,
+        value.name
+    } or { value }
+    for _, candidate in ipairs(values) do
+        local compact = string.lower(tostring(candidate or ""))
+            :gsub("[%s_%-]", "")
+        if string.find(compact, "containerhub", 1, true) ~= nil then
+            return true
+        end
+    end
+    return false
+end
+
 function ibh.isContainerHubClassName(className)
-    local compact = string.lower(tostring(className or ""))
-        :gsub("[%s_%-]", "")
-    return string.find(compact, "containerhub", 1, true) ~= nil
+    return ibh.isContainerHubElement(className)
 end
 
 function ibh.isPotentialProductSource(className)
@@ -1397,8 +1544,13 @@ function ibh.startSourceCandidateScan(snapshots)
     end
 
     local neededById, neededList = {}, {}
+    local hasTrackedIndustry = false
     for _, group in ipairs(ibh.addedElementGroups) do
         for _, element in ipairs(group.elements or {}) do
+            if type(element) == "table" and not element.removed
+                and ibh.isIndustryClassName(element.className) then
+                hasTrackedIndustry = true
+            end
             local product = type(element) == "table" and not element.removed
                 and element.industry and element.industry.product or nil
             for _, ingredient in ipairs(
@@ -1412,7 +1564,7 @@ function ibh.startSourceCandidateScan(snapshots)
             end
         end
     end
-    if #neededList == 0 then
+    if not hasTrackedIndustry then
         ibh.sourceCandidates = {}
         return
     end
@@ -1430,12 +1582,75 @@ function ibh.startSourceCandidateScan(snapshots)
         colors = ibh.getIngredientColors(neededList),
         productsBySourceId = {},
         flowsByContainer = {},
+        hubCapacityRows = {},
         candidates = {}
     }
 end
 
+function ibh.collectReverseContainerHubCapacity(
+    scan,
+    container,
+    inputIds,
+    outputIds
+)
+    if ibh.isContainerHubElement(container) then return end
+    local linkedIds, seenLinks = {}, {}
+    for _, ids in ipairs({ inputIds or {}, outputIds or {} }) do
+        for _, linkedId in ipairs(ids) do
+            local key = tostring(linkedId)
+            if not seenLinks[key] then
+                seenLinks[key] = true
+                linkedIds[#linkedIds + 1] = linkedId
+            end
+        end
+    end
+
+    for _, linkedId in ipairs(linkedIds) do
+        local linked = ibh.getSnapshotById(scan.snapshotsById, linkedId)
+        if linked ~= nil and ibh.isContainerHubElement(linked) then
+            local hubKey = tostring(linked.id)
+            local row = scan.hubCapacityRows[hubKey]
+            if row == nil then
+                row = {
+                    total = 0,
+                    count = 0,
+                    unknown = false,
+                    seen = {},
+                    ids = {}
+                }
+                scan.hubCapacityRows[hubKey] = row
+            end
+            local containerKey = tostring(container.id)
+            if not row.seen[containerKey] then
+                row.seen[containerKey] = true
+                row.count = row.count + 1
+                row.ids[#row.ids + 1] = container.id
+                local capacity = ibh.getKnownContainerCapacity(container)
+                if capacity == nil then
+                    row.unknown = true
+                else
+                    row.total = row.total + capacity
+                end
+            end
+        end
+    end
+end
+
+function ibh.publishReverseContainerHubCapacities(scan)
+    ibh.containerHubCapacityById = {}
+    ibh.containerHubLinkedIdsById = {}
+    for hubKey, row in pairs(scan.hubCapacityRows or {}) do
+        ibh.containerHubLinkedIdsById[hubKey] = row.ids or {}
+        if row.count > 0 and not row.unknown then
+            ibh.containerHubCapacityById[hubKey] = row.total
+        end
+    end
+    ibh.refreshTrackedIndustryConnections(scan.snapshotsById)
+    ibh.cachedHudHtml = ibh.buildHudHtml()
+end
+
 function ibh.finishSourceCandidate(scan, containerId, flow)
-    if ibh.isContainerHubClassName(flow.snapshot.className) then
+    if ibh.isContainerHubElement(flow.snapshot) then
         flow.snapshot.maxVolume = ibh.getContainerHubCapacity(
             containerId,
             scan.snapshotsById
@@ -1531,6 +1746,7 @@ function ibh.advanceSourceCandidateScan()
         elseif scan.phase == "containers" then
             local container = scan.snapshots[scan.cursor]
             if container == nil then
+                ibh.publishReverseContainerHubCapacities(scan)
                 scan.flowIds = {}
                 for containerId in pairs(scan.flowsByContainer) do
                     scan.flowIds[#scan.flowIds + 1] = containerId
@@ -1540,10 +1756,21 @@ function ibh.advanceSourceCandidateScan()
                 scan.cursor = scan.cursor + 1
                 budget = budget - 1
                 if ibh.isContainerClassName(container.className) then
-                    for _, sourceId in ipairs(ibh.getConnectedElementIds(
+                    local inputIds = ibh.getConnectedElementIds(
                         "getElementInPlugsById",
                         container.id
-                    )) do
+                    )
+                    local outputIds = ibh.getConnectedElementIds(
+                        "getElementOutPlugsById",
+                        container.id
+                    )
+                    ibh.collectReverseContainerHubCapacity(
+                        scan,
+                        container,
+                        inputIds,
+                        outputIds
+                    )
+                    for _, sourceId in ipairs(inputIds) do
                         local source = scan.productsBySourceId[sourceId]
                         if source ~= nil then
                             ibh.addSourceFlow(
@@ -1595,6 +1822,7 @@ function ibh.startElementSearch(coreElement)
     ibh.recordUnknownContainerClasses(byId)
     ibh.refreshTrackedIndustryConnections(byId)
     ibh.refreshArElements()
+    ibh.refreshArSetupCandidates(byId)
     ibh.startSourceCandidateScan(snapshots)
     unit.setTimer(
         "ibhNewElementSearch",
@@ -1618,6 +1846,7 @@ function ibh.searchForNewElements()
             or previous.identityKey ~= snapshot.identityKey
 
         if isNewIdentity
+            and ibh.isEllipseIndustryClassName(snapshot.className)
             and ibh.findTrackedElement(snapshot.identityKey) == nil then
             addedElements[#addedElements + 1] = ibh.describeCoreElement(snapshot)
         end
@@ -1635,6 +1864,7 @@ function ibh.searchForNewElements()
     ibh.recordUnknownContainerClasses(currentById)
     ibh.refreshTrackedIndustryConnections(currentById)
     ibh.refreshArElements()
+    ibh.refreshArSetupCandidates(currentById)
     ibh.startSourceCandidateScan(snapshots)
     ibh.saveTrackedElements()
 end
@@ -1665,26 +1895,6 @@ function ibh.escapeHtml(value)
         :gsub('"', "&quot;")
 end
 
-function ibh.getMedian(values)
-    if #values == 0 then return nil end
-
-    local sorted = {}
-    for index, value in ipairs(values) do sorted[index] = value end
-    table.sort(sorted)
-
-    local middle = math.floor(#sorted / 2) + 1
-    if #sorted % 2 == 1 then return sorted[middle] end
-
-    return (sorted[middle - 1] + sorted[middle]) / 2
-end
-
-function ibh.getElementGroupGap()
-    local median = ibh.getMedian(ibh.addedElementIntervals)
-    if median == nil then return ibhElementGroupMinimumGapSeconds end
-
-    return math.max(ibhElementGroupMinimumGapSeconds, median * 3)
-end
-
 function ibh.getAddedElementLabel(element)
     if type(element) ~= "table" then return tostring(element) end
 
@@ -1707,37 +1917,27 @@ function ibh.recordAddedElements(elements, addedAt)
     if type(elements) ~= "table" or #elements == 0 then return end
 
     local timestamp = tonumber(addedAt) or system.getArkTime()
-    local newest = ibh.addedElementGroups[1]
-    local startNewGroup = newest == nil
-
-    if newest ~= nil then
-        local interval = math.max(0, timestamp - newest.lastAddedAt)
-        startNewGroup = interval > ibh.getElementGroupGap()
-
-        if not startNewGroup and interval > 0 then
-            ibh.addedElementIntervals[#ibh.addedElementIntervals + 1] = interval
-            if #ibh.addedElementIntervals > 20 then
-                table.remove(ibh.addedElementIntervals, 1)
-            end
-        end
-    end
-
-    if startNewGroup then
-        newest = {
+    local tracked = ibh.addedElementGroups[1]
+    if tracked == nil then
+        tracked = {
             firstAddedAt = timestamp,
             lastAddedAt = timestamp,
             elements = {}
         }
-        table.insert(ibh.addedElementGroups, 1, newest)
-
-        while #ibh.addedElementGroups > 5 do
-            table.remove(ibh.addedElementGroups)
-        end
     end
-
-    newest.lastAddedAt = timestamp
+    ibh.addedElementGroups = { tracked }
+    tracked.firstAddedAt = math.min(
+        tonumber(tracked.firstAddedAt) or timestamp,
+        timestamp
+    )
+    tracked.lastAddedAt = math.max(
+        tonumber(tracked.lastAddedAt) or timestamp,
+        timestamp
+    )
     for _, element in ipairs(elements) do
-        newest.elements[#newest.elements + 1] = element
+        if ibh.isEllipseIndustryClassName(element.className) then
+            tracked.elements[#tracked.elements + 1] = element
+        end
     end
 
     ibh.saveTrackedElements()
@@ -1745,16 +1945,9 @@ function ibh.recordAddedElements(elements, addedAt)
 end
 
 function ibh.buildAddedElementsHtml()
-    local colors = {
-        { 112, 112, 255, 1.0 },
-        { 148, 148, 255, 0.9 },
-        { 184, 184, 255, 0.8 },
-        { 219, 219, 255, 0.7 },
-        { 231, 231, 231, 0.6 }
-    }
     local html = [[
         <div style="height:8px;"></div>
-        <div style="color:#dce9ef;">Last added elements</div>
+        <div style="color:#dce9ef;">Tracked industries</div>
     ]]
 
     if #ibh.addedElementGroups == 0 then
@@ -1763,13 +1956,8 @@ function ibh.buildAddedElementsHtml()
         ]]
     end
 
-    for groupIndex, group in ipairs(ibh.addedElementGroups) do
-        local color = colors[groupIndex]
-        html = html
-            .. '<div style="margin-top:5px;color:rgba('
-            .. table.concat({ color[1], color[2], color[3] }, ",")
-            .. ',' .. tostring(color[4]) .. ');">'
-
+    for _, group in ipairs(ibh.addedElementGroups) do
+        html = html .. '<div style="margin-top:5px;color:#aeb8ff;">'
         for _, element in ipairs(group.elements) do
             html = html
                 .. '<div style="margin-top:2px;">'
@@ -1892,12 +2080,14 @@ function ibh.completeTrackedIndustry(localId)
     if not removed then return false end
 
     ibh.arDoneTarget = nil
+    ibh.arInteractionTarget = nil
     ibh.sourceScan = nil
     ibh.pendingSourceSnapshots = nil
     ibh.filterSourceCandidatesToTrackedNeeds()
     ibh.refreshTrackedIndustries()
     ibh.refreshTrackedIndustryConnections(ibh.knownElementsById or {})
     ibh.refreshArElements()
+    ibh.refreshArSetupCandidates(ibh.knownElementsById or {})
     ibh.saveTrackedElements()
 
     local snapshots = {}
@@ -1910,23 +2100,79 @@ function ibh.completeTrackedIndustry(localId)
     return true
 end
 
+function ibh.isTrackedIndustryId(localId)
+    for _, group in ipairs(ibh.addedElementGroups or {}) do
+        for _, element in ipairs(group.elements or {}) do
+            if tostring(element.id) == tostring(localId)
+                and not element.removed then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+function ibh.addIndustryToContext(localId)
+    if ibh.isTrackedIndustryId(localId) then return false end
+    local snapshot = ibh.getSnapshotById(ibh.knownElementsById or {}, localId)
+    if snapshot == nil
+        or not ibh.isEllipseIndustryClassName(snapshot.className) then
+        return false
+    end
+
+    ibh.describeCoreElement(snapshot)
+    ibh.recordAddedElements({ snapshot }, system.getArkTime())
+    ibh.sourceScan = nil
+    ibh.pendingSourceSnapshots = nil
+    ibh.refreshTrackedIndustries()
+    ibh.refreshTrackedIndustryConnections(ibh.knownElementsById or {})
+    ibh.refreshArElements()
+    ibh.refreshArSetupCandidates(ibh.knownElementsById or {})
+
+    local snapshots = {}
+    for _, current in pairs(ibh.knownElementsById or {}) do
+        snapshots[#snapshots + 1] = current
+    end
+    ibh.startSourceCandidateScan(snapshots)
+    ibh.saveTrackedElements()
+    ibh.cachedHudHtml = ibh.buildHudHtml()
+    ibh.renderScreen()
+    return true
+end
+
 function ibh.activateArDoneTarget()
-    if ibh.pendingDoneTargetId ~= nil then return end
-    local target = ibh.arDoneTarget
+    if ibh.pendingArTargetId ~= nil then return end
+    local interaction = ibh.arInteractionTarget
+    local target = interaction and interaction.element or ibh.arDoneTarget
+    local action = interaction and interaction.action or "done"
     ibh.arDoneTarget = nil
-    if target ~= nil and ibh.isIndustryReadyForDone(target) then
-        ibh.pendingDoneTargetId = target.id
-        ibh.pressedDoneTargetId = tostring(target.id)
+    ibh.arInteractionTarget = nil
+    local valid = target ~= nil and (
+        (action == "setup" and not ibh.isTrackedIndustryId(target.id))
+        or (action == "ignore" and ibh.isTrackedIndustryId(target.id))
+        or (action == "done" and ibh.isIndustryReadyForDone(target))
+    )
+    if valid then
+        ibh.pendingArTargetId = target.id
+        ibh.pendingArAction = action
+        ibh.pressedArActionKey = action .. ":" .. tostring(target.id)
         ibh.renderScreen()
-        unit.setTimer("ibhDoneClick", 0.3)
+        unit.setTimer("ibhDoneClick", 0.15)
     end
 end
 
 function ibh.finishArDoneClick()
-    local localId = ibh.pendingDoneTargetId
-    ibh.pendingDoneTargetId = nil
-    ibh.pressedDoneTargetId = nil
-    if localId ~= nil then ibh.completeTrackedIndustry(localId) end
+    local localId = ibh.pendingArTargetId
+    local action = ibh.pendingArAction
+    ibh.pendingArTargetId = nil
+    ibh.pendingArAction = nil
+    ibh.pressedArActionKey = nil
+    if localId == nil then return end
+    if action == "setup" then
+        ibh.addIndustryToContext(localId)
+    else
+        ibh.completeTrackedIndustry(localId)
+    end
 end
 
 function ibh.buildIngredientHtml(ingredient, linked, available)
@@ -2333,20 +2579,23 @@ function ibh.buildArDotHtml(
     diameter,
     ringOnly,
     screenWidth,
-    screenHeight
+    screenHeight,
+    opacity
 )
     local point = ibh.projectWorldPoint(worldPoint)
     if point == nil then return "" end
 
-    local fillAlpha = ringOnly and 0.08 or 0.95
+    opacity = math.max(0, math.min(1, tonumber(opacity) or 1))
+    local fillAlpha = (ringOnly and 0.08 or 0.95) * opacity
     return '<div style="position:absolute;left:'
         .. string.format("%.6f", point.x * 100)
         .. '%;top:' .. string.format("%.6f", point.y * 100)
         .. '%;width:' .. tostring(diameter) .. 'px;height:'
         .. tostring(diameter) .. 'px;transform:translate(-50%,-50%);'
         .. 'box-sizing:border-box;border-radius:50%;background:rgba('
-        .. color .. ',' .. tostring(fillAlpha) .. ');border:1px solid rgb('
-        .. color .. ');box-shadow:0 0 6px rgba(' .. color .. ',0.9);"></div>'
+        .. color .. ',' .. tostring(fillAlpha) .. ');border:1px solid rgba('
+        .. color .. ',' .. tostring(opacity) .. ');box-shadow:0 0 6px rgba('
+        .. color .. ',' .. tostring(0.9 * opacity) .. ');"></div>'
 end
 
 function ibh.buildArEllipseHtml(geometry, screenWidth, screenHeight, opacity)
@@ -2603,6 +2852,7 @@ end
 
 function ibh.buildArHtml()
     ibh.arDoneTarget = nil
+    ibh.arInteractionTarget = nil
     if not ibhArEnabled or type(ibh.arElements) ~= "table"
         or #ibh.arElements == 0 then return "" end
 
@@ -2618,30 +2868,20 @@ function ibh.buildArHtml()
     end
 
     local html = ""
+    local now = system.getArkTime()
     for _, element in ipairs(ibh.arElements) do
         local geometry = ibh.getElementWorldGeometry(element, frame)
         if geometry ~= nil and geometry.right ~= nil
             and geometry.forward ~= nil and geometry.up ~= nil then
-            local ellipseDistance = math.max(
-                0,
-                tonumber(ibhArEllipseDistanceMeters) or 50
-            )
-            if ibh.vectorDistance(playerPosition, geometry.origin)
-                <= ellipseDistance then
-                html = html .. ibh.buildArEllipseHtml(
-                    geometry,
-                    screenWidth,
-                    screenHeight,
-                    0.8
-                )
-            end
+            local opacity = ibh.getTrackedIndustryArOpacity(element, now)
             html = html .. ibh.buildArDotHtml(
                 geometry.origin,
                 "98,220,255",
                 10,
                 false,
                 screenWidth,
-                screenHeight
+                screenHeight,
+                opacity
             )
         end
     end
@@ -2708,147 +2948,111 @@ function ibh.buildArHtml()
         end
     end
 
-    local doneItems = {}
-    local readyDoneIds = {}
-    for _, element in ipairs(ibh.arElements) do
-        if ibh.isIndustryReadyForDone(element) then
-            local elementKey = tostring(element.id)
-            readyDoneIds[elementKey] = true
-            local geometry = ibh.getElementWorldGeometry(element, frame)
-            local distance = geometry ~= nil
-                and ibh.vectorDistance(playerPosition, geometry.origin)
-                or math.huge
-            if geometry ~= nil and distance <= 10 then
-                local buttonPoint = ibh.offsetWorldPoint(
-                    geometry.origin,
-                    geometry.right,
-                    geometry.forward,
-                    geometry.up,
-                    0,
-                    0,
-                    0.8
-                )
-                local point = ibh.projectWorldPoint(buttonPoint)
-                if point ~= nil and point.x >= 0 and point.x <= 1
-                    and point.y >= 0 and point.y <= 1 then
-                    local wallRightPoint = ibh.projectWorldPoint(
-                        ibh.offsetWorldPoint(
-                            buttonPoint,
-                            geometry.right,
-                            geometry.forward,
-                            geometry.up,
-                            1,
-                            0,
-                            0
-                        )
-                    )
-                    local wallUpPoint = ibh.projectWorldPoint(
-                        ibh.offsetWorldPoint(
-                            buttonPoint,
-                            geometry.right,
-                            geometry.forward,
-                            geometry.up,
-                            0,
-                            0,
-                            1
-                        )
-                    )
-                    local wallRadius = 120
-                    for _, edgePoint in ipairs({ wallRightPoint, wallUpPoint }) do
-                        if edgePoint ~= nil then
-                            local dx = (edgePoint.x - point.x) * screenWidth
-                            local dy = (edgePoint.y - point.y) * screenHeight
-                            wallRadius = math.max(
-                                wallRadius,
-                                math.sqrt(dx * dx + dy * dy)
-                            )
-                        end
-                    end
-                    wallRadius = math.min(900, wallRadius)
-                    local angle = math.huge
-                    local cx, cy, cz = ibh.getVectorComponents(cameraPosition)
-                    local bx, by, bz = ibh.getVectorComponents(buttonPoint)
-                    if cx ~= nil and bx ~= nil
-                        and ibh.getVectorComponents(cameraForward) ~= nil then
-                        angle = ibh.vectorAngleDegrees(
-                            cameraForward,
-                            ibh.vector(bx - cx, by - cy, bz - cz)
-                        )
-                    end
-                    doneItems[#doneItems + 1] = {
-                        element = element,
-                        point = point,
-                        distance = distance,
-                        angle = angle,
-                        wallRadius = wallRadius
-                    }
-                    if not ibh.announcedDoneButtons[elementKey] then
-                        ibh.announcedDoneButtons[elementKey] = true
-                        ibh.print(
-                            "DONE button drawn: "
-                            .. ibh.getNameWithLocalId(element.name, element.id)
-                        )
-                    end
-                end
-            end
+    local interactionItems = {}
+    local function addInteraction(element, action, label, distanceLimit, upOffset)
+        local geometry = ibh.getElementWorldGeometry(element, frame)
+        local distance = geometry ~= nil
+            and ibh.vectorDistance(playerPosition, geometry.origin)
+            or math.huge
+        if geometry == nil or distance > distanceLimit then return end
+
+        local buttonPoint = ibh.offsetWorldPoint(
+            geometry.origin,
+            geometry.right,
+            geometry.forward,
+            geometry.up,
+            0,
+            0,
+            upOffset
+        )
+        local point = ibh.projectWorldPoint(buttonPoint)
+        if point == nil or point.x < 0 or point.x > 1
+            or point.y < 0 or point.y > 1 then return end
+
+        local angle = math.huge
+        local cx, cy, cz = ibh.getVectorComponents(cameraPosition)
+        local bx, by, bz = ibh.getVectorComponents(buttonPoint)
+        if cx ~= nil and bx ~= nil
+            and ibh.getVectorComponents(cameraForward) ~= nil then
+            angle = ibh.vectorAngleDegrees(
+                cameraForward,
+                ibh.vector(bx - cx, by - cy, bz - cz)
+            )
         end
-    end
-    for elementKey in pairs(ibh.announcedDoneButtons) do
-        if not readyDoneIds[elementKey] then
-            ibh.announcedDoneButtons[elementKey] = nil
-        end
+        local buttonScale = distance <= 5
+            and 0.9
+            or math.max(0.3, 0.9 - (distance - 5) * 0.06)
+        interactionItems[#interactionItems + 1] = {
+            element = element,
+            action = action,
+            label = label,
+            point = point,
+            distance = distance,
+            angle = angle,
+            buttonScale = buttonScale,
+            aimDegrees = 2.5 * buttonScale
+        }
     end
 
+    for _, element in ipairs(ibh.arElements) do
+        addInteraction(element, "ignore", "IGNORE", 15, 0.8)
+        if ibh.isIndustryReadyForDone(element) then
+            addInteraction(element, "done", "DONE", 15, 1.45)
+        end
+    end
+    for _, element in ipairs(ibh.arSetupCandidates or {}) do
+        addInteraction(element, "setup", "SETUP", 15, 0.8)
+    end
     local selected = nil
-    for _, item in ipairs(doneItems) do
-        if item.angle <= 2.5 and (selected == nil
+    for _, item in ipairs(interactionItems) do
+        if item.angle <= item.aimDegrees and (selected == nil
             or item.angle < selected.angle
             or (math.abs(item.angle - selected.angle) < 0.001
                 and item.distance < selected.distance)) then
             selected = item
         end
     end
-    if selected ~= nil then ibh.arDoneTarget = selected.element end
+    if selected ~= nil then
+        ibh.arInteractionTarget = {
+            action = selected.action,
+            element = selected.element
+        }
+        if selected.action == "done" then
+            ibh.arDoneTarget = selected.element
+        end
+    end
 
-    table.sort(doneItems, function(left, right)
+    table.sort(interactionItems, function(left, right)
         return left.distance > right.distance
     end)
-    for _, item in ipairs(doneItems) do
+    for _, item in ipairs(interactionItems) do
         local active = selected == item
-        local pressed = tostring(item.element.id)
-            == tostring(ibh.pressedDoneTargetId)
-        local background = pressed
-            and "linear-gradient(180deg,rgba(18,90,55,0.98),rgba(5,42,27,0.98))"
-            or active
-            and "linear-gradient(180deg,rgba(92,225,145,0.98),rgba(25,125,72,0.98))"
-            or "linear-gradient(180deg,rgba(30,115,76,0.96),rgba(5,45,31,0.96))"
-        local border = active and "#b9ffd1" or "#67d99a"
+        local pressed = ibh.pressedArActionKey
+            == item.action .. ":" .. tostring(item.element.id)
+        local colors = item.action == "setup"
+            and { "35,125,175", "90,205,255", "110,215,255" }
+            or item.action == "ignore"
+            and { "130,68,35", "235,135,75", "255,175,110" }
+            or { "30,115,76", "92,225,145", "103,217,154" }
+        local face = pressed and "18,55,42" or (active and colors[2] or colors[1])
+        local border = active and "rgb(" .. colors[3] .. ")"
+            or "rgba(" .. colors[3] .. ",0.82)"
         local shadow = pressed
-            and "0 1px 0 rgba(2,28,19,0.98),0 3px 9px rgba(0,0,0,0.50),inset 0 3px 7px rgba(0,0,0,0.42)"
-            or active
-            and "0 5px 0 rgba(7,62,35,0.96),0 10px 24px rgba(65,255,150,0.42),inset 0 2px 0 rgba(255,255,255,0.42)"
-            or "0 5px 0 rgba(2,28,19,0.98),0 10px 22px rgba(0,0,0,0.60),inset 0 2px 0 rgba(210,255,230,0.22)"
-        local buttonTransform = pressed
-            and "translate(-50%,-50%) translateY(5px)"
-            or "translate(-50%,-50%)"
-        local wallDiameter = item.wallRadius * 2
+            and "0 1px 0 rgba(2,20,15,0.98),0 3px 9px rgba(0,0,0,0.50),inset 0 3px 7px rgba(0,0,0,0.42)"
+            or "0 5px 0 rgba(2,28,19,0.98),0 10px 22px rgba(0,0,0,0.60),inset 0 2px 0 rgba(255,255,255,0.25)"
+        local buttonTransform = "translate(-50%,-50%)"
+            .. (pressed and " translateY(5px)" or "")
+            .. " scale(" .. string.format("%.3f", item.buttonScale) .. ")"
         html = html .. '<div style="position:absolute;left:'
             .. string.format("%.1f", item.point.x * screenWidth)
             .. 'px;top:' .. string.format("%.1f", item.point.y * screenHeight)
-            .. 'px;width:' .. string.format("%.1f", wallDiameter)
-            .. 'px;height:' .. string.format("%.1f", wallDiameter)
-            .. 'px;transform:translate(-50%,-50%);border-radius:50%;'
-            .. 'background:radial-gradient(circle,rgba(92,220,155,0.31) 0%,'
-            .. 'rgba(65,165,120,0.24) 45%,rgba(35,105,80,0.175) 75%,'
-            .. 'rgba(20,70,55,0) 100%);"></div>'
-            .. '<div style="position:absolute;left:'
-            .. string.format("%.1f", item.point.x * screenWidth)
-            .. 'px;top:' .. string.format("%.1f", item.point.y * screenHeight)
             .. 'px;transform:' .. buttonTransform .. ';padding:9px 22px;'
-            .. 'color:#effff5;background:' .. background .. ';border:2px solid '
+            .. 'color:#effff5;background:linear-gradient(180deg,rgba('
+            .. face .. ',0.98),rgba(' .. colors[1] .. ',0.98));border:2px solid '
             .. border .. ';border-radius:6px;font:bold 20px Arial,sans-serif;'
             .. 'letter-spacing:0.8px;box-shadow:' .. shadow .. ';'
-            .. 'text-shadow:0 2px 3px #001b10;white-space:nowrap;">DONE</div>'
+            .. 'text-shadow:0 2px 3px #001b10;white-space:nowrap;">'
+            .. item.label .. '</div>'
     end
 
     return html
@@ -3063,6 +3267,7 @@ function ibh.buildHudHtml()
             font-weight:normal;
             text-shadow:0 0 4px #000;
         ">
+    ]] .. ibh.buildIndustriesHtml() .. [[
             <div style="width:190px;padding:6px 10px;color:#ecf8ff;
                 background:rgba(4,12,18,0.72);
                 border:1px solid rgba(90,210,255,0.8);border-radius:4px;">
@@ -3070,9 +3275,7 @@ function ibh.buildHudHtml()
                 <div style="text-align:right;color:rgba(210,225,232,0.72);">
                     v]] .. ibh.escapeHtml(ibhVersion) .. [[
                 </div>
-    ]] .. ibh.buildAddedElementsHtml() .. [[
             </div>
-    ]] .. ibh.buildIndustriesHtml() .. [[
         </div>
     ]]
 end

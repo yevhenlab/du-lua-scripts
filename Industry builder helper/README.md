@@ -33,21 +33,22 @@ fixed-position label every 0.5 seconds.
 
 Increase the patch version for every code change.
 
-The HUD also keeps the five most recent added-element groups, newest first.
+Newly detected Industry elements remain tracked internally but are not listed in
+a separate HUD column.
 `ibh.recordAddedElements(elements)` adds detected elements. Nearby additions
 share a group; a delay greater than the adaptive group gap starts a new group.
 
 The exported `newElementSearchSeconds` parameter sets the detection interval
 and defaults to 3 seconds. Startup records the Core's current element IDs as
-the baseline. Each timer scan adds newly appearing IDs to the HUD.
-Displayed elements retain their local IDs. If a later scan no longer finds an
-ID on the Core, its existing HUD entry is marked `(removed)` in place.
+the baseline. Each timer scan adds newly appearing Industry IDs to tracking.
+Tracked elements retain their local IDs. If a later scan no longer finds an
+ID on the Core, its stored entry is marked `(removed)` in place.
 Names are also refreshed during each scan, so renamed elements update in place.
 Element identity combines local ID, construct-local position, and class. If a
 reused local ID has a different position or class, the old entry stays removed
-and a new HUD entry is created.
-Added Industry elements appear in a second HUD column with an 84%-opaque dark
-background. Each card shows the
+and a new tracked entry is created.
+Context Industry elements appear in the leftmost HUD column with an 84%-opaque
+dark background. The PB uptime/version card follows it. Each Industry card shows the
 Industry name and either `no product` or the current product's display name,
 per-batch quantity, unit volume, unit mass, and recipe ingredients with amounts.
 Industry and recipe data refresh with the element-search timer.
@@ -164,6 +165,27 @@ product-name label disappears as soon as the detail card appears. Because Core L
 all displayed resource quantities are suspected-content estimates rather than
 current container inventory.
 
+New-element discovery tracks only `Industry1` through `Industry5` elements and
+`IndustryUnit` Transfer Units. They are kept in one flat tracked-Industry list;
+other construct elements are ignored. A new Industry center dot starts at full
+opacity. Every completed 30 seconds of age multiplies its current dot opacity
+by `0.99`. Industry ellipses are not rendered.
+
+When an Industry outputs through a Container Hub, the HUD capacity is the sum
+of every Container linked to that Hub. Capacities are resolved from current
+direct PB links first and the saved class catalog otherwise; an unresolved
+member keeps the Hub total unknown instead of displaying an incomplete sum.
+Numbered Container Hub item-plug maps are resolved by accepting scalar values
+only when they match a real construct-local element ID.
+The parser also accepts a construct-local element ID stored as the map key,
+which is used by some Container Hub plug-map entries.
+If the Hub-side map yields no physical Containers, the frame-budgeted topology
+scan follows Container links back to that Hub. The resulting linked-container
+list is used for the HUD capacity sum. Container Hubs are identified from class
+name, display name, or element name because the Core may expose a generic
+Container class for them. Output-container discovery does not print chat
+diagnostics.
+
 Candidate labels are rendered from farthest to nearest. Consequently, nearer
 dots and detail cards are emitted last, appear above overlapping distant cards,
 and also receive the stronger distance-based opacity.
@@ -189,6 +211,9 @@ than their sum. Make X, mixed Maintain/Make X, and Run with unknown capacity
 fall back to the summed current `unitsProduced` value. These estimates feed both
 the AR resource label and the HUD component-availability column.
 
+Crafted element names append the uppercase item `scale` metadata, such as
+`Basic Chemical Container XL`.
+
 Topology discovery is processed incrementally on System update frames rather
 than in the three-second element-search timer. The exported
 `sourceScanBatchSize` defaults to three construct elements per frame, which
@@ -205,7 +230,26 @@ remain visible. The updated tracking list is saved to the Databank.
 Each Industry card shows the current Core Industry state beside its name;
 `Running` is highlighted green. Chat reports once when a tracked Industry is
 observed running and once when its `DONE` button is first drawn on screen.
-The button uses a raised beveled face and depth shadow. A translucent radial
-wall behind it fades to clear at a projected one-metre world-space radius.
+The button uses a raised beveled face and depth shadow.
 Clicking depresses the button immediately; the tracking action follows after
-0.3 seconds so the pressed state remains visible briefly.
+0.15 seconds so the pressed state remains visible briefly.
+
+Every tracked Industry receives an `IGNORE` AR button within 15 m. Activating
+it removes that Industry from context without requiring it to be running. The
+item ID of each tracked Industry defines its exact machine type. Untracked
+Industries of any currently tracked type receive a `SETUP` button within 15 m;
+activating it adds the target to context with a fresh added timestamp. `SETUP`,
+`IGNORE`, `SETUP`, and `DONE` appear within 15 m and share crosshair hover and
+the 0.15-second pressed state.
+
+Container Hub output capacity is recalculated from the Hub's current IN and OUT
+plug maps whenever tracked Industry connections refresh. IDs embedded in plug
+descriptions are supported; the incrementally built reverse-link total is used
+only when the Hub-side relationship map cannot provide a complete total.
+Descriptive plug-map values containing an unwrapped local ID are also parsed,
+while numeric plug-name suffixes are not treated as element IDs.
+Hub reverse-link discovery processes only `sourceScanBatchSize` elements per
+frame. Output metadata is also collected only once per distinct output element
+during each refresh, even when several Industries share that output.
+Buttons have no radial background wall. Their scale is 90% of the previous
+size from 0–5 m, then decreases linearly to 30% at 15 m.
