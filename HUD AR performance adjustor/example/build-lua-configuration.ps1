@@ -4,7 +4,7 @@ $ErrorActionPreference = 'Stop'
 function Read-LuaFile([string]$Name) { Get-Content -LiteralPath (Join-Path $PSScriptRoot $Name) -Raw }
 function New-Slot([string]$Name) { [pscustomobject][ordered]@{ name = $Name; type = [pscustomobject][ordered]@{ events = @(); methods = @() } } }
 function New-Handler([int]$Key, [string]$SlotKey, [string]$Signature, [object[]]$FilterArgs, [string]$Code) { [pscustomobject][ordered]@{ code = $Code; filter = [pscustomobject][ordered]@{ args = @($FilterArgs); signature = $Signature; slotKey = $SlotKey }; key = [string]$Key } }
-$slots = [ordered]@{ '-1' = New-Slot 'unit'; '-3' = New-Slot 'player'; '-4' = New-Slot 'system'; '-5' = New-Slot 'library' }
+$slots = [ordered]@{ '-1' = New-Slot 'unit'; '-4' = New-Slot 'system'; '-5' = New-Slot 'library' }
 $configuration = [pscustomobject][ordered]@{ slots = [pscustomobject]$slots; handlers = @(
     New-Handler 0 '-5' 'onStart()' @() (Read-LuaFile 'library.onStart.lua')
     New-Handler 1 '-1' 'onStart()' @() (Read-LuaFile 'unit.onStart.lua')

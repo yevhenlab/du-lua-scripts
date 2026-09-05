@@ -15,4 +15,4 @@ From the parent project, run `../install-local.ps1 -DuRoot "<your Dual Universe 
 
 Run `./build-lua-configuration.ps1 -CopyToClipboard`, then paste the generated configuration into a Programming Board. The configuration needs only the built-in `unit`, `player`, `system`, and `library` slots.
 
-`unit.onStart.lua` is the setup point: configure `panelMode`, placement, and `reduceArFrequencyOnFpsDrop`, then register renderers. `system.onUpdate.lua` forwards game frames to the library. The two Unit timer files show the adaptive library timer and an independent custom timer.
+`unit.onStart.lua` is the setup point: configure `panelMode`, placement, `adaptArRedrawFrequencyToFps`, and `maximumArRedrawPercentOfFps`, then register renderers. `system.onUpdate.lua` forwards game frames to the library. The two Unit timer files show the adaptive library timer and an independent custom timer.

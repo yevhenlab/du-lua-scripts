@@ -24,7 +24,6 @@ function New-Handler([int]$Key, [string]$SlotKey, [string]$Signature, [object[]]
 
 $slots = [ordered]@{
     '-1' = New-Slot 'unit'
-    '-3' = New-Slot 'player'
     '-4' = New-Slot 'system'
     '-5' = New-Slot 'library'
 }

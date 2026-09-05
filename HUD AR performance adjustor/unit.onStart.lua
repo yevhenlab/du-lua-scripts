@@ -1,10 +1,12 @@
 -- User-facing adaptive-rendering setting.
-reduceArFrequencyOnFpsDrop = true --export -- reduce AR redraw rate after FPS drops
+adaptArRedrawFrequencyToFps = true --export -- adapt AR redraw frequency to FPS
+maximumArRedrawPercentOfFps = 100 --export -- cap AR redraw rate to 1-100% of FPS
 
 -- Load the panel-free adaptive renderer.
 local initializeLiby4performance = require("liby.liby4performance")
-hudAr = initializeLiby4performance(_G, unit, system, player, {
-    reduceArFrequencyOnFpsDrop = reduceArFrequencyOnFpsDrop
+hudAr = initializeLiby4performance(unit, system, {
+    adaptArRedrawFrequencyToFps = adaptArRedrawFrequencyToFps,
+    maximumArRedrawPercentOfFps = maximumArRedrawPercentOfFps
 })
 
 -- Register drawing functions defined in the PB Library handler.
