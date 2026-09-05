@@ -1,0 +1,28 @@
+<svg id="icon_materials" style="enable-background:new 0 0 1130 1130;" version="1.1" viewBox="0 0 1130 1130" x="0px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" y="0px">
+        <g>
+          <g>
+            <polygon points="545,353.8 336.1,232.3 336.1,474.4 545,595 ">
+            </polygon>
+            <polygon points="565,319.2 773.1,198.2 565,78 356.9,198.2 ">
+            </polygon>
+            <polygon points="585,353.8 585,595 793.9,474.4 793.9,232.3 ">
+            </polygon>
+          </g>
+          <g>
+            <polygon points="296.1,774.8 87.3,653.3 87.3,895.4 296.1,1016 ">
+            </polygon>
+            <polygon points="316.1,740.1 524.2,619.1 316.1,499 108.1,619.1 ">
+            </polygon>
+            <polygon points="336.1,774.8 336.1,1016 545,895.4 545,653.3 ">
+            </polygon>
+          </g>
+          <g>
+            <polygon points="793.9,774.8 585,653.3 585,895.4 793.9,1016 ">
+            </polygon>
+            <polygon points="813.8,740.1 1021.9,619.1 813.9,499 605.8,619.1 ">
+            </polygon>
+            <polygon points="833.9,774.8 833.9,1016 1042.7,895.4 1042.7,653.3 ">
+            </polygon>
+          </g>
+        </g>
+      </svg>

@@ -1,0 +1,14 @@
+<svg id="icon_state" style="enable-background:new 0 0 300 300;" viewBox="0 0 300 300" x="0px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" y="0px">
+        <path d="M97.2,298.5H0.5V0.5h96.7V298.5z M5.2,293.5h87.2V5.5H5.2V293.5z">
+        </path>
+        <rect height="269" style="fill: var(--left-block-color)" width="69.2" x="14.2" y="15">
+        </rect>
+        <path d="M198.6,298.5h-96.7V0.5h96.7V298.5z M106.7,293.5h87.2V5.5h-87.2V293.5z">
+        </path>
+        <rect height="269" style="fill: var(--middle-block-color)" width="69.2" x="115.7" y="15">
+        </rect>
+        <path d="M300,298.5h-96.7V0.5H300V298.5z M208.1,293.5h87.2V5.5h-87.2V293.5z">
+        </path>
+        <rect height="269" style="fill: var(--right-block-color)" width="69.2" x="217.1" y="15">
+        </rect>
+      </svg>

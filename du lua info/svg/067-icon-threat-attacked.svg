@@ -1,0 +1,12 @@
+<svg id="icon_threat_attacked" style="enable-background:new 0 0 794.4 794.4;" version="1.1" viewBox="0 0 794.4 794.4" x="0px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" y="0px">
+        <rect height="51.3" width="169.5" x="17.4" y="195">
+        </rect>
+        <rect height="74.5" width="318.7" x="89.1" y="554.5">
+        </rect>
+        <polygon points="288.5,526.7 167.3,465.6 242.4,466.1 361.6,526.7 ">
+        </polygon>
+        <path d="M328.8,352.2c0-28.3,4-55.7,11-81.9H17.4v163.8h322.3C332.8,407.9,328.8,380.5,328.8,352.2z">
+        </path>
+        <path d="M596.2,171.4c-99.8,0-180.8,80.9-180.8,180.7c0,99.8,80.9,180.8,180.8,180.8S777,452,777,352.2	C777,252.4,696.1,171.4,596.2,171.4z M583.5,433.6H534V270.8h49.6V433.6z M658.5,433.6H609V270.8h49.6V433.6z">
+        </path>
+      </svg>

@@ -1,0 +1,22 @@
+<svg id="icon_unidentity" style="enable-background:new 0 0 300 300;" viewBox="0 0 300 300" x="0px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" y="0px">
+        <g>
+          <polygon points="44.5,117 59.7,117 59.7,50.9 125.9,50.9 125.9,35.6 44.5,35.6 	">
+          </polygon>
+          <polygon points="243.5,244 177.4,244 177.4,259.3 258.8,259.3 258.8,177.9 243.5,177.9 	">
+          </polygon>
+          <polygon points="59.7,177.9 44.5,177.9 44.5,259.3 125.9,259.3 125.9,244 59.7,244 	">
+          </polygon>
+          <polygon points="243.5,117 258.8,117 258.8,35.6 177.4,35.6 177.4,50.9 243.5,50.9 	">
+          </polygon>
+          <rect height="67.3" width="15.2" x="144" y="-0.8">
+          </rect>
+          <rect height="67.3" width="15.2" x="144" y="232.6">
+          </rect>
+          <rect height="15.2" width="67.3" x="1.9" y="139.8">
+          </rect>
+          <rect height="15.2" width="67.3" x="231.7" y="139.3">
+          </rect>
+        </g>
+        <polygon points="203.2,115.7 181.6,94.2 150.5,125.3 119.3,94.2 97.7,115.7 128.9,146.9 97.7,178.1 119.3,199.6 150.5,168.5 	181.6,199.6 203.2,178.1 172,146.9 ">
+        </polygon>
+      </svg>

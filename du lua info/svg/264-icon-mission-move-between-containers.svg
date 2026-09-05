@@ -1,0 +1,22 @@
+<svg id="icon_mission_move_between_containers" style="enable-background:new 0 0 300 300;" version="1.1" viewBox="0 0 300 300" x="0px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" y="0px">
+        <polygon points="73.2,137.3 25.7,109.9 25.7,171.3 73.2,197.3 " style="fill: var(--svg-main-color)">
+        </polygon>
+        <g>
+          <polygon points="25.7,241.1 73.2,270.4 73.2,256.6 25.7,230 	" style="fill: var(--svg-main-color)">
+          </polygon>
+          <polygon points="95.1,149.7 82.3,142.3 82.3,213.1 16.4,176.7 16.4,104.4 11.2,101.4 0,110.6 0,225.8 17.5,236.5 		17.5,215.1 81.1,250.2 81.1,275.2 93.5,282.7 103.3,276 103.3,166.7 	" style="fill: var(--svg-main-color)">
+          </polygon>
+        </g>
+        <polygon points="197.1,241.1 149.6,270.4 149.6,256.6 197.1,230 " style="fill: var(--svg-main-color)">
+        </polygon>
+        <polygon points="271.4,93.6 80.9,93.6 189.6,148 189.6,112.9 271.4,112.5 " style="fill: var(--svg-second-color)">
+        </polygon>
+        <polygon points="102,71.8 300,71.8 191.3,17.4 191.3,52.5 102,52.9 " style="fill: var(--svg-second-color)">
+        </polygon>
+        <polygon points="149.6,143.8 149.6,197.3 197.1,171.3 197.1,167.6 " style="fill: var(--svg-main-color)">
+        </polygon>
+        <path d="M95.2,116.5C77.8,112.5,66,103.2,66,92.2c0-4.4,2.1-8.5,5.5-12.1l-12.7-6.3L26,92.6l79.8,45.7l16.8,0.3l7.8-4.4	l-13.6-6.8L95.2,116.5z" style="fill: var(--svg-main-color)">
+        </path>
+        <polygon points="206.4,126.9 206.4,176.7 140.5,213.1 140.5,142.3 127.8,149.7 119.6,166.7 119.6,276 129.3,282.7 	141.7,275.2 141.7,250.2 205.3,215.1 205.3,236.5 222.8,225.8 222.8,126.9 " style="fill: var(--svg-main-color)">
+        </polygon>
+      </svg>

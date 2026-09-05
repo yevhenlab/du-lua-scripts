@@ -1,0 +1,20 @@
+<svg id="icon_set_as_destination" style="enable-background:new 0 0 300 300;" viewBox="0 0 300 300" x="0px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" y="0px">
+        <rect height="27.6" width="104.6" x="0" y="135.8">
+        </rect>
+        <rect height="27.6" width="104.6" x="194.6" y="135.8">
+        </rect>
+        <rect height="27.6" transform="matrix(4.906259e-11 -1 1 4.906259e-11 -97.2125 396.3661)" width="104.6" x="97.3" y="233">
+        </rect>
+        <rect height="27.6" transform="matrix(4.906259e-11 -1 1 4.906259e-11 97.3012 201.8524)" width="104.6" x="97.3" y="38.5">
+        </rect>
+        <path d="M259.2,119.2h20.2c-12-48.6-50.6-86.8-99.5-98.2v20.1C218,51.6,248.1,81.4,259.2,119.2z">
+        </path>
+        <path d="M260.1,179.9c-10.3,39.4-41,70.6-80.2,81.4v20c49.9-11.6,89.2-51.3,100.2-101.4H260.1z">
+        </path>
+        <g>
+          <path d="M39.9,119.2C51,81.4,81.2,51.6,119.3,41.1V21c-48.9,11.4-87.5,49.6-99.5,98.2H39.9z">
+          </path>
+          <path d="M39,179.9H19.1c11,50.1,50.2,89.8,100.2,101.4v-20.1C80.1,250.4,49.2,219.3,39,179.9z">
+          </path>
+        </g>
+      </svg>

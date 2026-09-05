@@ -1,0 +1,18 @@
+<svg id="icon_altitude" viewBox="0 0 300 300" x="0px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" y="0px">
+        <path d="M256.7,92.3l-35.3,57.7h17.8v102.8c0,0,35.3,0.4,35,0V150.1H292L256.7,92.3z">
+        </path>
+        <rect height="25.1" width="269.2" x="22.8" y="45.9">
+        </rect>
+        <g>
+          <polygon points="78.2,154.8 94.8,136.9 109.6,152.2 118.4,141.1 94.9,98.8 68.9,145.6 	">
+          </polygon>
+          <polygon points="123.7,150.7 110.4,167.4 95,151.6 78.6,169.3 63.8,154.8 9.3,253 180.4,253 	">
+          </polygon>
+        </g>
+        <g>
+          <polygon points="169.3,171.1 179.8,181.9 186,174.1 169.4,144.2 153,173.8 158.2,183.2 	">
+          </polygon>
+          <polygon points="189.7,180.9 180.4,192.7 169.5,181.5 161.8,189.7 196.9,253 229.7,253 	">
+          </polygon>
+        </g>
+      </svg>

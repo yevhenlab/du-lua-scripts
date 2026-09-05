@@ -1,0 +1,40 @@
+<svg id="icon_ore_extracted" style="enable-background:new 0 0 300 300;" viewBox="0 0 300 300" x="0px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" y="0px">
+        <g>
+          <polygon points="128.3,228.7 144.5,221.1 150.7,200.6 123.3,213.5 	">
+          </polygon>
+          <polygon points="121.1,207 153.3,192 159.4,172 116.3,192.2 	">
+          </polygon>
+          <polygon points="130.4,235.1 135.5,250.5 141.8,229.7 	">
+          </polygon>
+          <polygon points="114.1,185.8 162,163.4 167.6,145.1 161.5,145.1 108.9,169.8 	">
+          </polygon>
+          <polygon points="145.7,145.1 100.7,145.1 106.7,163.4 	">
+          </polygon>
+        </g>
+        <rect height="11.2" width="19.3" x="196.2" y="77.6">
+        </rect>
+        <rect height="11.2" width="19.3" x="54.9" y="77.6">
+        </rect>
+        <rect height="19.7" width="102.5" x="82.9" y="115.3">
+        </rect>
+        <rect height="11.8" width="179.3" x="44.5" y="95.7">
+        </rect>
+        <rect height="12.4" width="6.9" x="202.4" y="59.4">
+        </rect>
+        <rect height="12.4" width="6.9" x="61.1" y="59.4">
+        </rect>
+        <polygon points="56,63.9 0.6,50.3 0.6,81.4 56,67.8 ">
+        </polygon>
+        <polygon points="72.4,63.9 127.8,50.3 127.8,81.4 72.4,67.8 ">
+        </polygon>
+        <polygon points="197.2,63.9 141.8,50.3 141.8,81.4 197.2,67.8 ">
+        </polygon>
+        <polygon points="213.7,63.9 269.1,50.3 269.1,81.4 213.7,67.8 ">
+        </polygon>
+        <polygon points="275.7,212.7 275.4,213.6 275.4,213.6 275.7,212.7 264.4,215.7 243.1,248.7 280.5,248.7 291.6,239.5 294.9,235.6 	298.3,221 299.5,205.3 ">
+        </polygon>
+        <polygon points="232.3,248.7 256.4,202.7 273.1,199.1 286.1,178.3 280.3,154.1 272.1,128.8 232.4,155 218.7,248.7 ">
+        </polygon>
+        <polygon points="205.9,248.7 212.6,192.5 198.7,171.3 183.3,193.1 196.2,248.7 ">
+        </polygon>
+      </svg>

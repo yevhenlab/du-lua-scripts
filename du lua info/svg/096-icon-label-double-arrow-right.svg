@@ -1,0 +1,10 @@
+<svg id="icon_label_double_arrow_right" style="enable-background:new 0 0 5365.3 1334.1;" version="1.1" viewBox="0 0 5365.3 1334.1" x="0px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" y="0px">
+        <polygon points="4440.8,35.2 36.4,35.2 36.4,35.8 627.5,669.9 36.4,1304.1 36.4,1304.7 4440.8,1304.7 5032.5,669.9 " style="fill: var(--arrow-fill)">
+        </polygon>
+        <polygon points="4695.3,35.2 4484.8,35.2 5076.5,669.9 4484.8,1304.7 4695.3,1304.7 5287,669.9 " style="fill: var(--chevron-fill);stroke-width:0;">
+        </polygon>
+        <rect height="1213.6" style="fill: var(--block-fill);stroke-width:0;" width="664.8" x="61.7" y="63.3">
+        </rect>
+        <rect height="1269.5" style="fill: var(--border-block-fill);stroke-width:0;" width="44.6" x="17.1" y="35.2">
+        </rect>
+      </svg>

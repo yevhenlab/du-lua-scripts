@@ -1,0 +1,8 @@
+<svg id="icon_double_arrow" style="enable-background:new 0 0 219.2 127.1;" version="1.1" viewBox="0 0 219.2 127.1" x="0px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" y="0px">
+        <polygon points="110,110.3 204.8,0 110.3,0 14.8,0 " style="fill: var(--inner-arrow)">
+        </polygon>
+        <polygon points="110.3,50.6 153.7,0 111.2,0.2 66.9,0 " style="fill: var(--outer-arrow)">
+        </polygon>
+        <polygon points="110,126.8 9.8,11 0,0 9.3,0 14.8,0 110,109.9 204.8,0 210.5,0 219.2,0 209.9,11 " style="fill: var(--stroke-arrow)">
+        </polygon>
+      </svg>

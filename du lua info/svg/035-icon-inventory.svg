@@ -1,0 +1,26 @@
+<svg baseProfile="tiny" id="icon_inventory" version="1.1" viewBox="0 0 300 300" x="0px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" y="0px">
+        <g>
+          <polygon points="256.8,209.3 256.8,130.7 188.7,248.3 	">
+          </polygon>
+          <polygon points="183.1,166.4 183.1,245 251.1,127.4 	">
+          </polygon>
+          <path d="M157.5,151.5v144l124.7-71.4V80L157.5,151.5z M263.3,213.1l-86.9,49.8V162.6l86.9-49.8V213.1z">
+          </path>
+        </g>
+        <g>
+          <polygon points="41.4,130.7 41.4,209.3 109.4,248.3 	">
+          </polygon>
+          <polygon points="115.1,166.4 46.9,127.4 115.1,245 	">
+          </polygon>
+          <path d="M17.6,81.1v144.7l122.7,70.3V151.4L17.6,81.1z M121.6,262.8L34.7,213V112.6l86.9,49.8V262.8z">
+          </path>
+        </g>
+        <polygon points="234.2,51.3 118.1,115.4 150,133.1 265.4,67.8 ">
+        </polygon>
+        <g>
+          <polygon points="170.9,17.7 150,6.5 32.9,67.8 56.7,81.2 	">
+          </polygon>
+          <polygon points="185.6,25.4 70.7,88.9 104.3,107.6 219.4,43.4 	">
+          </polygon>
+        </g>
+      </svg>

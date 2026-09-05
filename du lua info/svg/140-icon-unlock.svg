@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="icon_unlock" viewBox="0 0 300 300">
+        <rect class="st0" height="145.6" width="233.4" x="22.3" y="150.4">
+        </rect>
+        <g>
+          <path class="st0" d="M90.8,120.9V84.6C90.8,56.1,112.4,33,139,33c23.1,0,42.5,17.5,47.1,40.8l25.3-7.7C203.6,31,174.1,4.8,139,4.8		c-41.1,0-74.5,35.8-74.5,79.8v36.4H90.8z">
+          </path>
+        </g>
+        <rect class="st0" height="12.8" transform="matrix(0.4635 -0.8861 0.8861 0.4635 81.4463 247.3976)" width="34.1" x="228" y="50">
+        </rect>
+        <rect class="st0" height="32.5" transform="matrix(0.2939 -0.9558 0.9558 0.2939 76.629 344.7283)" width="12.8" x="265.2" y="104.2">
+        </rect>
+        <rect class="st0" height="12.8" transform="matrix(0.8739 -0.486 0.486 0.8739 -4.7173 142.1305)" width="40.4" x="251.5" y="73.7">
+        </rect>
+      </svg>

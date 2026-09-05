@@ -1,0 +1,3882 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "name": "Dual Universe F1 Knowledge Base",
+    "note": "Recovered from the in-game F1 Lua documentation. Machine-local paths have been removed."
+  },
+  "elements": [
+    {
+      "element": "Adjustors",
+      "methods": [
+        {
+          "signature": "activate()",
+          "description": "Start the adjustor at full power (works only when run inside a cockpit or under remote control)"
+        },
+        {
+          "signature": "deactivate()",
+          "description": "Stops the adjustor (works only when run inside a cockpit or under remote control)"
+        },
+        {
+          "signature": "getMaxThrust()",
+          "description": "Returns the maximal exhaust thrust the adjustor can deliver"
+        },
+        {
+          "signature": "getObstructionFactor()",
+          "description": "Returns the obstruction ratio of the engine exhaust by Elements and Voxels. The more obstructed the engine is, the less properly it will work. Try to fix your design if this is the case"
+        },
+        {
+          "signature": "getTags()",
+          "description": "Returns the tags of the engine"
+        },
+        {
+          "signature": "getThrust()",
+          "description": "Returns the current exhaust thrust of the adjustor"
+        },
+        {
+          "signature": "getThrustAxis()",
+          "description": "Returns the adjustor exhaust thrust direction in construct local coordinates"
+        },
+        {
+          "signature": "getTorqueAxis()",
+          "description": "Returns the adjustor torque axis in construct local coordinates"
+        },
+        {
+          "signature": "getWorldThrustAxis()",
+          "description": "Returns the adjustor exhaust thrust direction in world coordinates"
+        },
+        {
+          "signature": "getWorldTorqueAxis()",
+          "description": "Returns the adjustor torque axis in world coordinates"
+        },
+        {
+          "signature": "isActive()",
+          "description": "Checks if the adjustor is active"
+        },
+        {
+          "signature": "isIgnoringTags()",
+          "description": "Checks if the engine is ignoring default tags"
+        },
+        {
+          "signature": "setTags(tags,ignore)",
+          "description": "Set the tags of the engine"
+        },
+        {
+          "signature": "setThrust(thrust)",
+          "description": "Set the exhaust thrust of the adjustor"
+        },
+        {
+          "signature": "toggle()",
+          "description": "Toggle the state of the adjustor"
+        }
+      ]
+    },
+    {
+      "element": "Airfoils",
+      "methods": [
+        {
+          "signature": "getCurrentMaxLift()",
+          "description": "Returns the maximal lift the aifoil can deliver at the moment, which might depend on various conditions like velocity, atmospheric density, obstruction, orientation, etc. The actual lift will be anything below this maximum lift, which defines the current max capability of the airfoil"
+        },
+        {
+          "signature": "getCurrentMinLift()",
+          "description": "Returns the minimal lift the airfoil can deliver at the moment (can be higher than zero), which will depend on various conditions like velocity, atmospheric density, obstruction, orientation, etc."
+        },
+        {
+          "signature": "getDrag()",
+          "description": "Returns the current drag of the airfoil"
+        },
+        {
+          "signature": "getDragRatio()",
+          "description": "The ratio between lift and drag, depending of the aerodynamic profile of the airfoil"
+        },
+        {
+          "signature": "getLift()",
+          "description": "Returns the current lift of the airfoil"
+        },
+        {
+          "signature": "getLiftAxis()",
+          "description": "Returns the airfoil lift direction in construct local coordinates"
+        },
+        {
+          "signature": "getMaxAngle()",
+          "description": "Returns the maximum angle to produce the maximum lift of the airfoil. Note that the airfoil will produce lift at a higher angle but not optimally."
+        },
+        {
+          "signature": "getMaxLift()",
+          "description": "Gives the maximum lift that the airfoil can generate, under optimal conditions. Note that the actual maximum lift will most of the time be less than this value."
+        },
+        {
+          "signature": "getMaxLiftEfficiency()",
+          "description": "Returns the ratio between the current maximum lift and the optimal maximum lift"
+        },
+        {
+          "signature": "getMinAngle()",
+          "description": "Returns the minimum angle to produce the maximum lift of the airfoil. Note that the airfoil will produce lift at a lower angle but not optimally."
+        },
+        {
+          "signature": "getObstructionFactor()",
+          "description": "Returns the obstruction ratio of the engine exhaust by Elements and Voxels. The more obstructed the engine is, the less properly it will work. Try to fix your design if this is the case"
+        },
+        {
+          "signature": "getStallAngle()",
+          "description": "Returns the airfoil stall angle"
+        },
+        {
+          "signature": "getTags()",
+          "description": "Returns the tags of the engine"
+        },
+        {
+          "signature": "getTorqueAxis()",
+          "description": "Returns the airfoil torque axis in construct local coordinates"
+        },
+        {
+          "signature": "getWorldLiftAxis()",
+          "description": "Returns the airfoil lift direction in world coordinates"
+        },
+        {
+          "signature": "getWorldTorqueAxis()",
+          "description": "Returns the airfoil torque axis in world coordinates"
+        },
+        {
+          "signature": "isIgnoringTags()",
+          "description": "Checks if the engine is ignoring default tags"
+        },
+        {
+          "signature": "isStalled()",
+          "description": "Checks if the airfoil is stalled"
+        },
+        {
+          "signature": "setTags(tags,ignore)",
+          "description": "Set the tags of the engine"
+        }
+      ]
+    },
+    {
+      "element": "Anti gravity generator",
+      "methods": [
+        {
+          "signature": "activate()",
+          "description": "Activate the anti-gravity generator"
+        },
+        {
+          "signature": "deactivate()",
+          "description": "Deactivate the anti-gravity generator"
+        },
+        {
+          "signature": "getBaseAltitude()",
+          "description": "Returns the current base altitude of the anti-gravitational field"
+        },
+        {
+          "signature": "getCompensationRate()",
+          "description": "Returns the current rate of compensation of the gravitational field"
+        },
+        {
+          "signature": "getFieldPower()",
+          "description": "Returns the current power of the gravitational field"
+        },
+        {
+          "signature": "getFieldStrength()",
+          "description": "Returns the strength of the anti-gravitational field"
+        },
+        {
+          "signature": "getPulsorCount()",
+          "description": "Returns the number of pulsors linked to the anti-gravity generator"
+        },
+        {
+          "signature": "getTargetAltitude()",
+          "description": "Returns the target altitude defined for the anti-gravitational field"
+        },
+        {
+          "signature": "isActive()",
+          "description": "Returns the state of activation of the anti-gravity generator"
+        },
+        {
+          "signature": "setTargetAltitude(altitude)",
+          "description": "Set the target altitude for the anti-gravity field. Cannot be called from onFlush"
+        },
+        {
+          "signature": "toggle()",
+          "description": "Toggle the anti-gravity generator"
+        }
+      ]
+    },
+    {
+      "element": "Atmospheric Airbrakes",
+      "methods": [
+        {
+          "signature": "activate()",
+          "description": "Start the brake at full power (works only when run inside a cockpit or under remote control)"
+        },
+        {
+          "signature": "deactivate()",
+          "description": "Stops the brake (works only when run inside a cockpit or under remote control)"
+        },
+        {
+          "signature": "getCurrentMaxThrust()",
+          "description": "Returns the maximal thrust the brake can deliver at the moment, which might depend on various conditions like atmospheric density, obstruction, orientation, etc. The actual thrust will be anything below this maxThrust, which defines the current max capability of the brake"
+        },
+        {
+          "signature": "getCurrentMinThrust()",
+          "description": "Returns the minimal thrust the brake can deliver at the moment (can be more than zero), which will depend on various conditions like atmospheric density, obstruction, orientation, etc Most of the time, this will be 0 but it can be greater than 0, particularly for Ailerons, in which case the actual thrust will be at least equal to minThrust"
+        },
+        {
+          "signature": "getMaxThrust()",
+          "description": "Returns the maximal thrust the brake can deliver in principle, under optimal conditions Note that the actual current min thrust will most of the time be less than max thrust"
+        },
+        {
+          "signature": "getMaxThrustEfficiency()",
+          "description": "Returns the ratio between the current maximum thrust and the optimal maximum thrust"
+        },
+        {
+          "signature": "getObstructionFactor()",
+          "description": "Returns the obstruction ratio of the engine exhaust by Elements and Voxels. The more obstructed the engine is, the less properly it will work. Try to fix your design if this is the case"
+        },
+        {
+          "signature": "getTags()",
+          "description": "Returns the tags of the engine"
+        },
+        {
+          "signature": "getThrust()",
+          "description": "Returns the current thrust of the brake"
+        },
+        {
+          "signature": "getThrustAxis()",
+          "description": "Returns the brake thrust direction in construct local coordinates"
+        },
+        {
+          "signature": "getWorldThrustAxis()",
+          "description": "Returns the brake thrust direction in world coordinates"
+        },
+        {
+          "signature": "isActive()",
+          "description": "Checks if the brake is active"
+        },
+        {
+          "signature": "isIgnoringTags()",
+          "description": "Checks if the engine is ignoring default tags"
+        },
+        {
+          "signature": "setTags(tags,ignore)",
+          "description": "Set the tags of the engine"
+        },
+        {
+          "signature": "setThrust(thrust)",
+          "description": "Set the thrust of the brake. Note that brakes can generate a force only in the movement opposite direction"
+        },
+        {
+          "signature": "toggle()",
+          "description": "Toggle the state of the brake"
+        }
+      ]
+    },
+    {
+      "element": "Atmospheric Engines",
+      "methods": [
+        {
+          "signature": "activate()",
+          "description": "Start the engine at full power (works only when run inside a cockpit or under remote control)"
+        },
+        {
+          "signature": "deactivate()",
+          "description": "Stops the engine (works only when run inside a cockpit or under remote control)"
+        },
+        {
+          "signature": "enableTorque(state)",
+          "description": "Sets the torque generation state on the engine"
+        },
+        {
+          "signature": "getCurrentFuelRate()",
+          "description": "Returns the engine fuel consumption rate per newton of thrust delivered per second"
+        },
+        {
+          "signature": "getCurrentMaxThrust()",
+          "description": "Returns the maximal thrust the engine can deliver at the moment, which might depend on various conditions like atmospheric density, obstruction, orientation, etc. The actual thrust will be anything below this maxThrust, which defines the current max capability of the engine"
+        },
+        {
+          "signature": "getCurrentMinThrust()",
+          "description": "Returns the minimal thrust the engine can deliver at the moment (can be more than zero), which will depend on various conditions like atmospheric density, obstruction, orientation, etc. Most of the time, this will be 0 but it can be greater than 0."
+        },
+        {
+          "signature": "getFuelConsumption()",
+          "description": "Returns the current fuel consumption rate"
+        },
+        {
+          "signature": "getFuelId()",
+          "description": "Returns the item ID of the fuel currently used by the engine"
+        },
+        {
+          "signature": "getFuelRateEfficiency()",
+          "description": "Returns the ratio between the current fuel rate and the theoretical nominal fuel rate"
+        },
+        {
+          "signature": "getFuelTankId()",
+          "description": "Returns the local ID of the fueltank linked to the engine"
+        },
+        {
+          "signature": "getMaxThrust()",
+          "description": "Returns the maximal thrust the engine can deliver in principle, under optimal conditions Note that the actual current min thrust will most of the time be less than max thrust"
+        },
+        {
+          "signature": "getMaxThrustEfficiency()",
+          "description": "Returns the ratio between the current maximum thrust and the optimal maximum thrust"
+        },
+        {
+          "signature": "getObstructionFactor()",
+          "description": "Returns the obstruction ratio of the engine exhaust by Elements and Voxels. The more obstructed the engine is, the less properly it will work. Try to fix your design if this is the case"
+        },
+        {
+          "signature": "getTags()",
+          "description": "Returns the tags of the engine"
+        },
+        {
+          "signature": "getThrust()",
+          "description": "Returns the current thrust of the engine"
+        },
+        {
+          "signature": "getThrustAxis()",
+          "description": "Returns the engine thrust direction in construct local coordinates"
+        },
+        {
+          "signature": "getTorqueAxis()",
+          "description": "Returns the engine torque axis in construct local coordinates"
+        },
+        {
+          "signature": "getWarmupTime()",
+          "description": "Returns the T50; the time needed for the engine to reach 50% of its maximal thrust (all engines do not instantly reach the thrust that is set for them, but they can take time to \"warm up\" to the final value)"
+        },
+        {
+          "signature": "getWorldThrustAxis()",
+          "description": "Returns the engine thrust direction in world coordinates"
+        },
+        {
+          "signature": "getWorldTorqueAxis()",
+          "description": "Returns the engine torque axis in world coordinates"
+        },
+        {
+          "signature": "hasFunctionalFuelTank()",
+          "description": "Checks if the engine linked to a functional Fuel Tank (not broken or colliding)?"
+        },
+        {
+          "signature": "isActive()",
+          "description": "Checks if the engine is active"
+        },
+        {
+          "signature": "isIgnoringTags()",
+          "description": "Checks if the engine is ignoring default tags"
+        },
+        {
+          "signature": "isOutOfFuel()",
+          "description": "Checks if the engine out of fuel"
+        },
+        {
+          "signature": "isTorqueEnabled()",
+          "description": "Checks if the torque generation is enabled on the engine"
+        },
+        {
+          "signature": "setTags(tags,ignore)",
+          "description": "Set the tags of the engine"
+        },
+        {
+          "signature": "setThrust(thrust)",
+          "description": "Set the thrust of the engine"
+        },
+        {
+          "signature": "toggle()",
+          "description": "Toggle the state of the engine"
+        }
+      ]
+    },
+    {
+      "element": "Base shield generator",
+      "methods": [
+        {
+          "signature": "activate()",
+          "description": "Activate the shield"
+        },
+        {
+          "signature": "deactivate()",
+          "description": "Deactivate the shield"
+        },
+        {
+          "signature": "getLockdownExitTime()",
+          "description": "Returns the hour since midnight of the preferred lockdown exit"
+        },
+        {
+          "signature": "getLockdownRemaining()",
+          "description": "Returns the remaining time of the base shield lockdown"
+        },
+        {
+          "signature": "getMaxShieldHitpoints()",
+          "description": "Returns the maximal hit points of the shield"
+        },
+        {
+          "signature": "getResistances()",
+          "description": "Returns distribution of resistance pool over resistance types"
+        },
+        {
+          "signature": "getResistancesCooldown()",
+          "description": "Returns time after which adjusting resistances is possible again"
+        },
+        {
+          "signature": "getResistancesMaxCooldown()",
+          "description": "Returns maximal cooldown between adjusting resistances"
+        },
+        {
+          "signature": "getResistancesPool()",
+          "description": "Returns total resistance pool that may be distributed"
+        },
+        {
+          "signature": "getResistancesRemaining()",
+          "description": "Returns the remaining amount of the resistance pool that can be distributed"
+        },
+        {
+          "signature": "getShieldHitpoints()",
+          "description": "Returns the current hit points of the shield"
+        },
+        {
+          "signature": "getState()",
+          "description": "Returns the activation state of the shield"
+        },
+        {
+          "signature": "getStressHitpoints()",
+          "description": "Returns stress, that is the total hit points of recent weapon impacts after applying resistance"
+        },
+        {
+          "signature": "getStressHitpointsRaw()",
+          "description": "Returns stress, that is the total hit points of recent weapon impacts without resistance"
+        },
+        {
+          "signature": "getStressRatio()",
+          "description": "Returns ratio per damage type of recent weapon impacts after applying resistance"
+        },
+        {
+          "signature": "getStressRatioRaw()",
+          "description": "Returns ratio per damage type of recent weapon impacts without resistance"
+        },
+        {
+          "signature": "inLockdown()",
+          "description": "Returns whether the base shield is currently in lockdown"
+        },
+        {
+          "signature": "onAbsorbed(hitpoints, rawHitpoints) event",
+          "description": "Emitted when the shield absorbed incoming damage"
+        },
+        {
+          "signature": "onDown() event",
+          "description": "Emitted when the shield hit points reached 0 due to damage"
+        },
+        {
+          "signature": "onEnterLockdown() event",
+          "description": "Emitted when the shield enters lockdown"
+        },
+        {
+          "signature": "onLeaveLockdown() event",
+          "description": "Emitted when the shield exits the lockdown"
+        },
+        {
+          "signature": "onRestored() event",
+          "description": "Emitted when the shield hit points were fully restored"
+        },
+        {
+          "signature": "onStartImmunity() event",
+          "description": "Emitted when the base shield became immune"
+        },
+        {
+          "signature": "onStopImmunity() event",
+          "description": "Emitted when the base shield stopped being immune"
+        },
+        {
+          "signature": "onToggled(active) event",
+          "description": "Emitted when we started or stopped the shield generator"
+        },
+        {
+          "signature": "setLockdownExitTime(hour)",
+          "description": "Set hour since midnight for the preferred lockdown exit"
+        },
+        {
+          "signature": "setResistances(antimatter,electromagnetic,kinetic,thermic)",
+          "description": "Distribute the resistance pool according to damage type"
+        },
+        {
+          "signature": "toggle()",
+          "description": "Toggle the state of the shield"
+        }
+      ]
+    },
+    {
+      "element": "Container",
+      "methods": [
+        {
+          "signature": "getContent()",
+          "description": "Returns a table describing the contents of the container, as a pair itemId and quantity per slot. Note that you have to request the content of the container to the server first with updateContent function."
+        },
+        {
+          "signature": "getItemsMass()",
+          "description": "Returns the container content mass(the sum of the mass of all items it contains)"
+        },
+        {
+          "signature": "getItemsVolume()",
+          "description": "Returns the container content volume(the sum of the volume of all items it contains)"
+        },
+        {
+          "signature": "getMaxVolume()",
+          "description": "Returns the maximum volume of the container"
+        },
+        {
+          "signature": "getSelfMass()",
+          "description": "Returns the mass of the container element(as if it were empty)"
+        },
+        {
+          "signature": "onContentUpdate() event",
+          "description": "Emitted when the container content is updated(storage update or after a manual request made with updateContent())"
+        },
+        {
+          "signature": "updateContent()",
+          "description": "Send a request to get an update of the content of the container, limited to one call allowed per 30 seconds The onContentUpdate event is emitted by the container when the content is updated"
+        }
+      ]
+    },
+    {
+      "element": "Control Unit",
+      "methods": [
+        {
+          "signature": "activateGroundEngineAltitudeStabilization(targetAltitude)",
+          "description": "The ground engines will stabilize to this altitude within their limits The stabilization will be done by adjusting thrust to never go over the target altitude This includes VerticalBooster and HoverEngine This function must be used on a piloting controller"
+        },
+        {
+          "signature": "cancelCurrentControlMasterMode()",
+          "description": "Cancel the current master mode in use This function must be used on a piloting controller"
+        },
+        {
+          "signature": "computeGroundEngineAltitudeStabilizationCapabilities()",
+          "description": "Returns ground engine stabilization altitude capabilities (lower and upper ranges) This function must be used on a piloting controller"
+        },
+        {
+          "signature": "deactivateGroundEngineAltitudeStabilization()",
+          "description": "The ground engines will behave like regular engines. This includes VerticalBoosters and HoverEngines. This function must be used on a piloting controller"
+        },
+        {
+          "signature": "deployLandingGears()",
+          "description": "Deploy all landing gears"
+        },
+        {
+          "signature": "exit()",
+          "description": "Stops the Control Unit's Lua code and exits. Warning: calling this might cause your ship to fall from the sky, use it with care. It is typically used in the coding of emergency Control Unit scripts to stop control once the ECU thinks that the ship has safely landed."
+        },
+        {
+          "signature": "getAtmosphereDensity()",
+          "description": "Returns the ambient atmospheric density"
+        },
+        {
+          "signature": "getAxisCommandValue(axis)",
+          "description": "Get the value of throttle in the cockpit. This function must be used on a piloting controller"
+        },
+        {
+          "signature": "getBoundingBoxCenter()",
+          "description": "Returns the position of the center of bounding box of the element in local construct coordinates"
+        },
+        {
+          "signature": "getBoundingBoxSize()",
+          "description": "Returns the bounding box dimensions of the element"
+        },
+        {
+          "signature": "getClass()",
+          "description": "Returns the class of the Element"
+        },
+        {
+          "signature": "getClassId()",
+          "description": "Returns the item id of the class of the Element"
+        },
+        {
+          "signature": "getClosestPlanetInfluence()",
+          "description": "Returns the influence rate of the nearest planet"
+        },
+        {
+          "signature": "getControlMode()",
+          "description": "Returns the current control mode. The mode is set by clicking the UI button or using the associated keybinding This function must be used on a piloting controller"
+        },
+        {
+          "signature": "getEngineThrust(taglist)",
+          "description": "Returns the total thrust values of all engines in the tag list This function must be used on a piloting controller"
+        },
+        {
+          "signature": "getForward()",
+          "description": "Returns the forward direction vector of the Element in construct local coordinates"
+        },
+        {
+          "signature": "getHitPoints()",
+          "description": "Returns the Element's current hit points (0 = destroyed)"
+        },
+        {
+          "signature": "getInPlugs()",
+          "description": "Returns the Element IN plug map"
+        },
+        {
+          "signature": "getIntegrity()",
+          "description": "Returns the Element's integrity between 0 and 100"
+        },
+        {
+          "signature": "getItemId()",
+          "description": "Returns the Element item ID (to be used with system.getItem() function to get information about the element)"
+        },
+        {
+          "signature": "getLocalId()",
+          "description": "Returns the unique local ID of the element"
+        },
+        {
+          "signature": "getMass()",
+          "description": "Returns the mass of the Element (includes the included items' mass when the Element is a Container)"
+        },
+        {
+          "signature": "getMaxHitPoints()",
+          "description": "Returns the Element's maximal hit points"
+        },
+        {
+          "signature": "getMaxRestorations()",
+          "description": "Returns the Element's maximal number of restorations"
+        },
+        {
+          "signature": "getName()",
+          "description": "Returns the Element's name"
+        },
+        {
+          "signature": "getOutPlugs()",
+          "description": "Returns the Element OUT plug map"
+        },
+        {
+          "signature": "getPosition()",
+          "description": "Returns the position of the Element in construct local coordinates"
+        },
+        {
+          "signature": "getRemainingRestorations()",
+          "description": "Returns the Element's remaining number of restorations"
+        },
+        {
+          "signature": "getRight()",
+          "description": "Returns the right direction vector of the Element in construct local coordinates"
+        },
+        {
+          "signature": "getSignalIn(plug)",
+          "description": "Returns the value of a signal in the specified IN plug of the Element. Standard plug names are built with the following syntax: direction-type-index. 'Direction' can be IN or OUT. 'type' is one of the following: ITEM, FUEL, ELECTRICITY, SIGNAL, HEAT, FLUID, CONTROL, and 'index' is a number between 0 and the total number of plugs of the given type in the given direction. Some plugs have special names like 'on' or 'off' for the Manual Switch Unit. Just check in-game for the plug names if you have a doubt."
+        },
+        {
+          "signature": "getSignalOut(plug)",
+          "description": "Returns the value of a signal in the specified OUT plug of the Element. Standard plug names are built with the following syntax: direction-type-index. 'Direction' can be IN or OUT. 'type' is one of the following: ITEM, FUEL, ELECTRICITY, SIGNAL, HEAT, FLUID, CONTROL, and 'index' is a number between 0 and the total number of plugs of the given type in the given direction. Some plugs have special names like 'on' or 'off' for the Manual Switch Unit. Just check in-game for the plug names if you have a doubt."
+        },
+        {
+          "signature": "getSurfaceEngineAltitudeStabilization()",
+          "description": "Return the ground engines' stabilization altitude This function must be used on a piloting controller"
+        },
+        {
+          "signature": "getThrottle()",
+          "description": "Return the current throttle value This function must be used on a piloting controller"
+        },
+        {
+          "signature": "getUp()",
+          "description": "Returns the up direction vector of the Element in construct local coordinates"
+        },
+        {
+          "signature": "getWidgetData()",
+          "description": "Returns the element data as JSON"
+        },
+        {
+          "signature": "getWidgetDataId()",
+          "description": "Returns the element data ID"
+        },
+        {
+          "signature": "getWidgetType()",
+          "description": "Returns the widget type compatible with the Element data"
+        },
+        {
+          "signature": "getWorldForward()",
+          "description": "Returns the forward direction vector of the Element in world coordinates"
+        },
+        {
+          "signature": "getWorldRight()",
+          "description": "Returns the right direction vector of the Element in world coordinates"
+        },
+        {
+          "signature": "getWorldUp()",
+          "description": "Returns the up direction vector of the Element in world coordinates"
+        },
+        {
+          "signature": "hasDRM()",
+          "description": "Checks if the control unit is protected by DRM"
+        },
+        {
+          "signature": "hideWidget()",
+          "description": "Hide the Element's widget in the in-game widget stack"
+        },
+        {
+          "signature": "isAnyHeadlightSwitchedOn()",
+          "description": "Check if any Construct Headlights is on"
+        },
+        {
+          "signature": "isAnyLandingGearDeployed()",
+          "description": "Checks if any landing gear is deployed"
+        },
+        {
+          "signature": "isInClass(className)",
+          "description": "Checks if the element is an element of the class given by its class name"
+        },
+        {
+          "signature": "isInClassId(classId)",
+          "description": "Checks if the element is an element of the class given by its item id"
+        },
+        {
+          "signature": "isMouseControlActivated()",
+          "description": "Check if a mouse control scheme is selected This function must be used on a piloting controller"
+        },
+        {
+          "signature": "isMouseDirectControlActivated()",
+          "description": "Check if the mouse control direct scheme is selected This function must be used on a piloting controller"
+        },
+        {
+          "signature": "isMouseVirtualJoystickActivated()",
+          "description": "Check if the mouse control virtual joystick scheme is selected This function must be used on a piloting controller"
+        },
+        {
+          "signature": "isRemoteControlled()",
+          "description": "Check if the construct is remote controlled"
+        },
+        {
+          "signature": "onTimer(tag) event",
+          "description": "Emitted when the timer with the tag 'tag' is ticking"
+        },
+        {
+          "signature": "retractLandingGears()",
+          "description": "Retract all landing gears"
+        },
+        {
+          "signature": "setAxisCommandValue(axis, commandValue)",
+          "description": "Set the value of throttle in the cockpit, which will be displayed in the cockpit widget when flying. This function must be used on a piloting controller"
+        },
+        {
+          "signature": "setEngineCommand(taglist, acceleration, angularAcceleration, keepForceCollinearity, keepTorqueCollinearity, priority1SubTags, priority2SubTags, priority3SubTags, toleranceRatioToStopCommand)",
+          "description": "Automatically assign the engines within the taglist to result in the given acceleration and angular acceleration provided. Can only be called within the system.onFlush event. If engines designated by the tags are not capable of producing the desired command, setEngineCommand will try to do its best to approximate it This function must be used on a piloting controller in onFlush event"
+        },
+        {
+          "signature": "setEngineThrust(taglist, thrust)",
+          "description": "Sets the thrust values for all engines in the tag list. This function must be used on a piloting controller"
+        },
+        {
+          "signature": "setSignalIn(plug, state)",
+          "description": "Set the value of a signal in the specified IN plug of the Element. Standard plug names are built with the following syntax: direction-type-index. 'Direction' can be IN or OUT. 'type' is one of the following: ITEM, FUEL, ELECTRICITY, SIGNAL, HEAT, FLUID, CONTROL, and 'index' is a number between 0 and the total number of plugs of the given type in the given direction. Some plugs have special names like 'on' or 'off' for the Manual Switch Unit. Just check in-game for the plug names if you have a doubt."
+        },
+        {
+          "signature": "setTimer(tag, period)",
+          "description": "Set up a timer with a given tag in a given period. This will start to trigger the 'onTimer' event with the corresponding tag as an argument, to help you identify what is ticking, and when"
+        },
+        {
+          "signature": "setupAxisCommandProperties(axis, commandType, targetSpeedRanges)",
+          "description": "Set the properties of an axis command This function must be used on a piloting controller. These properties will be used to display the command in UI"
+        },
+        {
+          "signature": "setWidgetControlMode(modeId, label)",
+          "description": "Set the label of a control mode buttons shown in the control unit widget This function must be used on a piloting controller"
+        },
+        {
+          "signature": "showWidget()",
+          "description": "Show the Element's widget in the in-game widget stack"
+        },
+        {
+          "signature": "stopTimer(tag)",
+          "description": "Stop the timer with the given tag"
+        },
+        {
+          "signature": "switchOffHeadlights()",
+          "description": "Turn off the Construct's headlights"
+        },
+        {
+          "signature": "switchOnHeadlights()",
+          "description": "Turn on the Construct's headlights"
+        }
+      ]
+    },
+    {
+      "element": "Core Unit",
+      "methods": [
+        {
+          "signature": "deleteSticker(index)",
+          "description": "Delete the referenced sticker."
+        },
+        {
+          "signature": "getAltitude()",
+          "description": "Returns the altitude above sea level, with respect to the closest planet (0 in space)"
+        },
+        {
+          "signature": "getCoreStress()",
+          "description": "Returns the core's current stress, destroyed when reaching max stress"
+        },
+        {
+          "signature": "getCoreStressRatio()",
+          "description": "Returns the core's current stress to max stress ratio"
+        },
+        {
+          "signature": "getCurrentPlanetId()",
+          "description": "Returns the id of the current close stellar body"
+        },
+        {
+          "signature": "getElementClassById(localId)",
+          "description": "Returns the class of the Element, identified by its local ID"
+        },
+        {
+          "signature": "getElementClassIdById(localId)",
+          "description": "Returns the item id of the class of the Element, identified by its local ID"
+        },
+        {
+          "signature": "getElementDisplayNameById(localId)",
+          "description": "Returns the display name of the Element, identified by its local ID"
+        },
+        {
+          "signature": "getElementForwardById(localId)",
+          "description": "Returns the forward direction vector of the Element, identified by its local ID, in construct local coordinates"
+        },
+        {
+          "signature": "getElementHitPointsById(localId)",
+          "description": "Returns the current level of hit points of the Element, identified by its local ID"
+        },
+        {
+          "signature": "getElementIdList()",
+          "description": "Returns the list of all the local IDs of the Elements of this construct"
+        },
+        {
+          "signature": "getElementIndustryInfoById(localId)",
+          "description": "Returns the information of the Industry Unit Element, identified by its local ID"
+        },
+        {
+          "signature": "getElementInPlugsById(localId)",
+          "description": "Returns the Element IN plug map, identified by its local ID"
+        },
+        {
+          "signature": "getElementItemIdById(localId)",
+          "description": "Returns the item ID of the Element, identified by its local ID"
+        },
+        {
+          "signature": "getElementMassById(localId)",
+          "description": "Returns the mass of the Element, identified by its local ID"
+        },
+        {
+          "signature": "getElementMaxHitPointsById(localId)",
+          "description": "Returns the maximum level of hit points of the Element, identified by its local ID"
+        },
+        {
+          "signature": "getElementMaxRestorationsById(localId)",
+          "description": "Returns the maximum restorations of the Element, identified by its local ID"
+        },
+        {
+          "signature": "getElementNameById(localId)",
+          "description": "Returns the name of the Element, identified by its local ID"
+        },
+        {
+          "signature": "getElementOutPlugsById(localId)",
+          "description": "Returns the Element OUT plug map, identified by its local ID"
+        },
+        {
+          "signature": "getElementPositionById(localId)",
+          "description": "Returns the position of the Element, identified by its local ID, in construct local coordinates."
+        },
+        {
+          "signature": "getElementRestorationsById(localId)",
+          "description": "Returns the remaining restorations of the Element, identified by its local ID"
+        },
+        {
+          "signature": "getElementRightById(localId)",
+          "description": "Returns the right direction vector of the Element, identified by its local ID, in construct local coordinates"
+        },
+        {
+          "signature": "getElementUpById(localId)",
+          "description": "Returns the up direction vector of the Element, identified by its local ID, in construct local coordinates"
+        },
+        {
+          "signature": "getEngineTagsById(localId)",
+          "description": "Returns the list of engine tags for an Engine Element identified by its local ID"
+        },
+        {
+          "signature": "getEngineTorqueById(localId)",
+          "description": "Returns the torque generation state for the Engine Element, identified by its local ID"
+        },
+        {
+          "signature": "getGravityIntensity()",
+          "description": "Returns the local gravity intensity"
+        },
+        {
+          "signature": "getMaxCoreStress()",
+          "description": "Returns the maximal stress the core can bear before it gets destroyed"
+        },
+        {
+          "signature": "getWorldGravity()",
+          "description": "Returns the local gravity vector in world coordinates"
+        },
+        {
+          "signature": "getWorldVertical()",
+          "description": "Returns the vertical unit vector along gravity, in world coordinates (0 in space)"
+        },
+        {
+          "signature": "isEngineIgnoringTagsById(localId)",
+          "description": "Checks if the engine element is ignoring default tags, identified by its local ID"
+        },
+        {
+          "signature": "moveSticker(index,x,y,z)",
+          "description": "Move the referenced sticker."
+        },
+        {
+          "signature": "onElementBroken(localId, restorations) event",
+          "description": "Emitted when an Element is broken"
+        },
+        {
+          "signature": "onElementDamaged(localId, hitpoints) event",
+          "description": "Emitted when an Element is damaged"
+        },
+        {
+          "signature": "onElementRepaired(localId, hitpoints) event",
+          "description": "Emitted when an Element is repaired"
+        },
+        {
+          "signature": "onElementRestored(localId, restorations) event",
+          "description": "Emitted when an Element is restored"
+        },
+        {
+          "signature": "onStressChanged(stress) event",
+          "description": "Emitted when core unit stress changed"
+        },
+        {
+          "signature": "rotateSticker(index,angle_x,angle_y,angle_z)",
+          "description": "Rotate the referenced sticker."
+        },
+        {
+          "signature": "setEngineTagsById(localId, tags, ignore)",
+          "description": "Sets the list of engine tags for an Engine Element, identified by its local ID"
+        },
+        {
+          "signature": "setEngineTorqueById(localId, state)",
+          "description": "Sets the torque generation state for the Engine Element, identified by its local ID"
+        },
+        {
+          "signature": "spawnArrowSticker(x,y,z,orientation)",
+          "description": "Spawns an arrow sticker in the 3D world, with coordinates relative to the construct."
+        },
+        {
+          "signature": "spawnNumberSticker(nb,x,y,z,orientation)",
+          "description": "Spawns a number sticker in the 3D world, with coordinates relative to the construct."
+        }
+      ]
+    },
+    {
+      "element": "Counter",
+      "methods": [
+        {
+          "signature": "getIndex()",
+          "description": "Returns the index of the current active output plug"
+        },
+        {
+          "signature": "getMaxIndex()",
+          "description": "Returns the maximum index of the counter"
+        },
+        {
+          "signature": "nextIndex()",
+          "description": "Moves the next counter index"
+        },
+        {
+          "signature": "setIndex(index)",
+          "description": "Sets the counter index"
+        }
+      ]
+    },
+    {
+      "element": "Databank",
+      "methods": [
+        {
+          "signature": "clear()",
+          "description": "Clear the Databank"
+        },
+        {
+          "signature": "clearValue(key)",
+          "description": "Remove the given key if the key is present in the Databank"
+        },
+        {
+          "signature": "getFloatValue(key)",
+          "description": "Returns value stored in the given key as a floating number"
+        },
+        {
+          "signature": "getIntValue(key)",
+          "description": "Returns value stored in the given key as an integer"
+        },
+        {
+          "signature": "getKeyList()",
+          "description": "Returns all the keys in the Databank"
+        },
+        {
+          "signature": "getNbKeys()",
+          "description": "Returns the number of keys that are stored inside the Databank"
+        },
+        {
+          "signature": "getStringValue(key)",
+          "description": "Returns value stored in the given key as a string"
+        },
+        {
+          "signature": "hasKey(key)",
+          "description": "Checks if the key is present in the Databank"
+        },
+        {
+          "signature": "setFloatValue(key,val)",
+          "description": "Stores a floating number value at the given key"
+        },
+        {
+          "signature": "setIntValue(key,val)",
+          "description": "Stores an integer value at the given key"
+        },
+        {
+          "signature": "setStringValue(key,val)",
+          "description": "Stores a string value at the given key"
+        }
+      ]
+    },
+    {
+      "element": "Detection Zone",
+      "methods": [
+        {
+          "signature": "getPlayers()",
+          "description": "Returns the list of ids of the players in the detection zone"
+        },
+        {
+          "signature": "getRadius()",
+          "description": "Returns the detection zone radius"
+        },
+        {
+          "signature": "onEnter(id) event",
+          "description": "Emitted when a player enters in the detection zone"
+        },
+        {
+          "signature": "onLeave(id) event",
+          "description": "Emitted when a player leaves in the detection zone"
+        }
+      ]
+    },
+    {
+      "element": "Door",
+      "methods": [
+        {
+          "signature": "close()",
+          "description": "Close the door"
+        },
+        {
+          "signature": "isOpen()",
+          "description": "Returns the opening status of the door"
+        },
+        {
+          "signature": "open()",
+          "description": "Open the door"
+        },
+        {
+          "signature": "toggle()",
+          "description": "Toggle the door"
+        }
+      ]
+    },
+    {
+      "element": "Emitter",
+      "methods": [
+        {
+          "signature": "getRange()",
+          "description": "Returns the emitter range"
+        },
+        {
+          "signature": "onSent(channel,message) event",
+          "description": "Emitted when the emitter successfully sent a message"
+        },
+        {
+          "signature": "send(channel,message)",
+          "description": "Send a message on the given channel, limited to one transmission per frame and per channel"
+        }
+      ]
+    },
+    {
+      "element": "Fireworks",
+      "methods": [
+        {
+          "signature": "fire()",
+          "description": "Fire the firework"
+        },
+        {
+          "signature": "getColor()",
+          "description": "Returns the color of the launched firework"
+        },
+        {
+          "signature": "getExplosionDelay()",
+          "description": "Returns the delay before the launched Fireworks explodes"
+        },
+        {
+          "signature": "getLaunchSpeed()",
+          "description": "Returns the speed at which the firework will be launched"
+        },
+        {
+          "signature": "getType()",
+          "description": "Returns the type of launched firework"
+        },
+        {
+          "signature": "onFired() event",
+          "description": "Emitted when a firework has just been fired"
+        },
+        {
+          "signature": "setColor(color)",
+          "description": "Set the color of the launched firework (will affect which firework is picked in the attached Container)"
+        },
+        {
+          "signature": "setExplosionDelay(delay)",
+          "description": "Set the delay before the launched Fireworks explodes"
+        },
+        {
+          "signature": "setLaunchSpeed(speed)",
+          "description": "Set the speed at which the firework will be launched (impacts its altitude, depending on the local gravity)."
+        },
+        {
+          "signature": "setType(type)",
+          "description": "Set the type of launched firework (will affect which firework is picked in the attached Container)"
+        }
+      ]
+    },
+    {
+      "element": "Force Field",
+      "methods": [
+        {
+          "signature": "deploy()",
+          "description": "Deploys the forcefield"
+        },
+        {
+          "signature": "getCurrentLength()",
+          "description": "Returns the current length of the forcefield"
+        },
+        {
+          "signature": "getLengthLimit()",
+          "description": "Returns the length limit of this forcefield model"
+        },
+        {
+          "signature": "getMaxLength()",
+          "description": "Returns the maximum length of the forcefield"
+        },
+        {
+          "signature": "isDeployed()",
+          "description": "Checks if the forcefield is deployed"
+        },
+        {
+          "signature": "retract()",
+          "description": "Retracts the forcefield"
+        },
+        {
+          "signature": "setMaxLength(maxLength)",
+          "description": "Sets the max length of the forcefield"
+        },
+        {
+          "signature": "toggle()",
+          "description": "Toggle the forcefield"
+        }
+      ]
+    },
+    {
+      "element": "Generic Element",
+      "methods": [
+        {
+          "signature": "getBoundingBoxCenter()",
+          "description": "Returns the position of the center of bounding box of the element in local construct coordinates"
+        },
+        {
+          "signature": "getBoundingBoxSize()",
+          "description": "Returns the bounding box dimensions of the element"
+        },
+        {
+          "signature": "getClass()",
+          "description": "Returns the class of the Element"
+        },
+        {
+          "signature": "getClassId()",
+          "description": "Returns the item id of the class of the Element"
+        },
+        {
+          "signature": "getForward()",
+          "description": "Returns the forward direction vector of the Element in construct local coordinates"
+        },
+        {
+          "signature": "getHitPoints()",
+          "description": "Returns the Element's current hit points (0 = destroyed)"
+        },
+        {
+          "signature": "getInPlugs()",
+          "description": "Returns the Element IN plug map"
+        },
+        {
+          "signature": "getIntegrity()",
+          "description": "Returns the Element's integrity between 0 and 100"
+        },
+        {
+          "signature": "getItemId()",
+          "description": "Returns the Element item ID (to be used with system.getItem() function to get information about the element)"
+        },
+        {
+          "signature": "getLocalId()",
+          "description": "Returns the unique local ID of the element"
+        },
+        {
+          "signature": "getMass()",
+          "description": "Returns the mass of the Element (includes the included items' mass when the Element is a Container)"
+        },
+        {
+          "signature": "getMaxHitPoints()",
+          "description": "Returns the Element's maximal hit points"
+        },
+        {
+          "signature": "getMaxRestorations()",
+          "description": "Returns the Element's maximal number of restorations"
+        },
+        {
+          "signature": "getName()",
+          "description": "Returns the Element's name"
+        },
+        {
+          "signature": "getOutPlugs()",
+          "description": "Returns the Element OUT plug map"
+        },
+        {
+          "signature": "getPosition()",
+          "description": "Returns the position of the Element in construct local coordinates"
+        },
+        {
+          "signature": "getRemainingRestorations()",
+          "description": "Returns the Element's remaining number of restorations"
+        },
+        {
+          "signature": "getRight()",
+          "description": "Returns the right direction vector of the Element in construct local coordinates"
+        },
+        {
+          "signature": "getSignalIn(plug)",
+          "description": "Returns the value of a signal in the specified IN plug of the Element. Standard plug names are built with the following syntax: direction-type-index. 'Direction' can be IN or OUT. 'type' is one of the following: ITEM, FUEL, ELECTRICITY, SIGNAL, HEAT, FLUID, CONTROL, and 'index' is a number between 0 and the total number of plugs of the given type in the given direction. Some plugs have special names like 'on' or 'off' for the Manual Switch Unit. Just check in-game for the plug names if you have a doubt."
+        },
+        {
+          "signature": "getSignalOut(plug)",
+          "description": "Returns the value of a signal in the specified OUT plug of the Element. Standard plug names are built with the following syntax: direction-type-index. 'Direction' can be IN or OUT. 'type' is one of the following: ITEM, FUEL, ELECTRICITY, SIGNAL, HEAT, FLUID, CONTROL, and 'index' is a number between 0 and the total number of plugs of the given type in the given direction. Some plugs have special names like 'on' or 'off' for the Manual Switch Unit. Just check in-game for the plug names if you have a doubt."
+        },
+        {
+          "signature": "getUp()",
+          "description": "Returns the up direction vector of the Element in construct local coordinates"
+        },
+        {
+          "signature": "getWidgetData()",
+          "description": "Returns the element data as JSON"
+        },
+        {
+          "signature": "getWidgetDataId()",
+          "description": "Returns the element data ID"
+        },
+        {
+          "signature": "getWidgetType()",
+          "description": "Returns the widget type compatible with the Element data"
+        },
+        {
+          "signature": "getWorldForward()",
+          "description": "Returns the forward direction vector of the Element in world coordinates"
+        },
+        {
+          "signature": "getWorldRight()",
+          "description": "Returns the right direction vector of the Element in world coordinates"
+        },
+        {
+          "signature": "getWorldUp()",
+          "description": "Returns the up direction vector of the Element in world coordinates"
+        },
+        {
+          "signature": "hideWidget()",
+          "description": "Hide the Element's widget in the in-game widget stack"
+        },
+        {
+          "signature": "isInClass(className)",
+          "description": "Checks if the element is an element of the class given by its class name"
+        },
+        {
+          "signature": "isInClassId(classId)",
+          "description": "Checks if the element is an element of the class given by its item id"
+        },
+        {
+          "signature": "setSignalIn(plug, state)",
+          "description": "Set the value of a signal in the specified IN plug of the Element. Standard plug names are built with the following syntax: direction-type-index. 'Direction' can be IN or OUT. 'type' is one of the following: ITEM, FUEL, ELECTRICITY, SIGNAL, HEAT, FLUID, CONTROL, and 'index' is a number between 0 and the total number of plugs of the given type in the given direction. Some plugs have special names like 'on' or 'off' for the Manual Switch Unit. Just check in-game for the plug names if you have a doubt."
+        },
+        {
+          "signature": "showWidget()",
+          "description": "Show the Element's widget in the in-game widget stack"
+        }
+      ]
+    },
+    {
+      "element": "Gyro",
+      "methods": [
+        {
+          "signature": "activate()",
+          "description": "Selects this gyro as the main gyro used for ship orientation"
+        },
+        {
+          "signature": "deactivate()",
+          "description": "Deselects this gyro as the main gyro used for ship orientation, using the Core Unit instead"
+        },
+        {
+          "signature": "getPitch()",
+          "description": "The pitch value relative to the gyro orientation and the local gravity"
+        },
+        {
+          "signature": "getRoll()",
+          "description": "The roll value relative to the gyro orientation and the local gravity"
+        },
+        {
+          "signature": "isActive()",
+          "description": "Returns the activation state of the gyro"
+        },
+        {
+          "signature": "toggle()",
+          "description": "Toggle the activation state of the gyro"
+        }
+      ]
+    },
+    {
+      "element": "Hover Engines",
+      "methods": [
+        {
+          "signature": "activate()",
+          "description": "Start the engine at full power (works only when run inside a cockpit or under remote control)"
+        },
+        {
+          "signature": "deactivate()",
+          "description": "Stops the engine (works only when run inside a cockpit or under remote control)"
+        },
+        {
+          "signature": "enableTorque(state)",
+          "description": "Sets the torque generation state on the engine"
+        },
+        {
+          "signature": "getCurrentFuelRate()",
+          "description": "Returns the engine fuel consumption rate per newton of thrust delivered per second"
+        },
+        {
+          "signature": "getCurrentMaxThrust()",
+          "description": "Returns the maximal thrust the engine can deliver at the moment, which might depend on various conditions like atmospheric density, obstruction, orientation, etc. The actual thrust will be anything below this maxThrust, which defines the current max capability of the engine"
+        },
+        {
+          "signature": "getCurrentMinThrust()",
+          "description": "Returns the minimal thrust the engine can deliver at the moment (can be more than zero), which will depend on various conditions like atmospheric density, obstruction, orientation, etc. Most of the time, this will be 0 but it can be greater than 0."
+        },
+        {
+          "signature": "getDistance()",
+          "description": "Returns the distance to the first object detected in the direction of the thrust"
+        },
+        {
+          "signature": "getFuelConsumption()",
+          "description": "Returns the current fuel consumption rate"
+        },
+        {
+          "signature": "getFuelId()",
+          "description": "Returns the item ID of the fuel currently used by the engine"
+        },
+        {
+          "signature": "getFuelRateEfficiency()",
+          "description": "Returns the ratio between the current fuel rate and the theoretical nominal fuel rate"
+        },
+        {
+          "signature": "getFuelTankId()",
+          "description": "Returns the local ID of the fueltank linked to the engine"
+        },
+        {
+          "signature": "getMaxDistance()",
+          "description": "Returns the maximum functional distance from the ground"
+        },
+        {
+          "signature": "getMaxThrust()",
+          "description": "Returns the maximal thrust the engine can deliver in principle, under optimal conditions Note that the actual current min thrust will most of the time be less than max thrust"
+        },
+        {
+          "signature": "getMaxThrustEfficiency()",
+          "description": "Returns the ratio between the current maximum thrust and the optimal maximum thrust"
+        },
+        {
+          "signature": "getObstructionFactor()",
+          "description": "Returns the obstruction ratio of the engine exhaust by Elements and Voxels. The more obstructed the engine is, the less properly it will work. Try to fix your design if this is the case"
+        },
+        {
+          "signature": "getTags()",
+          "description": "Returns the tags of the engine"
+        },
+        {
+          "signature": "getThrust()",
+          "description": "Returns the current thrust of the engine"
+        },
+        {
+          "signature": "getThrustAxis()",
+          "description": "Returns the engine thrust direction in construct local coordinates"
+        },
+        {
+          "signature": "getTorqueAxis()",
+          "description": "Returns the engine torque axis in construct local coordinates"
+        },
+        {
+          "signature": "getWarmupTime()",
+          "description": "Returns the T50; the time needed for the engine to reach 50% of its maximal thrust (all engines do not instantly reach the thrust that is set for them, but they can take time to \"warm up\" to the final value)"
+        },
+        {
+          "signature": "getWorldThrustAxis()",
+          "description": "Returns the engine thrust direction in world coordinates"
+        },
+        {
+          "signature": "getWorldTorqueAxis()",
+          "description": "Returns the engine torque axis in world coordinates"
+        },
+        {
+          "signature": "hasFunctionalFuelTank()",
+          "description": "Checks if the engine linked to a functional Fuel Tank (not broken or colliding)?"
+        },
+        {
+          "signature": "isActive()",
+          "description": "Checks if the engine is active"
+        },
+        {
+          "signature": "isIgnoringTags()",
+          "description": "Checks if the engine is ignoring default tags"
+        },
+        {
+          "signature": "isOutOfFuel()",
+          "description": "Checks if the engine out of fuel"
+        },
+        {
+          "signature": "isTorqueEnabled()",
+          "description": "Checks if the torque generation is enabled on the engine"
+        },
+        {
+          "signature": "setTags(tags,ignore)",
+          "description": "Set the tags of the engine"
+        },
+        {
+          "signature": "setThrust(thrust)",
+          "description": "Set the thrust of the engine"
+        },
+        {
+          "signature": "toggle()",
+          "description": "Toggle the state of the engine"
+        }
+      ]
+    },
+    {
+      "element": "Industry",
+      "methods": [
+        {
+          "signature": "getBank()",
+          "description": "Returns a table describing the contents of the schematic bank, as a pair itemId and quantity per slot"
+        },
+        {
+          "signature": "getCyclesCompleted()",
+          "description": "Get the count of completed cycles since the player started the unit"
+        },
+        {
+          "signature": "getEfficiency()",
+          "description": "Returns the efficiency of the industry"
+        },
+        {
+          "signature": "getInfo()",
+          "description": "Returns the complete information of the industry"
+        },
+        {
+          "signature": "getInputs()",
+          "description": "Returns the list of items required to run the selected output product."
+        },
+        {
+          "signature": "getOutputs()",
+          "description": "Returns the list of id of the items currently produced."
+        },
+        {
+          "signature": "getRequiredSchematicIds()",
+          "description": "Returns the list of item ids of the currently required schematics. Empty if there are no required schematics"
+        },
+        {
+          "signature": "getState()",
+          "description": "Return the current running state of the industry"
+        },
+        {
+          "signature": "getUptime()",
+          "description": "Returns the time elapsed in seconds since the player started the unit for the latest time"
+        },
+        {
+          "signature": "onBankUpdate() event",
+          "description": "Emitted when the schematic bank content is updated(bank update or after a manual request made with updateBank())"
+        },
+        {
+          "signature": "onCompleted(id,quantity) event",
+          "description": "Emitted when the Industry Unit has completed a run per product"
+        },
+        {
+          "signature": "onStarted(id,quantity) event",
+          "description": "Emitted when the Industry Unit has started a new production process per product"
+        },
+        {
+          "signature": "onStatusChanged(status) event",
+          "description": "Emitted when the industry status has changed"
+        },
+        {
+          "signature": "setOutput(itemId)",
+          "description": "Set the item to produce from its id."
+        },
+        {
+          "signature": "startFor(numBatches)",
+          "description": "Start the production of numBatches and then stop"
+        },
+        {
+          "signature": "startMaintain(quantity)",
+          "description": "Start maintaining the specified quantity. Resumes production when the quantity in the output Container is too low, and pauses production when it is equal or higher"
+        },
+        {
+          "signature": "startRun()",
+          "description": "Start the production, and it will run unless it is stopped or the input resources run out"
+        },
+        {
+          "signature": "stop(force,allowLoss)",
+          "description": "Stop the production of the industry unit"
+        },
+        {
+          "signature": "updateBank()",
+          "description": "Send a request to get an update of the content of the schematic bank, limited to one call allowed per 30 seconds"
+        }
+      ]
+    },
+    {
+      "element": "Landing Gear",
+      "methods": [
+        {
+          "signature": "deploy()",
+          "description": "Deploys the landing gear"
+        },
+        {
+          "signature": "isDeployed()",
+          "description": "Checks if the landing gear is deployed"
+        },
+        {
+          "signature": "retract()",
+          "description": "Retracts the landing gear"
+        },
+        {
+          "signature": "toggle()",
+          "description": "Toggle the landing gear"
+        }
+      ]
+    },
+    {
+      "element": "Laser Detector",
+      "methods": [
+        {
+          "signature": "isHit()",
+          "description": "Checks if any laser is hitting the detector"
+        },
+        {
+          "signature": "onHit() event",
+          "description": "Emitted when a laser hit the detector"
+        },
+        {
+          "signature": "onLoss() event",
+          "description": "Emitted when all lasers stop hitting the detector"
+        }
+      ]
+    },
+    {
+      "element": "Laser Emitter",
+      "methods": [
+        {
+          "signature": "activate()",
+          "description": "Activates the laser emitter"
+        },
+        {
+          "signature": "deactivate()",
+          "description": "Deactivates the laser emitter"
+        },
+        {
+          "signature": "isActive()",
+          "description": "Checks if the laser emitter is active"
+        },
+        {
+          "signature": "toggle()",
+          "description": "Toggle the laser emitter"
+        }
+      ]
+    },
+    {
+      "element": "Light",
+      "methods": [
+        {
+          "signature": "activate()",
+          "description": "Switches the light on"
+        },
+        {
+          "signature": "deactivate()",
+          "description": "Switches the light off"
+        },
+        {
+          "signature": "getBlinkingTimeShift()",
+          "description": "Returns the light blinking time shift"
+        },
+        {
+          "signature": "getColor()",
+          "description": "Returns the light color in RGB"
+        },
+        {
+          "signature": "getOffBlinkingDuration()",
+          "description": "Returns the light 'off' blinking duration"
+        },
+        {
+          "signature": "getOnBlinkingDuration()",
+          "description": "Returns the light 'on' blinking duration"
+        },
+        {
+          "signature": "isActive()",
+          "description": "Checks if the light is on"
+        },
+        {
+          "signature": "isBlinking()",
+          "description": "Checks if the light blinking is enabled"
+        },
+        {
+          "signature": "setBlinkingState(state)",
+          "description": "Returns the blinking state of the light"
+        },
+        {
+          "signature": "setBlinkingTimeShift(shift)",
+          "description": "Set the light blinking time shift"
+        },
+        {
+          "signature": "setColor(r,g,b)",
+          "description": "Set the color of the light to RGB. Lights can use HDR color values above 1.0 to glow."
+        },
+        {
+          "signature": "setOffBlinkingDuration(state)",
+          "description": "Set the light 'off' blinking duration"
+        },
+        {
+          "signature": "setOnBlinkingDuration(state)",
+          "description": "Set the light 'on' blinking duration"
+        },
+        {
+          "signature": "toggle()",
+          "description": "Toggle the state of the light"
+        }
+      ]
+    },
+    {
+      "element": "Manual Button",
+      "methods": [
+        {
+          "signature": "isDown()",
+          "description": "Checks if the manual button is down"
+        },
+        {
+          "signature": "onPressed() event",
+          "description": "Emitted when the button is pressed"
+        },
+        {
+          "signature": "onReleased() event",
+          "description": "Emitted when the button is released"
+        }
+      ]
+    },
+    {
+      "element": "Manual Switch",
+      "methods": [
+        {
+          "signature": "activate()",
+          "description": "Switches the switch on"
+        },
+        {
+          "signature": "deactivate()",
+          "description": "Switches the switch off"
+        },
+        {
+          "signature": "isActive()",
+          "description": "Checks if the switch is active"
+        },
+        {
+          "signature": "onPressed() event",
+          "description": "Emitted when the button is pressed"
+        },
+        {
+          "signature": "onReleased() event",
+          "description": "Emitted when the button is released"
+        },
+        {
+          "signature": "toggle()",
+          "description": "Toggle the switch"
+        }
+      ]
+    },
+    {
+      "element": "Mining unit",
+      "methods": [
+        {
+          "signature": "getActiveOre()",
+          "description": "Returns the item ID of the currently selected ore."
+        },
+        {
+          "signature": "getAdjacencyBonus()",
+          "description": "Returns the territory's adjacency bonus to the territory of the mining unit. Note: This"
+        },
+        {
+          "signature": "getBaseRate()",
+          "description": "Returns the base production rate of the mining unit."
+        },
+        {
+          "signature": "getCalibrationRate()",
+          "description": "Returns the calibration rate of the mining unit."
+        },
+        {
+          "signature": "getEfficiency()",
+          "description": "Returns the efficiency rate of the mining unit."
+        },
+        {
+          "signature": "getLastExtractedOre()",
+          "description": "Returns the item ID of the ore extracted during the last calibration excavation."
+        },
+        {
+          "signature": "getLastExtractedVolume()",
+          "description": "Returns the volume of ore extracted during the last calibration excavation."
+        },
+        {
+          "signature": "getLastExtractingPlayerId()",
+          "description": "Returns the ID of the last player who calibrated the mining unit."
+        },
+        {
+          "signature": "getLastExtractionPosition()",
+          "description": "Returns the position of the last calibration excavation, in world coordinates."
+        },
+        {
+          "signature": "getLastExtractionTime()",
+          "description": "Returns the time in seconds since the last calibration of the mining unit."
+        },
+        {
+          "signature": "getOptimalRate()",
+          "description": "Returns the optimal calibration rate of the mining unit."
+        },
+        {
+          "signature": "getOrePools()",
+          "description": "Returns the list of available ore pools"
+        },
+        {
+          "signature": "getProductionRate()",
+          "description": "Returns the current production rate of the mining unit."
+        },
+        {
+          "signature": "getRemainingTime()",
+          "description": "Returns the remaining time of the current batch extraction process."
+        },
+        {
+          "signature": "getState()",
+          "description": "Returns the current state of the mining unit"
+        },
+        {
+          "signature": "onCalibrated(oreId, rate, amount) event",
+          "description": "Emitted when the mining unit is calibrated."
+        },
+        {
+          "signature": "onCompleted(oreId, amount) event",
+          "description": "Emitted when the mining unit complete a batch."
+        },
+        {
+          "signature": "onStarted(id) event",
+          "description": "Emitted when the mining unit started a new extraction process."
+        },
+        {
+          "signature": "onStateChanged(status) event",
+          "description": "Emitted when the mining unit state is changed."
+        },
+        {
+          "signature": "onStopped() event",
+          "description": "Emitted when the mining unit stopped the extraction process."
+        }
+      ]
+    },
+    {
+      "element": "Plasma extractor",
+      "methods": [
+        {
+          "signature": "getPlasmaPools()",
+          "description": "Returns the list of available plasma pools"
+        },
+        {
+          "signature": "getRemainingTime()",
+          "description": "Returns the remaining time of the current batch extraction process"
+        },
+        {
+          "signature": "getState()",
+          "description": "Returns the current status of the plasma extractor"
+        },
+        {
+          "signature": "onCompleted() event",
+          "description": "Emitted when the plasma extractor complete a batch"
+        },
+        {
+          "signature": "onStarted() event",
+          "description": "Emitted when the plasma extractor started a new extraction process"
+        },
+        {
+          "signature": "onStateChanged(status) event",
+          "description": "Emitted when the plasma extractor state is changed"
+        },
+        {
+          "signature": "onStopped() event",
+          "description": "Emitted when the plasma extractor stopped the extraction process"
+        }
+      ]
+    },
+    {
+      "element": "Pressure tile",
+      "methods": [
+        {
+          "signature": "isDown()",
+          "description": "Checks if the pressure tile is down"
+        },
+        {
+          "signature": "onPressed() event",
+          "description": "Emitted when the pressure tile is pressed"
+        },
+        {
+          "signature": "onReleased() event",
+          "description": "Emitter when the pressure tile is released"
+        }
+      ]
+    },
+    {
+      "element": "Radar",
+      "methods": [
+        {
+          "signature": "getConstructAngularSpeed(id)",
+          "description": "Returns the angular speed of the given construct to your construct, if identified for owned dynamic constructs"
+        },
+        {
+          "signature": "getConstructCoreSize(id)",
+          "description": "Returns the core size of the given construct"
+        },
+        {
+          "signature": "getConstructDistance(id)",
+          "description": "Returns the distance to the given construct"
+        },
+        {
+          "signature": "getConstructIds()",
+          "description": "Returns the list of construct IDs in the scan range"
+        },
+        {
+          "signature": "getConstructInfos(id)",
+          "description": "Returns a table of working elements on the given construction, if identified for owned dynamic constructs"
+        },
+        {
+          "signature": "getConstructKind(id)",
+          "description": "Return the kind of the given construct"
+        },
+        {
+          "signature": "getConstructMass(id)",
+          "description": "Returns the mass of the given construct, if identified for owned dynamic constructs"
+        },
+        {
+          "signature": "getConstructName(id)",
+          "description": "Return the name of the given construct, if defined"
+        },
+        {
+          "signature": "getConstructOwnerEntity(id)",
+          "description": "Returns a table with id of the owner entity (player or organization) of the given construct, if in range and if active transponder tags match for owned dynamic constructs."
+        },
+        {
+          "signature": "getConstructPos(id)",
+          "description": "Returns the position of the given construct in construct local coordinates, if active transponder tags match for owned dynamic constructs"
+        },
+        {
+          "signature": "getConstructRadialSpeed(id)",
+          "description": "Returns the radial speed of the given construct to your construct, if identified for owned dynamic constructs"
+        },
+        {
+          "signature": "getConstructs()",
+          "description": "Returns the list of constructs in a given range according to the current sort method"
+        },
+        {
+          "signature": "getConstructSize(id)",
+          "description": "Return the size of the bounding box of the given construct, if in range"
+        },
+        {
+          "signature": "getConstructSpeed(id)",
+          "description": "Returns the speed of the given construct, if identified for owned dynamic constructs"
+        },
+        {
+          "signature": "getConstructVelocity(id)",
+          "description": "Returns the velocity vector of the given construct in construct local coordinates, if identified and if active transponder tags match for owned dynamic constructs"
+        },
+        {
+          "signature": "getConstructWorldPos(id)",
+          "description": "Returns the position of the given construct in world coordinates, if in range and if active transponder tags match for owned dynamic constructs"
+        },
+        {
+          "signature": "getConstructWorldVelocity(id)",
+          "description": "Returns the velocity vector of the given construct in world coordinates, if identified and if active transponder tags match for owned dynamic constructs"
+        },
+        {
+          "signature": "getIdentifiedConstructIds()",
+          "description": "Returns the list of identified construct IDs"
+        },
+        {
+          "signature": "getIdentifyRanges()",
+          "description": "Returns ranges to identify a target based on its core size"
+        },
+        {
+          "signature": "getOperationalState()",
+          "description": "Checks if the radar is operational"
+        },
+        {
+          "signature": "getRange()",
+          "description": "Returns the scan range of the radar"
+        },
+        {
+          "signature": "getSortMethod()",
+          "description": "Gets the sort method for construct data"
+        },
+        {
+          "signature": "getTargetId()",
+          "description": "Returns the ID of the target construct"
+        },
+        {
+          "signature": "getThreatRateFrom(id)",
+          "description": "Returns the threat rate the given construct is for your construct"
+        },
+        {
+          "signature": "getThreatRateTo(id)",
+          "description": "Returns the threat rate your construct is for the given construct"
+        },
+        {
+          "signature": "hasMatchingTransponder(id)",
+          "description": "Returns whether the target has an active Transponder with matching tags"
+        },
+        {
+          "signature": "isConstructAbandoned(id)",
+          "description": "Returns 1 if the given construct was abandoned"
+        },
+        {
+          "signature": "isConstructIdentified(id)",
+          "description": "Returns 1 if the given construct is identified"
+        },
+        {
+          "signature": "onEnter(id) event",
+          "description": "Emitted when a Construct enters the scan range of the radar"
+        },
+        {
+          "signature": "onIdentified(id) event",
+          "description": "Emitted when a construct is identified"
+        },
+        {
+          "signature": "onLeave(id) event",
+          "description": "Emitted when a construct leaves the range of the radar"
+        },
+        {
+          "signature": "setSortMethod(method)",
+          "description": "Sets the sort method for construct data"
+        }
+      ]
+    },
+    {
+      "element": "Receiver",
+      "methods": [
+        {
+          "signature": "getChannels()",
+          "description": "Returns the channels list"
+        },
+        {
+          "signature": "getRange()",
+          "description": "Returns the receiver range"
+        },
+        {
+          "signature": "hasChannel(channel)",
+          "description": "Checks if the given channel exists in the receiver channels list"
+        },
+        {
+          "signature": "onReceived(channel, message) event",
+          "description": "Emitted when a message is received on any channel defined on the element"
+        },
+        {
+          "signature": "setChannelList(channels)",
+          "description": "Set the channels list"
+        }
+      ]
+    },
+    {
+      "element": "Rocket Engines",
+      "methods": [
+        {
+          "signature": "activate()",
+          "description": "Start the engine at full power (works only when run inside a cockpit or under remote control)"
+        },
+        {
+          "signature": "deactivate()",
+          "description": "Stops the engine (works only when run inside a cockpit or under remote control)"
+        },
+        {
+          "signature": "enableTorque(state)",
+          "description": "Sets the torque generation state on the engine"
+        },
+        {
+          "signature": "getCurrentFuelRate()",
+          "description": "Returns the engine fuel consumption rate per newton of thrust delivered per second"
+        },
+        {
+          "signature": "getCurrentMaxThrust()",
+          "description": "Returns the maximal thrust the engine can deliver at the moment, which might depend on various conditions like atmospheric density, obstruction, orientation, etc. The actual thrust will be anything below this maxThrust, which defines the current max capability of the engine"
+        },
+        {
+          "signature": "getCurrentMinThrust()",
+          "description": "Returns the minimal thrust the engine can deliver at the moment (can be more than zero), which will depend on various conditions like atmospheric density, obstruction, orientation, etc. Most of the time, this will be 0 but it can be greater than 0."
+        },
+        {
+          "signature": "getFuelConsumption()",
+          "description": "Returns the current fuel consumption rate"
+        },
+        {
+          "signature": "getFuelId()",
+          "description": "Returns the item ID of the fuel currently used by the engine"
+        },
+        {
+          "signature": "getFuelRateEfficiency()",
+          "description": "Returns the ratio between the current fuel rate and the theoretical nominal fuel rate"
+        },
+        {
+          "signature": "getFuelTankId()",
+          "description": "Returns the local ID of the fueltank linked to the engine"
+        },
+        {
+          "signature": "getMaxThrust()",
+          "description": "Returns the maximal thrust the engine can deliver in principle, under optimal conditions Note that the actual current min thrust will most of the time be less than max thrust"
+        },
+        {
+          "signature": "getMaxThrustEfficiency()",
+          "description": "Returns the ratio between the current maximum thrust and the optimal maximum thrust"
+        },
+        {
+          "signature": "getObstructionFactor()",
+          "description": "Returns the obstruction ratio of the engine exhaust by Elements and Voxels. The more obstructed the engine is, the less properly it will work. Try to fix your design if this is the case"
+        },
+        {
+          "signature": "getTags()",
+          "description": "Returns the tags of the engine"
+        },
+        {
+          "signature": "getThrust()",
+          "description": "Returns the current thrust of the engine"
+        },
+        {
+          "signature": "getThrustAxis()",
+          "description": "Returns the engine thrust direction in construct local coordinates"
+        },
+        {
+          "signature": "getTorqueAxis()",
+          "description": "Returns the engine torque axis in construct local coordinates"
+        },
+        {
+          "signature": "getWarmupTime()",
+          "description": "Returns the T50; the time needed for the engine to reach 50% of its maximal thrust (all engines do not instantly reach the thrust that is set for them, but they can take time to \"warm up\" to the final value)"
+        },
+        {
+          "signature": "getWorldThrustAxis()",
+          "description": "Returns the engine thrust direction in world coordinates"
+        },
+        {
+          "signature": "getWorldTorqueAxis()",
+          "description": "Returns the engine torque axis in world coordinates"
+        },
+        {
+          "signature": "hasFunctionalFuelTank()",
+          "description": "Checks if the engine linked to a functional Fuel Tank (not broken or colliding)?"
+        },
+        {
+          "signature": "isActive()",
+          "description": "Checks if the engine is active"
+        },
+        {
+          "signature": "isIgnoringTags()",
+          "description": "Checks if the engine is ignoring default tags"
+        },
+        {
+          "signature": "isOutOfFuel()",
+          "description": "Checks if the engine out of fuel"
+        },
+        {
+          "signature": "isTorqueEnabled()",
+          "description": "Checks if the torque generation is enabled on the engine"
+        },
+        {
+          "signature": "setTags(tags,ignore)",
+          "description": "Set the tags of the engine"
+        },
+        {
+          "signature": "setThrust(thrust)",
+          "description": "Set the thrust of the engine"
+        },
+        {
+          "signature": "toggle()",
+          "description": "Toggle the state of the engine"
+        }
+      ]
+    },
+    {
+      "element": "Screen",
+      "methods": [
+        {
+          "signature": "activate()",
+          "description": "Switch on the screen"
+        },
+        {
+          "signature": "clearScriptOutput()",
+          "description": "Set the screen render script output to the empty string"
+        },
+        {
+          "signature": "deactivate()",
+          "description": "Switch off the screen"
+        },
+        {
+          "signature": "getMouseState()",
+          "description": "Returns the state of the mouse click"
+        },
+        {
+          "signature": "getMouseX()",
+          "description": "Returns the x-coordinate of the position pointed at in the screen"
+        },
+        {
+          "signature": "getMouseY()",
+          "description": "Returns the y-coordinate of the position pointed at in the screen"
+        },
+        {
+          "signature": "getScriptOutput()",
+          "description": "Get the screen render script output"
+        },
+        {
+          "signature": "isActive()",
+          "description": "Checks if the screen is on"
+        },
+        {
+          "signature": "onMouseDown(x,y) event",
+          "description": "Emitted when the player starts a click on the screen"
+        },
+        {
+          "signature": "onMouseUp(x,y) event",
+          "description": "Emitted when the player releases a click on the screen"
+        },
+        {
+          "signature": "onOutputChanged(output) event",
+          "description": "Emitted when the output of the screen is changed"
+        },
+        {
+          "signature": "setCenteredText(text)",
+          "description": "Displays the given text centered in the screen with a font to maximize its visibility"
+        },
+        {
+          "signature": "setRenderScript(script)",
+          "description": "Set the screen render script, switching the screen to native rendering mode"
+        },
+        {
+          "signature": "setScriptInput(input)",
+          "description": "Defines the input of the screen rendering script, which will be automatically defined during the execution of Lua"
+        },
+        {
+          "signature": "toggle()",
+          "description": "Toggle the state of the screen"
+        }
+      ]
+    },
+    {
+      "element": "Shield generator",
+      "methods": [
+        {
+          "signature": "activate()",
+          "description": "Activate the shield"
+        },
+        {
+          "signature": "deactivate()",
+          "description": "Deactivate the shield"
+        },
+        {
+          "signature": "getMaxShieldHitpoints()",
+          "description": "Returns the maximal hit points of the shield"
+        },
+        {
+          "signature": "getResistances()",
+          "description": "Returns distribution of resistance pool over resistance types"
+        },
+        {
+          "signature": "getResistancesCooldown()",
+          "description": "Returns time after which adjusting resistances is possible again"
+        },
+        {
+          "signature": "getResistancesMaxCooldown()",
+          "description": "Returns maximal cooldown between adjusting resistances"
+        },
+        {
+          "signature": "getResistancesPool()",
+          "description": "Returns total resistance pool that may be distributed"
+        },
+        {
+          "signature": "getResistancesRemaining()",
+          "description": "Returns the remaining amount of the resistance pool that can be distributed"
+        },
+        {
+          "signature": "getShieldHitpoints()",
+          "description": "Returns the current hit points of the shield"
+        },
+        {
+          "signature": "getStressHitpoints()",
+          "description": "Returns stress, that is the total hit points of recent weapon impacts after applying resistance"
+        },
+        {
+          "signature": "getStressHitpointsRaw()",
+          "description": "Returns stress, that is the total hit points of recent weapon impacts without resistance"
+        },
+        {
+          "signature": "getStressRatio()",
+          "description": "Returns ratio per damage type of recent weapon impacts after applying resistance"
+        },
+        {
+          "signature": "getStressRatioRaw()",
+          "description": "Returns ratio per damage type of recent weapon impacts without resistance"
+        },
+        {
+          "signature": "getVentingCooldown()",
+          "description": "Returns time after which venting is possible again"
+        },
+        {
+          "signature": "getVentingMaxCooldown()",
+          "description": "Returns maximal cooldown between venting"
+        },
+        {
+          "signature": "isActive()",
+          "description": "Returns the activation state of the shield"
+        },
+        {
+          "signature": "isVenting()",
+          "description": "Check whether venting is in progress"
+        },
+        {
+          "signature": "onAbsorbed(hitpoints, rawHitpoints) event",
+          "description": "Emitted when the shield absorbed incoming damage"
+        },
+        {
+          "signature": "onDown() event",
+          "description": "Emitted when the shield hit points reached 0 due to damages"
+        },
+        {
+          "signature": "onRestored() event",
+          "description": "Emitted when the shield hit points were fully restored"
+        },
+        {
+          "signature": "onToggled(active) event",
+          "description": "Emitted when we started or stopped the shield generator"
+        },
+        {
+          "signature": "onVenting(active, restoredHitpoints) event",
+          "description": "Emitted when venting started, stopped or restored some hitpoints"
+        },
+        {
+          "signature": "setResistances(antimatter,electromagnetic,kinetic,thermic)",
+          "description": "Distribute the resistance pool according to damage type"
+        },
+        {
+          "signature": "startVenting()",
+          "description": "Activate shield venting to restore hit points"
+        },
+        {
+          "signature": "stopVenting()",
+          "description": "Stop shield venting"
+        },
+        {
+          "signature": "toggle()",
+          "description": "Toggle the state of the shield"
+        }
+      ]
+    },
+    {
+      "element": "Space Brakes",
+      "methods": [
+        {
+          "signature": "activate()",
+          "description": "Start the brake at full power (works only when run inside a cockpit or under remote control)"
+        },
+        {
+          "signature": "deactivate()",
+          "description": "Stops the brake (works only when run inside a cockpit or under remote control)"
+        },
+        {
+          "signature": "getCurrentMaxThrust()",
+          "description": "Returns the maximal thrust the brake can deliver at the moment, which might depend on various conditions like atmospheric density, obstruction, orientation, etc. The actual thrust will be anything below this maxThrust, which defines the current max capability of the brake"
+        },
+        {
+          "signature": "getCurrentMinThrust()",
+          "description": "Returns the minimal thrust the brake can deliver at the moment (can be more than zero), which will depend on various conditions like atmospheric density, obstruction, orientation, etc Most of the time, this will be 0 but it can be greater than 0, particularly for Ailerons, in which case the actual thrust will be at least equal to minThrust"
+        },
+        {
+          "signature": "getMaxThrust()",
+          "description": "Returns the maximal thrust the brake can deliver in principle, under optimal conditions Note that the actual current min thrust will most of the time be less than max thrust"
+        },
+        {
+          "signature": "getMaxThrustEfficiency()",
+          "description": "Returns the ratio between the current maximum thrust and the optimal maximum thrust"
+        },
+        {
+          "signature": "getObstructionFactor()",
+          "description": "Returns the obstruction ratio of the engine exhaust by Elements and Voxels. The more obstructed the engine is, the less properly it will work. Try to fix your design if this is the case"
+        },
+        {
+          "signature": "getTags()",
+          "description": "Returns the tags of the engine"
+        },
+        {
+          "signature": "getThrust()",
+          "description": "Returns the current thrust of the brake"
+        },
+        {
+          "signature": "getThrustAxis()",
+          "description": "Returns the brake thrust direction in construct local coordinates"
+        },
+        {
+          "signature": "getWorldThrustAxis()",
+          "description": "Returns the brake thrust direction in world coordinates"
+        },
+        {
+          "signature": "isActive()",
+          "description": "Checks if the brake is active"
+        },
+        {
+          "signature": "isIgnoringTags()",
+          "description": "Checks if the engine is ignoring default tags"
+        },
+        {
+          "signature": "setTags(tags,ignore)",
+          "description": "Set the tags of the engine"
+        },
+        {
+          "signature": "setThrust(thrust)",
+          "description": "Set the thrust of the brake. Note that brakes can generate a force only in the movement opposite direction"
+        },
+        {
+          "signature": "toggle()",
+          "description": "Toggle the state of the brake"
+        }
+      ]
+    },
+    {
+      "element": "Space Engines",
+      "methods": [
+        {
+          "signature": "activate()",
+          "description": "Start the engine at full power (works only when run inside a cockpit or under remote control)"
+        },
+        {
+          "signature": "deactivate()",
+          "description": "Stops the engine (works only when run inside a cockpit or under remote control)"
+        },
+        {
+          "signature": "enableTorque(state)",
+          "description": "Sets the torque generation state on the engine"
+        },
+        {
+          "signature": "getCurrentFuelRate()",
+          "description": "Returns the engine fuel consumption rate per newton of thrust delivered per second"
+        },
+        {
+          "signature": "getCurrentMaxThrust()",
+          "description": "Returns the maximal thrust the engine can deliver at the moment, which might depend on various conditions like atmospheric density, obstruction, orientation, etc. The actual thrust will be anything below this maxThrust, which defines the current max capability of the engine"
+        },
+        {
+          "signature": "getCurrentMinThrust()",
+          "description": "Returns the minimal thrust the engine can deliver at the moment (can be more than zero), which will depend on various conditions like atmospheric density, obstruction, orientation, etc. Most of the time, this will be 0 but it can be greater than 0."
+        },
+        {
+          "signature": "getFuelConsumption()",
+          "description": "Returns the current fuel consumption rate"
+        },
+        {
+          "signature": "getFuelId()",
+          "description": "Returns the item ID of the fuel currently used by the engine"
+        },
+        {
+          "signature": "getFuelRateEfficiency()",
+          "description": "Returns the ratio between the current fuel rate and the theoretical nominal fuel rate"
+        },
+        {
+          "signature": "getFuelTankId()",
+          "description": "Returns the local ID of the fueltank linked to the engine"
+        },
+        {
+          "signature": "getMaxThrust()",
+          "description": "Returns the maximal thrust the engine can deliver in principle, under optimal conditions Note that the actual current min thrust will most of the time be less than max thrust"
+        },
+        {
+          "signature": "getMaxThrustEfficiency()",
+          "description": "Returns the ratio between the current maximum thrust and the optimal maximum thrust"
+        },
+        {
+          "signature": "getObstructionFactor()",
+          "description": "Returns the obstruction ratio of the engine exhaust by Elements and Voxels. The more obstructed the engine is, the less properly it will work. Try to fix your design if this is the case"
+        },
+        {
+          "signature": "getTags()",
+          "description": "Returns the tags of the engine"
+        },
+        {
+          "signature": "getThrust()",
+          "description": "Returns the current thrust of the engine"
+        },
+        {
+          "signature": "getThrustAxis()",
+          "description": "Returns the engine thrust direction in construct local coordinates"
+        },
+        {
+          "signature": "getTorqueAxis()",
+          "description": "Returns the engine torque axis in construct local coordinates"
+        },
+        {
+          "signature": "getWarmupTime()",
+          "description": "Returns the T50; the time needed for the engine to reach 50% of its maximal thrust (all engines do not instantly reach the thrust that is set for them, but they can take time to \"warm up\" to the final value)"
+        },
+        {
+          "signature": "getWorldThrustAxis()",
+          "description": "Returns the engine thrust direction in world coordinates"
+        },
+        {
+          "signature": "getWorldTorqueAxis()",
+          "description": "Returns the engine torque axis in world coordinates"
+        },
+        {
+          "signature": "hasFunctionalFuelTank()",
+          "description": "Checks if the engine linked to a functional Fuel Tank (not broken or colliding)?"
+        },
+        {
+          "signature": "isActive()",
+          "description": "Checks if the engine is active"
+        },
+        {
+          "signature": "isIgnoringTags()",
+          "description": "Checks if the engine is ignoring default tags"
+        },
+        {
+          "signature": "isOutOfFuel()",
+          "description": "Checks if the engine out of fuel"
+        },
+        {
+          "signature": "isTorqueEnabled()",
+          "description": "Checks if the torque generation is enabled on the engine"
+        },
+        {
+          "signature": "setTags(tags,ignore)",
+          "description": "Set the tags of the engine"
+        },
+        {
+          "signature": "setThrust(thrust)",
+          "description": "Set the thrust of the engine"
+        },
+        {
+          "signature": "toggle()",
+          "description": "Toggle the state of the engine"
+        }
+      ]
+    },
+    {
+      "element": "Telemeter",
+      "methods": [
+        {
+          "signature": "getMaxDistance()",
+          "description": "Returns the max distance from which an obstacle can be detected (default is 100m)"
+        },
+        {
+          "signature": "getRayAxis()",
+          "description": "Returns telemeter raycast axis in local construct coordinates"
+        },
+        {
+          "signature": "getRayOrigin()",
+          "description": "Returns telemeter raycast origin in local construct coordinates"
+        },
+        {
+          "signature": "getRayWorldAxis()",
+          "description": "Returns telemeter raycast axis in world coordinates"
+        },
+        {
+          "signature": "getRayWorldOrigin()",
+          "description": "Returns telemeter raycast origin in world coordinates"
+        },
+        {
+          "signature": "raycast()",
+          "description": "Emits a raycast from the telemeter, returns a raycastHit object"
+        }
+      ]
+    },
+    {
+      "element": "Transponder",
+      "methods": [
+        {
+          "signature": "activate()",
+          "description": "Activate the transponder"
+        },
+        {
+          "signature": "deactivate()",
+          "description": "Deactivate the transponder"
+        },
+        {
+          "signature": "getTags()",
+          "description": "Returns the tag list"
+        },
+        {
+          "signature": "isActive()",
+          "description": "Checks if the transponder is active"
+        },
+        {
+          "signature": "onToggled(active) event",
+          "description": "Emitted when the transponder is started or stopped"
+        },
+        {
+          "signature": "setTags(tags)",
+          "description": "Set the tags list with up to 8 entries"
+        },
+        {
+          "signature": "toggle()",
+          "description": "Toggle the state of the transponder"
+        }
+      ]
+    },
+    {
+      "element": "Vertical Boosters",
+      "methods": [
+        {
+          "signature": "activate()",
+          "description": "Start the engine at full power (works only when run inside a cockpit or under remote control)"
+        },
+        {
+          "signature": "deactivate()",
+          "description": "Stops the engine (works only when run inside a cockpit or under remote control)"
+        },
+        {
+          "signature": "enableTorque(state)",
+          "description": "Sets the torque generation state on the engine"
+        },
+        {
+          "signature": "getCurrentFuelRate()",
+          "description": "Returns the engine fuel consumption rate per newton of thrust delivered per second"
+        },
+        {
+          "signature": "getCurrentMaxThrust()",
+          "description": "Returns the maximal thrust the engine can deliver at the moment, which might depend on various conditions like atmospheric density, obstruction, orientation, etc. The actual thrust will be anything below this maxThrust, which defines the current max capability of the engine"
+        },
+        {
+          "signature": "getCurrentMinThrust()",
+          "description": "Returns the minimal thrust the engine can deliver at the moment (can be more than zero), which will depend on various conditions like atmospheric density, obstruction, orientation, etc. Most of the time, this will be 0 but it can be greater than 0."
+        },
+        {
+          "signature": "getDistance()",
+          "description": "Returns the distance to the first object detected in the direction of the thrust"
+        },
+        {
+          "signature": "getFuelConsumption()",
+          "description": "Returns the current fuel consumption rate"
+        },
+        {
+          "signature": "getFuelId()",
+          "description": "Returns the item ID of the fuel currently used by the engine"
+        },
+        {
+          "signature": "getFuelRateEfficiency()",
+          "description": "Returns the ratio between the current fuel rate and the theoretical nominal fuel rate"
+        },
+        {
+          "signature": "getFuelTankId()",
+          "description": "Returns the local ID of the fueltank linked to the engine"
+        },
+        {
+          "signature": "getMaxDistance()",
+          "description": "Returns the maximum functional distance from the ground"
+        },
+        {
+          "signature": "getMaxThrust()",
+          "description": "Returns the maximal thrust the engine can deliver in principle, under optimal conditions Note that the actual current min thrust will most of the time be less than max thrust"
+        },
+        {
+          "signature": "getMaxThrustEfficiency()",
+          "description": "Returns the ratio between the current maximum thrust and the optimal maximum thrust"
+        },
+        {
+          "signature": "getObstructionFactor()",
+          "description": "Returns the obstruction ratio of the engine exhaust by Elements and Voxels. The more obstructed the engine is, the less properly it will work. Try to fix your design if this is the case"
+        },
+        {
+          "signature": "getTags()",
+          "description": "Returns the tags of the engine"
+        },
+        {
+          "signature": "getThrust()",
+          "description": "Returns the current thrust of the engine"
+        },
+        {
+          "signature": "getThrustAxis()",
+          "description": "Returns the engine thrust direction in construct local coordinates"
+        },
+        {
+          "signature": "getTorqueAxis()",
+          "description": "Returns the engine torque axis in construct local coordinates"
+        },
+        {
+          "signature": "getWarmupTime()",
+          "description": "Returns the T50; the time needed for the engine to reach 50% of its maximal thrust (all engines do not instantly reach the thrust that is set for them, but they can take time to \"warm up\" to the final value)"
+        },
+        {
+          "signature": "getWorldThrustAxis()",
+          "description": "Returns the engine thrust direction in world coordinates"
+        },
+        {
+          "signature": "getWorldTorqueAxis()",
+          "description": "Returns the engine torque axis in world coordinates"
+        },
+        {
+          "signature": "hasFunctionalFuelTank()",
+          "description": "Checks if the engine linked to a functional Fuel Tank (not broken or colliding)?"
+        },
+        {
+          "signature": "isActive()",
+          "description": "Checks if the engine is active"
+        },
+        {
+          "signature": "isIgnoringTags()",
+          "description": "Checks if the engine is ignoring default tags"
+        },
+        {
+          "signature": "isOutOfFuel()",
+          "description": "Checks if the engine out of fuel"
+        },
+        {
+          "signature": "isTorqueEnabled()",
+          "description": "Checks if the torque generation is enabled on the engine"
+        },
+        {
+          "signature": "setTags(tags,ignore)",
+          "description": "Set the tags of the engine"
+        },
+        {
+          "signature": "setThrust(thrust)",
+          "description": "Set the thrust of the engine"
+        },
+        {
+          "signature": "toggle()",
+          "description": "Toggle the state of the engine"
+        }
+      ]
+    },
+    {
+      "element": "Warp Drive",
+      "methods": [
+        {
+          "signature": "getAvailableWarpCells()",
+          "description": "Returns the quantity of warp cells available in the linked container"
+        },
+        {
+          "signature": "getContainerId()",
+          "description": "Returns the local id of the container linked to the warp drive"
+        },
+        {
+          "signature": "getDestination()",
+          "description": "Returns the construct ID of the current warp destination"
+        },
+        {
+          "signature": "getDestinationName()",
+          "description": "Returns the name of the current warp destination construct"
+        },
+        {
+          "signature": "getDistance()",
+          "description": "Returns the distance to the current warp destination"
+        },
+        {
+          "signature": "getRequiredWarpCells()",
+          "description": "Returns the quantity of warp cells required to warp to the warp destination set"
+        },
+        {
+          "signature": "getStatus()",
+          "description": "Returns the current status of the warp drive"
+        },
+        {
+          "signature": "initiate()",
+          "description": "Initiate the warp jump process"
+        }
+      ]
+    },
+    {
+      "element": "Weapon",
+      "methods": [
+        {
+          "signature": "getAmmo()",
+          "description": "Returns the item id of the currently equipped ammo"
+        },
+        {
+          "signature": "getAmmoCount()",
+          "description": "Returns the current amount of remaining ammunition"
+        },
+        {
+          "signature": "getBaseDamage()",
+          "description": "Returns the base weapon damage"
+        },
+        {
+          "signature": "getContainerId()",
+          "description": "Returns the local id of the container linked to the weapon"
+        },
+        {
+          "signature": "getCycleTime()",
+          "description": "Returns the weapon cycle time"
+        },
+        {
+          "signature": "getHitProbability()",
+          "description": "Returns the current hit probability of the weapon for the current target"
+        },
+        {
+          "signature": "getMagazineVolume()",
+          "description": "Returns the magazine volume"
+        },
+        {
+          "signature": "getMaxAmmo()",
+          "description": "Returns the maximum amount of ammunition the weapon can carry"
+        },
+        {
+          "signature": "getMaxDistance()",
+          "description": "Returns the maximum distance to target"
+        },
+        {
+          "signature": "getOperationalState()",
+          "description": "Checks if the weapon is operational"
+        },
+        {
+          "signature": "getOptimalAimingCone()",
+          "description": "Returns the optimal aim cone"
+        },
+        {
+          "signature": "getOptimalDistance()",
+          "description": "Returns the optimal distance to target"
+        },
+        {
+          "signature": "getOptimalTracking()",
+          "description": "Returns the optimal tracking rate"
+        },
+        {
+          "signature": "getReloadTime()",
+          "description": "Returns the weapon reload time"
+        },
+        {
+          "signature": "getStatus()",
+          "description": "Returns the current weapon status"
+        },
+        {
+          "signature": "getTargetId()",
+          "description": "Returns the id of the current target construct of the weapon"
+        },
+        {
+          "signature": "getUnloadTime()",
+          "description": "Returns the weapon unload time"
+        },
+        {
+          "signature": "isOutOfAmmo()",
+          "description": "Checks if the weapon is out of ammo"
+        },
+        {
+          "signature": "onDestroyed(targetId) event",
+          "description": "Emitted when the weapon target has been destroyed"
+        },
+        {
+          "signature": "onElementDestroyed(targetId,itemId) event",
+          "description": "Emitted when an element on the weapon target has been destroyed"
+        },
+        {
+          "signature": "onHit(targetId,damage) event",
+          "description": "Emitted when the weapon has hit"
+        },
+        {
+          "signature": "onMissed(targetId) event",
+          "description": "Emitted when the weapon has missed its target"
+        },
+        {
+          "signature": "onReload(id) event",
+          "description": "Emitted when the weapon starts reloading"
+        },
+        {
+          "signature": "onReloaded(id) event",
+          "description": "Emitted when the weapon has reloaded"
+        }
+      ]
+    }
+  ],
+  "luaNamespaces": [
+    {
+      "element": "Construct",
+      "methods": [
+        {
+          "signature": "dock(id)",
+          "description": "Sends a request to dock to the given construct. Limited to piloting controllers"
+        },
+        {
+          "signature": "forceDeboard(id)",
+          "description": "Sends a request to deboard a player or surrogate with the given id"
+        },
+        {
+          "signature": "forceInterruptVRSession(id)",
+          "description": "Sends a request to interrupt the surrogate session of a player with the given id"
+        },
+        {
+          "signature": "forceUndock(id)",
+          "description": "Sends a request to undock a construct with the given id"
+        },
+        {
+          "signature": "getAbsoluteVelocity()",
+          "description": "The construct's absolute linear velocity, in construct local coordinates"
+        },
+        {
+          "signature": "getAcceleration()",
+          "description": "The construct's linear acceleration, in construct local coordinates"
+        },
+        {
+          "signature": "getAngularAcceleration()",
+          "description": "The construct's angular acceleration, in construct local coordinates"
+        },
+        {
+          "signature": "getAngularVelocity()",
+          "description": "The construct's angular velocity, in construct local coordinates"
+        },
+        {
+          "signature": "getBoardedInVRStationAvatarMass(id)",
+          "description": "Returns the mass of the given player if in VR station on board the construct"
+        },
+        {
+          "signature": "getBoardedPlayerMass(id)",
+          "description": "Returns the mass of the given player or surrogate if it is on board the construct"
+        },
+        {
+          "signature": "getBoundingBoxCenter()",
+          "description": "Returns the position of the center of bounding box of the construct in local construct coordinates"
+        },
+        {
+          "signature": "getBoundingBoxSize()",
+          "description": "Returns the size of the bounding box of the construct"
+        },
+        {
+          "signature": "getCenterOfMass()",
+          "description": "Returns the position of the center of mass of the construct, in local construct coordinates"
+        },
+        {
+          "signature": "getCloseParents()",
+          "description": "Returns the list of ids of nearby constructs, on which the construct can dock"
+        },
+        {
+          "signature": "getClosestParent()",
+          "description": "Returns the id of the nearest constructs, on which the construct can dock"
+        },
+        {
+          "signature": "getCreator()",
+          "description": "Returns the creator entity"
+        },
+        {
+          "signature": "getCrossSection()",
+          "description": "Returns the construct's cross sectional surface in the current direction of movement"
+        },
+        {
+          "signature": "getCurrentBrake()",
+          "description": "Returns the current braking force generated by construct brakes"
+        },
+        {
+          "signature": "getDistanceToSafeZone()",
+          "description": "Returns the distance between the construct and the nearest safe zone"
+        },
+        {
+          "signature": "getDockedConstructMass(id)",
+          "description": "Returns the mass of the given construct if it is docked to the construct"
+        },
+        {
+          "signature": "getDockedConstructs()",
+          "description": "Returns the list of IDs of constructs docked to the construct"
+        },
+        {
+          "signature": "getDockingMode()",
+          "description": "Returns the current docking mode"
+        },
+        {
+          "signature": "getForward()",
+          "description": "Returns the forward vector of the construct coordinates system"
+        },
+        {
+          "signature": "getFrictionBurnSpeed()",
+          "description": "Returns the speed at which your construct will suffer damage due to friction with the air"
+        },
+        {
+          "signature": "getId()",
+          "description": "Returns the construct unique ID"
+        },
+        {
+          "signature": "getInertialMass()",
+          "description": "Returns the inertial mass of the construct, calculated as 1/3 of the trace of the inertial tensor"
+        },
+        {
+          "signature": "getInertialTensor()",
+          "description": "Returns the inertial tensor of the construct"
+        },
+        {
+          "signature": "getMass()",
+          "description": "Returns the mass of the construct"
+        },
+        {
+          "signature": "getMaxAngularSpeed()",
+          "description": "Returns the max angular speed"
+        },
+        {
+          "signature": "getMaxBrake()",
+          "description": "Returns the maximum braking force that can currently be generated by the construct brakes"
+        },
+        {
+          "signature": "getMaxSpeed()",
+          "description": "Returns the max speed along current moving direction"
+        },
+        {
+          "signature": "getMaxSpeedPerAxis()",
+          "description": "Returns the max speed per axis"
+        },
+        {
+          "signature": "getMaxThrustAlongAxis(taglist, CRefAxis)",
+          "description": "Returns the construct max kinematics parameters in both atmo and space range, in newtons. Kinematics parameters designate here the maximal positive and negative base force the construct is capable of producing along the chosen CRefAxis. In practice, this gives you an estimate of the maximum thrust your ship is capable of producing in space or in atmosphere, as well as the max reverse thrust. These are theoretical estimates and correspond with the addition of the max thrust along the corresponding axis. It might not reflect the accurate current max thrust capacity of your ship, which depends on various local conditions (velocity, atmospheric density, orientation, obstruction, engine damage, etc) This is typically used in conjunction with the Control Unit throttle to setup the desired forward acceleration"
+        },
+        {
+          "signature": "getName()",
+          "description": "Returns the name of the construct"
+        },
+        {
+          "signature": "getOrientationForward()",
+          "description": "Returns the forward direction vector of the active orientation unit, in construct local coordinates"
+        },
+        {
+          "signature": "getOrientationRight()",
+          "description": "Returns the right direction vector of the active orientation unit, in construct local coordinates"
+        },
+        {
+          "signature": "getOrientationUnitId()",
+          "description": "Returns the local id of the current active orientation unit (core unit or gyro unit)"
+        },
+        {
+          "signature": "getOrientationUp()",
+          "description": "Returns the up direction vector of the active orientation unit, in construct local coordinates"
+        },
+        {
+          "signature": "getOwner()",
+          "description": "Returns the owner entity"
+        },
+        {
+          "signature": "getParent()",
+          "description": "Returns the id of the parent construct of our active construct"
+        },
+        {
+          "signature": "getParentForward()",
+          "description": "Returns the construct's parent forward direction vector, in local coordinates"
+        },
+        {
+          "signature": "getParentPosition()",
+          "description": "Returns the position of the construct's parent when docked in local coordinates"
+        },
+        {
+          "signature": "getParentRight()",
+          "description": "Returns the construct's parent right direction vector, in construct local coordinates"
+        },
+        {
+          "signature": "getParentUp()",
+          "description": "Returns the construct's parent up direction vector, in construct local coordinates"
+        },
+        {
+          "signature": "getParentWorldForward()",
+          "description": "Returns the construct's parent forward direction vector, in world coordinates"
+        },
+        {
+          "signature": "getParentWorldPosition()",
+          "description": "Returns the position of the construct's parent when docked in world coordinates"
+        },
+        {
+          "signature": "getParentWorldRight()",
+          "description": "Returns the construct's parent right direction vector, in world coordinates"
+        },
+        {
+          "signature": "getParentWorldUp()",
+          "description": "Returns the construct's parent up direction vector, in world coordinates"
+        },
+        {
+          "signature": "getPlayersOnBoard()",
+          "description": "Returns the list of player IDs on board the construct"
+        },
+        {
+          "signature": "getPlayersOnBoardInVRStation()",
+          "description": "Returns the list of player ids on board the construct inside a VR Station"
+        },
+        {
+          "signature": "getPvPTimer()",
+          "description": "Returns the current construct PvP timer state"
+        },
+        {
+          "signature": "getRight()",
+          "description": "Returns the right vector of the construct coordinates system"
+        },
+        {
+          "signature": "getSchematicContainerId()",
+          "description": "Returns the local id of the current active schematic container. nil if none has been declared"
+        },
+        {
+          "signature": "getSize()",
+          "description": "Returns the size of the building zone of the construct"
+        },
+        {
+          "signature": "getTotalMass()",
+          "description": "Returns the total mass of the construct (voxels, elements, avatars and docked constructs)"
+        },
+        {
+          "signature": "getUp()",
+          "description": "Returns the up direction vector of the construct coordinates system"
+        },
+        {
+          "signature": "getVelocity()",
+          "description": "The construct's linear velocity, relative to its parent, in construct local coordinates"
+        },
+        {
+          "signature": "getWarpState()",
+          "description": "Returns the current warp state"
+        },
+        {
+          "signature": "getWorldAbsoluteVelocity()",
+          "description": "The construct's absolute linear velocity, in world coordinates"
+        },
+        {
+          "signature": "getWorldAcceleration()",
+          "description": "The construct's linear acceleration, in world coordinates"
+        },
+        {
+          "signature": "getWorldAirFrictionAcceleration()",
+          "description": "Returns the acceleration generated by air resistance"
+        },
+        {
+          "signature": "getWorldAirFrictionAngularAcceleration()",
+          "description": "Returns the acceleration torque generated by air resistance"
+        },
+        {
+          "signature": "getWorldAngularAcceleration()",
+          "description": "The construct's angular acceleration, in world coordinates"
+        },
+        {
+          "signature": "getWorldAngularVelocity()",
+          "description": "The construct's angular velocity, in world coordinates"
+        },
+        {
+          "signature": "getWorldCenterOfMass()",
+          "description": "Returns the position of the center of mass of the construct, in world coordinates"
+        },
+        {
+          "signature": "getWorldForward()",
+          "description": "Returns the forward direction vector of the construct, in world coordinates"
+        },
+        {
+          "signature": "getWorldOrientationForward()",
+          "description": "Returns the forward direction vector of the active orientation unit, in world coordinates"
+        },
+        {
+          "signature": "getWorldOrientationRight()",
+          "description": "Returns the right direction vector of the active orientation unit, in world coordinates"
+        },
+        {
+          "signature": "getWorldOrientationUp()",
+          "description": "Returns the up direction vector of the active orientation unit, in world coordinates"
+        },
+        {
+          "signature": "getWorldPosition()",
+          "description": "Returns the world position of the construct"
+        },
+        {
+          "signature": "getWorldRight()",
+          "description": "Returns the right direction vector of the construct, in world coordinates"
+        },
+        {
+          "signature": "getWorldUp()",
+          "description": "Returns the up direction vector of the construct, in world coordinates"
+        },
+        {
+          "signature": "getWorldVelocity()",
+          "description": "The construct's linear velocity, relative to its parent, in world coordinates"
+        },
+        {
+          "signature": "isConstructDocked(id)",
+          "description": "Checks if the given construct is docked to the construct"
+        },
+        {
+          "signature": "isInPvPZone()",
+          "description": "Checks if the construct is in PvP zone"
+        },
+        {
+          "signature": "isPlayerBoarded(id)",
+          "description": "Checks if the given player is on board in the construct"
+        },
+        {
+          "signature": "isPlayerBoardedInVRStation(id)",
+          "description": "Returns 1 if the given player is boarded to the construct inside a VR Station"
+        },
+        {
+          "signature": "isWarping()",
+          "description": "Checks if the construct is currently warping"
+        },
+        {
+          "signature": "onConstructDocked(id) event",
+          "description": "Emitted when another construct docks this construct"
+        },
+        {
+          "signature": "onDocked(id) event",
+          "description": "Emitted when the construct becomes docked"
+        },
+        {
+          "signature": "onPlayerBoarded(id) event",
+          "description": "Emitted when a player or surrogate boards the construct"
+        },
+        {
+          "signature": "onPvPTimer(active) event",
+          "description": "Emitted when the PvP timer started or elapsed"
+        },
+        {
+          "signature": "onUndocked(id) event",
+          "description": "Emitted when the construct is undocked"
+        },
+        {
+          "signature": "onVRStationEntered(id) event",
+          "description": "Emitted when a player enters a VR Station"
+        },
+        {
+          "signature": "setDockingMode(mode)",
+          "description": "Sets the docking mode"
+        },
+        {
+          "signature": "undock()",
+          "description": "Sends a request to undock the construct. Limited to piloting controllers"
+        }
+      ]
+    },
+    {
+      "element": "Library",
+      "methods": [
+        {
+          "signature": "getPointOnScreen(worldPos)",
+          "description": "Returns the position of the given point in world coordinates system, on the game screen"
+        },
+        {
+          "signature": "systemResolution2(c1,c2,c0)",
+          "description": "Solve the 2D linear system M*x=c0 where M is defined by its column vectors c1,c2"
+        },
+        {
+          "signature": "systemResolution3(c1,c2,c3,c0)",
+          "description": "Solve the 3D linear system M*x=c0 where M is defined by its column vectors c1,c2,c3"
+        }
+      ]
+    },
+    {
+      "element": "Player",
+      "methods": [
+        {
+          "signature": "freeze(state)",
+          "description": "Freezes the player movements, liberating the associated movement keys to be used by the script. Note that this function is disabled if the player is not running the script explicitly (pressing F on the Control Unit, vs. via a plug signal)"
+        },
+        {
+          "signature": "getAbsoluteVelocity()",
+          "description": "Returns the absolute velocity vector of the player, in world coordinates"
+        },
+        {
+          "signature": "getForward()",
+          "description": "Returns the forward direction vector of the player, in construct local coordinates"
+        },
+        {
+          "signature": "getHeadPosition()",
+          "description": "Returns the position of the head of the player's character, in construct local coordinates"
+        },
+        {
+          "signature": "getId()",
+          "description": "Return the ID of the player"
+        },
+        {
+          "signature": "getMass()",
+          "description": "Returns the player mass"
+        },
+        {
+          "signature": "getName()",
+          "description": "Returns the player name"
+        },
+        {
+          "signature": "getNanopackMass()",
+          "description": "Returns the player's nanopack content mass"
+        },
+        {
+          "signature": "getNanopackMaxVolume()",
+          "description": "Returns the player's nanopack maximum volume"
+        },
+        {
+          "signature": "getNanopackVolume()",
+          "description": "Returns the player's nanopack content volume"
+        },
+        {
+          "signature": "getOrgIds()",
+          "description": "Returns the list of organization IDs of the player"
+        },
+        {
+          "signature": "getParent()",
+          "description": "Returns the identifier of the construct to which the player is parented"
+        },
+        {
+          "signature": "getPlanet()",
+          "description": "Returns the id of the planet the player is located on"
+        },
+        {
+          "signature": "getPosition()",
+          "description": "Returns the position of the player, in construct local coordinates"
+        },
+        {
+          "signature": "getRight()",
+          "description": "Returns the right direction vector of the player, in construct local coordinates"
+        },
+        {
+          "signature": "getSeatId()",
+          "description": "Returns the local ID of the seat on which the player is sitting"
+        },
+        {
+          "signature": "getUp()",
+          "description": "Returns the up direction vector of the player, in construct local coordinates"
+        },
+        {
+          "signature": "getVelocity()",
+          "description": "Returns the velocity vector of the player, in construct local coordinates"
+        },
+        {
+          "signature": "getWorldForward()",
+          "description": "Returns the forward direction vector of the player, in world coordinates"
+        },
+        {
+          "signature": "getWorldHeadPosition()",
+          "description": "Returns the position of the head of the player's character, in world coordinates"
+        },
+        {
+          "signature": "getWorldPosition()",
+          "description": "Returns the position of the player, in world coordinates"
+        },
+        {
+          "signature": "getWorldRight()",
+          "description": "Returns the right direction vector of the player, in world coordinates"
+        },
+        {
+          "signature": "getWorldUp()",
+          "description": "Returns the up direction vector of the player, in world coordinates"
+        },
+        {
+          "signature": "getWorldVelocity()",
+          "description": "Returns the velocity vector of the player, in world coordinates"
+        },
+        {
+          "signature": "hasDRMAutorization()",
+          "description": "Checks if the player has DRM autorization to the control unit"
+        },
+        {
+          "signature": "isFrozen()",
+          "description": "Checks if the player movements are frozen"
+        },
+        {
+          "signature": "isHeadlightOn()",
+          "description": "Returns the state of the headlight of the player"
+        },
+        {
+          "signature": "isJetpackOn()",
+          "description": "Checks if the player's jetpack is on"
+        },
+        {
+          "signature": "isParentedTo(id)",
+          "description": "Checks if the player is parented to the given construct"
+        },
+        {
+          "signature": "isSeated()",
+          "description": "Checks if the player is seated"
+        },
+        {
+          "signature": "isSprinting()",
+          "description": "Checks if the player is currently sprinting"
+        },
+        {
+          "signature": "onParentChanged(oldId, newId) event",
+          "description": "Emitted when the player parent change"
+        },
+        {
+          "signature": "setHeadlightOn(state)",
+          "description": "Set the state of the headlight of the player"
+        }
+      ]
+    },
+    {
+      "element": "System",
+      "methods": [
+        {
+          "signature": "addDataToWidget(dataId, widgetId)",
+          "description": "Add data to widget. Note that this function is disabled if the player is not running the script explicitly (pressing F on the Control Unit, vs. via a plug signal)."
+        },
+        {
+          "signature": "clearWaypoint(notify)",
+          "description": "Clear the active destination waypoint. (only in explicit runs)'"
+        },
+        {
+          "signature": "createData(dataJson)",
+          "description": "Create data. Note that this function is disabled if the player is not running the script explicitly (pressing F on the Control Unit, vs. via a plug signal)."
+        },
+        {
+          "signature": "createWidget(panelId, type)",
+          "description": "Create an empty widget and add it to a panel. Note that this function is disabled if the player is not running the script explicitly (pressing F on the Control Unit, vs. via a plug signal)."
+        },
+        {
+          "signature": "createWidgetPanel(label)",
+          "description": "Create an empty panel. Note that this function is disabled if the player is not running the script explicitly (pressing F on the Control Unit, vs. via a plug signal)."
+        },
+        {
+          "signature": "destroyData(dataId)",
+          "description": "Destroy the data. Note that this function is disabled if the player is not running the script explicitly (pressing F on the Control Unit, vs. via a plug signal)."
+        },
+        {
+          "signature": "destroyWidget(widgetId)",
+          "description": "Destroy the widget. Note that this function is disabled if the player is not running the script explicitly (pressing F on the Control Unit, vs. via a plug signal)."
+        },
+        {
+          "signature": "destroyWidgetPanel(panelId)",
+          "description": "Destroy the panel. Note that this function is disabled if the player is not running the script explicitly (pressing F on the Control Unit, vs. via a plug signal)."
+        },
+        {
+          "signature": "getActionControllerKeyName(actionName)",
+          "description": "Return the controller button currently bound to the given action. Useful to display tips."
+        },
+        {
+          "signature": "getActionKeyName(actionName)",
+          "description": "Return the key currently bound to the given action. Useful to display tips."
+        },
+        {
+          "signature": "getActionUpdateDeltaTime()",
+          "description": "Return delta time of action updates (to use in ActionLoop)"
+        },
+        {
+          "signature": "getArkTime()",
+          "description": "Return the current time since the arrival of the Arkship on September 30th, 2017"
+        },
+        {
+          "signature": "getAxisValue(index)",
+          "description": "Return the current value of the axis"
+        },
+        {
+          "signature": "getCameraForward()",
+          "description": "Returns the forward direction vector of the active camera, in construct local coordinates."
+        },
+        {
+          "signature": "getCameraHorizontalFov()",
+          "description": "Return the current value of the player's horizontal field of view"
+        },
+        {
+          "signature": "getCameraMode()",
+          "description": "Returns the active camera mode."
+        },
+        {
+          "signature": "getCameraPos()",
+          "description": "Returns the position of the camera, in construct local coordinates."
+        },
+        {
+          "signature": "getCameraRight()",
+          "description": "Returns the right direction vector of the active camera, in construct local coordinates."
+        },
+        {
+          "signature": "getCameraUp()",
+          "description": "Returns the up direction vector of the active camera, in construct local coordinates."
+        },
+        {
+          "signature": "getCameraVerticalFov()",
+          "description": "Return the current value of the player's vertical field of view"
+        },
+        {
+          "signature": "getCameraWorldForward()",
+          "description": "Returns the forward direction vector of the active camera, in world coordinates."
+        },
+        {
+          "signature": "getCameraWorldPos()",
+          "description": "Returns the position of the camera, in world coordinates."
+        },
+        {
+          "signature": "getCameraWorldRight()",
+          "description": "Returns the right direction vector of the active camera, in world coordinates."
+        },
+        {
+          "signature": "getCameraWorldUp()",
+          "description": "Returns the up direction vector of the active camera, in world coordinates."
+        },
+        {
+          "signature": "getControlDeviceForwardInput()",
+          "description": "Return the mouse input for the ship control action (forward/backward)"
+        },
+        {
+          "signature": "getControlDeviceLeftRightInput()",
+          "description": "Return the mouse input for the ship control action (right/left)"
+        },
+        {
+          "signature": "getControlDeviceYawInput()",
+          "description": "Return the mouse input for the ship control action (yaw right/left)"
+        },
+        {
+          "signature": "getInstructionCount()",
+          "description": "Returns the current instruction count during this tick"
+        },
+        {
+          "signature": "getInstructionLimit()",
+          "description": "Returns the instruction limit before the CPU overload"
+        },
+        {
+          "signature": "getItem(id)",
+          "description": "Return the item table corresponding to the given item ID."
+        },
+        {
+          "signature": "getLocale()",
+          "description": "Return the locale in which the game is currently running"
+        },
+        {
+          "signature": "getMouseDeltaX()",
+          "description": "Return the current value of the mouse delta X"
+        },
+        {
+          "signature": "getMouseDeltaY()",
+          "description": "Return the current value of the mouse delta Y"
+        },
+        {
+          "signature": "getMousePosX()",
+          "description": "Return the current value of the mouse pos X"
+        },
+        {
+          "signature": "getMousePosY()",
+          "description": "Return the current value of the mouse pos Y"
+        },
+        {
+          "signature": "getMouseSensitivity()",
+          "description": "Return the value of mouse sensitivity game setting"
+        },
+        {
+          "signature": "getMouseWheel()",
+          "description": "Return the current value of the mouse wheel"
+        },
+        {
+          "signature": "getOrganization(id)",
+          "description": "Returns the corresponding organization to the given organization id, if known, e.g. broadcasted by a transponder"
+        },
+        {
+          "signature": "getPlayerName(id)",
+          "description": "Return the name of the given player, if in range of visibility or broadcasted by a transponder"
+        },
+        {
+          "signature": "getPlayerWorldPos(id)",
+          "description": "Return the world position of the given player, if in range of visibility"
+        },
+        {
+          "signature": "getRawAxisValue(index)",
+          "description": "Return the current raw value of the axis, unfiltered by the dead zone."
+        },
+        {
+          "signature": "getRecipes(id)",
+          "description": "Returns a list of recipes producing the given item from its id."
+        },
+        {
+          "signature": "getScreenHeight()",
+          "description": "Return the current value of the screen height"
+        },
+        {
+          "signature": "getScreenWidth()",
+          "description": "Return the current value of the screen width"
+        },
+        {
+          "signature": "getThrottleInputFromMouseWheel()",
+          "description": "Return the current value of the mouse wheel (for the throttle speedUp/speedDown action)"
+        },
+        {
+          "signature": "getUtcOffset()",
+          "description": "Return the time offset between local timezone and UTC"
+        },
+        {
+          "signature": "getUtcTime()",
+          "description": "Return the current time since January 1st, 1970."
+        },
+        {
+          "signature": "getWaypointFromPlayerPos()",
+          "description": "Return the player's world position as a waypoint string, starting with '::pos' (only in explicit runs)"
+        },
+        {
+          "signature": "isAmmoItem(itemId)",
+          "description": "Checks if the given item is an ammo item"
+        },
+        {
+          "signature": "isBlueprintItem(itemId)",
+          "description": "Checks if the given item is a blueprint"
+        },
+        {
+          "signature": "isClassItem(itemId)",
+          "description": "Checks if the given item is a class item"
+        },
+        {
+          "signature": "isElementItem(itemId)",
+          "description": "Checks if the given item is an element"
+        },
+        {
+          "signature": "isFirstPerson()",
+          "description": "Checks if the active camera is in first person view."
+        },
+        {
+          "signature": "isItemInClass(itemId, className)",
+          "description": "Checks if the given item is an item of the class given by its class name"
+        },
+        {
+          "signature": "isItemInClassId(itemId, classId)",
+          "description": "Checks if the item is an item of the class identified by its item id"
+        },
+        {
+          "signature": "isMaterialItem(itemId)",
+          "description": "Checks if the given item is a material"
+        },
+        {
+          "signature": "isPackageItem(itemId)",
+          "description": "Checks if the given item is a package"
+        },
+        {
+          "signature": "isPartItem(itemId)",
+          "description": "Checks if the given item is a part"
+        },
+        {
+          "signature": "isPlayingSound()",
+          "description": "Check if a sound is playing"
+        },
+        {
+          "signature": "isRawMaterialItem(itemId)",
+          "description": "Checks if the given item is a raw material"
+        },
+        {
+          "signature": "isSchematicItem(itemId)",
+          "description": "Checks if the given item is a schematic"
+        },
+        {
+          "signature": "isScrapItem(itemId)",
+          "description": "Checks if the given item is a scrap item"
+        },
+        {
+          "signature": "isViewLocked()",
+          "description": "Return the lock state of the mouse free look"
+        },
+        {
+          "signature": "lockView(state)",
+          "description": "Lock or unlock the mouse free look. Note that this function is disabled if the player is not running the script explicitly (pressing F on the Control Unit, vs. via a plug signal)."
+        },
+        {
+          "signature": "onActionLoop(action) event",
+          "description": "Emitted at each update as long as the action is maintained"
+        },
+        {
+          "signature": "onActionStart(action) event",
+          "description": "Emitted when an action starts"
+        },
+        {
+          "signature": "onActionStop(action) event",
+          "description": "Emitted when an action stops"
+        },
+        {
+          "signature": "onCameraChanged(mode) event",
+          "description": "Emitted when the player changes the camera mode."
+        },
+        {
+          "signature": "onFlush() event",
+          "description": "Physics update. Do not use to put anything else by a call to updateICC on your Control Unit, as many functions are disabled when called from 'onFlush'. This is only to update the physics (engine control, etc.), not to setup some gameplay code."
+        },
+        {
+          "signature": "onInputText(text) event",
+          "description": "A new message has been entered in the Lua tab of the chat, acting like a command line interface"
+        },
+        {
+          "signature": "onUpdate() event",
+          "description": "Game update event. This is equivalent to a timer set at 0 seconds, as updates will go as fast as the FPS can go"
+        },
+        {
+          "signature": "playSound(filePath)",
+          "description": "Play a sound file from your audio folder (located in \"My documents/NQ/DualUniverse/audio\"). Only one sound can be played at a time."
+        },
+        {
+          "signature": "print(msg)",
+          "description": "Print the given message in the Lua chat channel. Note that this function is disabled if the player is not running the script explicitly (pressing F on the Control Unit, vs. via a plug signal)."
+        },
+        {
+          "signature": "removeDataFromWidget(dataId, widgetId)",
+          "description": "Remove data from widget. Note that this function is disabled if the player is not running the script explicitly (pressing F on the Control Unit, vs. via a plug signal)."
+        },
+        {
+          "signature": "setScreen(content)",
+          "description": "Set the content of the Control Unit custom screen with some HTML code. Note that this function is disabled if the player is not running the script explicitly (pressing F on the Control Unit, vs. via a plug signal)."
+        },
+        {
+          "signature": "setWaypoint(waypointStr, notify)",
+          "description": "Set a waypoint at the destination described by the waypoint string, of the form '::pos{...}' (only in explicit runs)"
+        },
+        {
+          "signature": "showHelper(show)",
+          "description": "Set the visibility of the helper top menu. Note that this function is disabled if the player is not running the script explicitly (pressing F on the Control Unit, vs. via a plug signal)."
+        },
+        {
+          "signature": "showScreen(bool)",
+          "description": "Control the display of the Control Unit custom screen, where you can define customized display information in HTML. Note that this function is disabled if the player is not running the script explicitly (pressing F on the Control Unit, vs. via a plug signal)."
+        },
+        {
+          "signature": "stopSound()",
+          "description": "Stop the current playing sound"
+        },
+        {
+          "signature": "updateData(dataId, dataJson)",
+          "description": "Update JSON associated to data. Note that this function is disabled if the player is not running the script explicitly (pressing F on the Control Unit, vs. via a plug signal)."
+        }
+      ]
+    }
+  ],
+  "renderScriptApi": [
+    {
+      "element": "RenderScript API",
+      "methods": [
+        {
+          "signature": "addBezier(layer, x1, y1, x2, y2, x3, y3)",
+          "description": "Add a quadratic bezier curve to the given layer. Supported properties: shadow, strokeColor, strokeWidth"
+        },
+        {
+          "signature": "addBox(layer, x, y, sx, sy)",
+          "description": "Add a box to the given layer. Supported properties: fillColor, rotation, shadow, strokeColor, strokeWidth"
+        },
+        {
+          "signature": "addBoxRounded(layer, x, y, sx, sy, r)",
+          "description": "Add a rounded box to the given layer. Supported properties: fillColor, rotation, shadow, strokeColor, strokeWidth"
+        },
+        {
+          "signature": "addCircle(layer, x, y, r)",
+          "description": "Add a circle to the given layer. Supported properties: fillColor, shadow, strokeColor, strokeWidth"
+        },
+        {
+          "signature": "addImage(layer, image, x, y, sx, sy)",
+          "description": "Add an image to the given layer. Supported properties: fillColor, rotation"
+        },
+        {
+          "signature": "addImageSub(layer, image, x, y, sx, sy, subX, subY, subSx, subSy)",
+          "description": "Add a sub-region of an image to the given layer. Supported properties: fillColor, rotation"
+        },
+        {
+          "signature": "addLine(layer, x1, y1, x2, y2)",
+          "description": "Add a line to the given layer. Supported properties: rotation, shadow, strokeColor, strokeWidth"
+        },
+        {
+          "signature": "addQuad(layer, x1, y1, x2, y2, x3, y3, x4, y4)",
+          "description": "Add a quadrilateral to the given layer. Supported properties: fillColor, rotation, shadow, strokeColor, strokeWidth"
+        },
+        {
+          "signature": "addText(layer, font, text, x, y)",
+          "description": "Add a string of text to the given layer. See setNextTextAlign for information on controlling text anchoring. Supported properties: fillColor, shadow, strokeColor, strokeWidth"
+        },
+        {
+          "signature": "addTriangle(layer, x1, y1, x2, y2, x3, y3)",
+          "description": "Add a triangle to the given layer. Supported properties: fillColor, rotation, shadow, strokeColor, strokeWidth"
+        },
+        {
+          "signature": "createLayer()",
+          "description": "Create a new layer that will be rendered on top of all previously-created layers"
+        },
+        {
+          "signature": "getAvailableFontCount()",
+          "description": "Return the number of fonts available to be used by render script"
+        },
+        {
+          "signature": "getAvailableFontName(index)",
+          "description": "Return the name of the nth available font"
+        },
+        {
+          "signature": "getCursor()",
+          "description": "Return the screen location that is currently raycasted by the player"
+        },
+        {
+          "signature": "getCursorDown()",
+          "description": "Return the status of the mouse button"
+        },
+        {
+          "signature": "getCursorPressed()",
+          "description": "Return the status of the mouse button"
+        },
+        {
+          "signature": "getCursorReleased()",
+          "description": "Return the status of the mouse button"
+        },
+        {
+          "signature": "getDeltaTime()",
+          "description": "Return the time, in seconds, since the screen was last updated. Useful for creating timing-based animations. Since screens are not guaranteed to be updated at any specific time interval it is more reliable to update animations based on this timer than based on a frame counter."
+        },
+        {
+          "signature": "getFontMetrics(font)",
+          "description": "Return informational metrics of a font Can be used for advanced text layout, although setNextTextAlign is all that is needed in most use cases."
+        },
+        {
+          "signature": "getFontSize(font)",
+          "description": "Return the currently-set size for the given font"
+        },
+        {
+          "signature": "getImageSize(image)",
+          "description": "Return the width and height of an image."
+        },
+        {
+          "signature": "getInput()",
+          "description": "Return the screen's current input string"
+        },
+        {
+          "signature": "getLocale()",
+          "description": "Return the locale in which the game is currently running"
+        },
+        {
+          "signature": "getRenderCost()",
+          "description": "Return the current render cost of the script"
+        },
+        {
+          "signature": "getRenderCostMax()",
+          "description": "Return the current render cost limit"
+        },
+        {
+          "signature": "getResolution()",
+          "description": "Return the screen's current resolution. Ideally, your render scripts should be written to adapt to the resolution, as it may change in the future"
+        },
+        {
+          "signature": "getTextBounds(font, text)",
+          "description": "Compute and return the bounding box of a text string rendered with a specific font"
+        },
+        {
+          "signature": "getTime()",
+          "description": "Return the time, in seconds, relative to the first execution"
+        },
+        {
+          "signature": "isImageLoaded(image)",
+          "description": "Return the load status of an image. Note that render scripts will still render even when not all images are loaded (the call to addImage will silently fail). You can use this function to do something else instead, such as draw a placeholder or loading bar while images load"
+        },
+        {
+          "signature": "loadFont(name, size)",
+          "description": "Load a font to be used with addText"
+        },
+        {
+          "signature": "loadImage(url)",
+          "description": "Load an image to be used with addImage from the given URL"
+        },
+        {
+          "signature": "logMessage(message)",
+          "description": "Log a message for debugging purposes. If the \"enable output in Lua channel\" box is checked on the editor panel for the given screen, the message will be displayed in the Lua channel, otherwise, this function does nothing. The checkbox is off by default, so you must explicitly enable this on a screen to see debug output"
+        },
+        {
+          "signature": "requestAnimationFrame(frames)",
+          "description": "Request that this screen should be redrawn in a certain number of frames. A screen that requires highly-fluid animations should call requestAnimationFrame(1) before it returns. Usage of this function has a significant performance impact on the screen unit system, so scripts should try to request updates as infrequently as possible. A screen with unchanging (static) contents should not call this function at all."
+        },
+        {
+          "signature": "setBackgroundColor(r, g, b)",
+          "description": "Set the background color of the screen"
+        },
+        {
+          "signature": "setDefaultFillColor(layer, shapeType, r, g, b, a)",
+          "description": "Set the default fill color for all subsequent shapes of the given type added to the given layer"
+        },
+        {
+          "signature": "setDefaultRotation(layer, shapeType, rotation)",
+          "description": "Set the default rotation for all subsequent shapes of the given type added to the given layer"
+        },
+        {
+          "signature": "setDefaultShadow(layer, shapeType, radius, r, g, b, a)",
+          "description": "Set the default shadow for all subsequent shapes of the given type added to the given layer"
+        },
+        {
+          "signature": "setDefaultStrokeColor(layer, shapeType, r, g, b, a)",
+          "description": "Set the default stroke color for all subsequent shapes of the given type added to the given layer"
+        },
+        {
+          "signature": "setDefaultStrokeWidth(layer, shapeType, strokeWidth)",
+          "description": "Set the default stroke width for all subsequent shapes of the given type added to the given layer"
+        },
+        {
+          "signature": "setDefaultTextAlign(layer, alignH, alignV)",
+          "description": "Set the default text alignment of all subsequent text strings on the given layer"
+        },
+        {
+          "signature": "setFontSize(font, size)",
+          "description": "Set the size at which a font will render. Impacts all subsequent font-related calls, including addText, getFontMetrics, and getTextBounds."
+        },
+        {
+          "signature": "setLayerClipRect(layer, x, y, sx, sy)",
+          "description": "Set a clipping rectangle applied to the layer as a whole. Layer contents that fall outside the clipping rectangle will not be rendered, and those that are partially within the rectangle will be 'clipped' against it. The clipping rectangle is applied before layer transformations. Note that clipped contents still count toward the render cost."
+        },
+        {
+          "signature": "setLayerOrigin(layer, x, y)",
+          "description": "Set the transform origin of a layer; layer scaling and rotation are applied relative to this origin"
+        },
+        {
+          "signature": "setLayerRotation(layer, rotation)",
+          "description": "Set a rotation applied to the layer as a whole, relative to the layer's transform origin"
+        },
+        {
+          "signature": "setLayerScale(layer, sx, sy)",
+          "description": "Set a scale factor applied to the layer as a whole, relative to the layer's transform origin. Scale factors are multiplicative, so that a scale >1 enlarges the size of the layer, 1.0 does nothing, and <1 reduces the size of the layer."
+        },
+        {
+          "signature": "setLayerTranslation(layer, tx, ty)",
+          "description": "Set a translation applied to the layer as a whole"
+        },
+        {
+          "signature": "setNextFillColor(layer, r, g, b, a)",
+          "description": "Set the fill color of the next rendered shape on the given layer; has no effect on shapes that do not support a fill color"
+        },
+        {
+          "signature": "setNextRotation(layer, rotation)",
+          "description": "Set the rotation of the next rendered shape on the given layer; has no effect on shapes that do not support rotation"
+        },
+        {
+          "signature": "setNextRotationDegrees(layer, rotation)",
+          "description": "Set the rotation of the next rendered shape on the given layer; has no effect on shapes that do not support rotation"
+        },
+        {
+          "signature": "setNextShadow(layer, radius, r, g, b, a)",
+          "description": "Set the shadow of the next rendered shape on the given layer; has no effect on shapes that do not support a shadow"
+        },
+        {
+          "signature": "setNextStrokeColor(layer, r, g, b, a)",
+          "description": "Set the stroke color of the next rendered shape on the given layer; has no effect on shapes that do not support a stroke color"
+        },
+        {
+          "signature": "setNextStrokeWidth(layer, strokeWidth)",
+          "description": "Set the stroke width of the next rendered shape on the given layer; has no effect on shapes that do not support a stroke width"
+        },
+        {
+          "signature": "setNextTextAlign(layer, alignH, alignV)",
+          "description": "Set the text alignment of the next rendered text string on the given layer. By default, text is anchored horizontally on the left, and vertically on the baseline"
+        },
+        {
+          "signature": "setOutput(output)",
+          "description": "Set the script's output string, which can be retrieved via a programming board with the screen unit API function getScriptOutput"
+        }
+      ]
+    }
+  ],
+  "referenceTopics": [
+    {
+      "topic": "Animation"
+    },
+    {
+      "topic": "Coordinate Space"
+    },
+    {
+      "topic": "Fonts"
+    },
+    {
+      "topic": "Introduction"
+    },
+    {
+      "topic": "Render Cost"
+    },
+    {
+      "topic": "Render Order"
+    },
+    {
+      "topic": "ShapeType List"
+    }
+  ]
+}

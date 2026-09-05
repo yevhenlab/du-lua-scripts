@@ -1,0 +1,20 @@
+<svg id="icon_probe_point" style="enable-background:new 0 0 300 300;" viewBox="0 0 300 300" x="0px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" y="0px">
+        <polygon points="60.6,116.3 37,116.3 37,33.4 119.8,33.4 119.8,57.1 60.6,57.1 ">
+        </polygon>
+        <polygon points="257.6,263.3 174.8,263.3 174.8,239.7 234,239.7 234,180.5 257.6,180.5 ">
+        </polygon>
+        <polygon points="119.8,263.3 37,263.3 37,180.5 60.6,180.5 60.6,239.7 119.8,239.7 ">
+        </polygon>
+        <polygon points="257.6,116.3 234,116.3 234,57.1 174.8,57.1 174.8,33.4 257.6,33.4 ">
+        </polygon>
+        <rect height="62.7" width="23.7" x="135.5" y="3.6">
+        </rect>
+        <rect height="62.7" width="23.7" x="135.5" y="234.6">
+        </rect>
+        <rect height="23.7" width="62.7" x="1.1" y="136.6">
+        </rect>
+        <rect height="23.7" width="62.7" x="236.3" y="136">
+        </rect>
+        <rect height="41.9" width="41.9" x="129.1" y="127.4">
+        </rect>
+      </svg>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="icon_statistic" viewBox="0 0 36.68 36.68">
+        <g data-name="Layer 2" id="Layer_2">
+          <g data-name="Calque 1" id="Calque_1">
+            <polygon points="18.01 36.68 12.79 31.36 13.49 30.68 18.02 35.3 22.43 30.97 23.11 31.66 18.01 36.68">
+            </polygon>
+            <polygon points="30.3 24.6 29.62 23.91 35.3 18.34 18.34 1.38 1.37 18.34 6.18 23.25 5.49 23.93 0 18.34 18.34 0 36.68 18.34 30.3 24.6">
+            </polygon>
+            <rect height="1.46" width="21.18" x="7.1" y="27.87">
+            </rect>
+            <rect height="3.3" transform="translate(32.49 10.95) rotate(90)" width="10.17" x="5.69" y="20.07">
+            </rect>
+            <rect height="3.3" transform="translate(38.54 7.4) rotate(90)" width="7.66" x="11.74" y="21.32">
+            </rect>
+            <rect height="3.3" transform="translate(38.29 -2.46) rotate(90)" width="17.78" x="11.48" y="16.26">
+            </rect>
+            <rect height="3.3" transform="translate(48.15 -2.2) rotate(90)" width="7.66" x="21.35" y="21.32">
+            </rect>
+          </g>
+        </g>
+      </svg>
