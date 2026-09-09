@@ -9,7 +9,7 @@ function SARN.applicationCaption()
 end
 
 function SARN.startupCaption()
-    return SARN.applicationCaption() .. string.char(32, 118, 48, 46, 48, 46, 49, 51)
+    return SARN.applicationCaption() .. string.char(32, 118, 48, 46, 49, 46, 48)
 end
 
 function SARN.call(element, methodName, ...)
@@ -21,6 +21,9 @@ end
 function SARN.components(value)
     if type(value) == "table" then
         return tonumber(value.x or value[1]), tonumber(value.y or value[2]), tonumber(value.z or value[3])
+    elseif type(value) == "string" then
+        local x, y, z = value:match("::pos%{0,%s*0,%s*([+-]?%d*%.?%d+),%s*([+-]?%d*%.?%d+),%s*([+-]?%d*%.?%d+)%}")
+        if x and y and z then return tonumber(x), tonumber(y), tonumber(z) end
     end
     return nil, nil, nil
 end
@@ -34,7 +37,8 @@ function SARN.distance(from, to)
 end
 
 function SARN.escapeHtml(value)
-    return tostring(value):gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
+    local escaped = tostring(value):gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
+    return escaped
 end
 
 function SARN.formatWholeWithSeparators(value)
