@@ -1,9 +1,9 @@
 -- Loads the known-location catalog and starts the adaptive SARN renderer.
--- Library dependencies: SARNConstructCatalog and SARNRenderer.
+-- Library dependencies: SARNLocationCatalog and SARNRenderer.
 adaptArRedrawFrequencyToFps = true --export -- adapt AR redraw frequency to FPS
 maximumArRedrawPercentOfFps = 100 --export -- cap AR redraw rate to 1-100% of FPS
 
-local loaded = SARNConstructCatalog.initialize()
+local loaded = SARNLocationCatalog.initialize()
 local initializeLiby4performance = require("liby.liby4performance")
 SARNPerformance = initializeLiby4performance(unit, system, {
     adaptArRedrawFrequencyToFps = adaptArRedrawFrequencyToFps,
@@ -22,9 +22,9 @@ system.print("")
 system.print("[SARN] " .. SARN.startupCaption())
 if loaded then
     system.print("[SARN] Known-place catalog loaded: "
-        .. tostring(SARNConstructCatalog.getStatistics().total) .. " locations.")
+        .. tostring(SARNLocationCatalog.getStatistics().total) .. " locations.")
 else
-    system.print("[SARN] Could not load required Lua file 'sarn/constructs.lua'.")
+    system.print("[SARN] Could not load required Lua file 'sarn/locations.lua'.")
 end
 local started, startError = pcall(SARNPerformance.start)
 if not started then

@@ -1,6 +1,6 @@
 # Settlers AR Navigator
 
-SARN renders AR assistance only for known, established places stored in `sarn/constructs.lua`. It does not scan Radar contacts or use a Databank.
+SARN renders AR assistance only for known, established places stored in `sarn/locations.lua`. It does not scan Radar contacts or use a Databank.
 
 Each visible place is shown as a dot with:
 
@@ -17,7 +17,7 @@ Each visible place is shown as a dot with:
 .\install-local.ps1
 ```
 
-3. Edit `<DU Root>/Game/data/lua/sarn/constructs.lua`. Supported fields are `id`, `name`, `ownerId`, `coordinate`, `color`, `label`, `coreSize`, and optional `size`.
+3. Edit `<DU Root>/Game/data/lua/sarn/locations.lua` for standard locations or `locations-settlers.lua` for Settlers destinations. Each location uses `name`, `label`, `kind`, `coordinate`, `ownerId`, `atlasBody`, and `areaRadius`; optional `icon` and `excluded` fields override the kind icon or suppress its AR object.
 4. Build and paste the generated Programming Board configuration:
 
 ```powershell

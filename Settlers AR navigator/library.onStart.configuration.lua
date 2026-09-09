@@ -1,9 +1,10 @@
 -- Defines SARN's exported visual distances, colours, and target dimensions.
 -- Library dependencies: none.
-markerColor = "96,220,255" --export
+markerColor = "232,238,240" --export
 highlightMarkerColor = "255,230,40" --export
 
 SARNConfiguration = {
     markerColor = markerColor,
-    highlightMarkerColor = highlightMarkerColor
+    highlightMarkerColor = highlightMarkerColor,
+    childColorPaleFactor = 0.15
 }

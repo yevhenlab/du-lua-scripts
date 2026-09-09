@@ -27,7 +27,7 @@ $slots['-5'] = New-Slot 'library'
 $handlers = @(
     (New-Handler 0 '-5' 'onStart()' (Read-LuaFile 'library.onStart.configuration.lua'))
     (New-Handler 1 '-5' 'onStart()' (Read-LuaFile 'library.onStart.helpers.lua'))
-    (New-Handler 2 '-5' 'onStart()' (Read-LuaFile 'library.onStart.constructCatalog.lua'))
+    (New-Handler 2 '-5' 'onStart()' (Read-LuaFile 'library.onStart.locationCatalog.lua'))
     (New-Handler 3 '-5' 'onStart()' (Read-LuaFile 'library.onStart.arDrawing.lua'))
     (New-Handler 4 '-5' 'onStart()' (Read-LuaFile 'library.onStart.hudDrawing.lua'))
     (New-Handler 5 '-5' 'onStart()' (Read-LuaFile 'library.onStart.renderer.lua'))
@@ -36,6 +36,9 @@ $handlers = @(
         [pscustomobject]@{ value = 'liby4performanceHud' }
     ))
     (New-Handler 8 '-4' 'onUpdate()' (Read-LuaFile 'system.onUpdate.lua'))
+    (New-Handler 9 '-4' 'onActionStart(action)' (Read-LuaFile 'system.onActionStart.parent.lua') @(
+        [pscustomobject]@{ value = 'leftmouse' }
+    ))
 )
 $configuration = [pscustomobject][ordered]@{ slots = [pscustomobject]$slots; handlers = $handlers; methods = @(); events = @() }
 $json = $configuration | ConvertTo-Json -Depth 20 -Compress
