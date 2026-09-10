@@ -1,14 +1,7 @@
 -- SARN location data: explicit high-level planets and moons from the DU client atlas.
 -- This is a data module. It does not inspect or generate locations at runtime.
 
-return {
-    kinds = {
-        planet = { icon = "icon-planet" },
-        moon = { icon = "icon-moon" },
-        market = { icon = "icon-market" }
-    },
-
-    locations = {
+local heliosPlanets = {
         {
             name = "Madis",
             label = "Planet",
@@ -365,5 +358,35 @@ return {
             atlasBody = { systemId = 0, bodyId = 9 },
             areaRadius = 61590.00
         }
-    }
+}
+
+local knownSpace = {
+    name = "Known Space",
+    label = "Known star systems",
+    kind = "known-space",
+    showChildrenGlobally = true
+}
+
+local heliosSystem = {
+    name = "Helios System",
+    label = "Star system",
+    kind = "system",
+    coordinate = "::pos{0,0,0,0,0}",
+    ownerId = nil,
+    areaRadius = 100000000,
+    showChildrenGlobally = true
+}
+
+heliosSystem.children = heliosPlanets
+knownSpace.children = { heliosSystem }
+
+return {
+    kinds = {
+        ["known-space"] = {},
+        system = {},
+        planet = { icon = "icon-planet" },
+        moon = { icon = "icon-moon" },
+        market = { icon = "icon-market" }
+    },
+    locations = { knownSpace }
 }

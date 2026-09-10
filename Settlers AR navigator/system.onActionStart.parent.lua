@@ -1,6 +1,9 @@
--- Activates the currently highlighted SARN details-view navigation row.
--- Library dependencies: SARNArDrawing initialized by library.onStart.arDrawing.lua.
+-- Activates the highlighted controller first, then a location interaction.
+-- Library dependencies: SARNController and SARNArDrawing.
 if action == "leftmouse" and SARNArDrawing ~= nil then
-    local ok, errorMessage = pcall(SARNArDrawing.activateSelectedAction)
-    if not ok then system.print("[SARN] Parent navigation failed: " .. tostring(errorMessage)) end
+    local ok, errorMessage = pcall(function()
+        local handled = SARNController ~= nil and SARNController.activateSelectedAction()
+        if not handled then SARNArDrawing.activateSelectedAction() end
+    end)
+    if not ok then system.print("[SARN] AR action failed: " .. tostring(errorMessage)) end
 end

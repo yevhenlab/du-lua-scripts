@@ -17,7 +17,9 @@ SARN loads the client-provided `atlas` Lua module from `<Dual Universe>/Game/dat
 worldPosition = bodyCenter + (bodyRadius + altitude) * direction(latitude, longitude)
 ```
 
-World-to-planet conversion uses the reverse calculation from the offset relative to the atlas body centre. It is needed when SARN explicitly needs to present or save planet-relative coordinates; AR rendering always uses normalized world space.
+World-to-planet conversion first uses SARN's own nearest planet or moon node: its `atlasBody` system/body IDs, world-space centre coordinate, and `areaRadius`. This makes the detailed-view coordinate action independent of the runtime atlas for catalog locations and their descendants. Atlas lookup remains a fallback for unrelated world-space locations. AR rendering always uses normalized world space.
+
+A planet or moon catalog node is anchored at the celestial body's exact centre, where latitude and longitude have no unique value. SARN represents this reversible special case as latitude `0`, longitude `0`, and altitude equal to the negative body radius.
 
 ## Invalid atlas bodies
 

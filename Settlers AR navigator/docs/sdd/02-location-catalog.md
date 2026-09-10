@@ -14,6 +14,8 @@ For example, a market composed of several XL parking constructs is saved as one 
 
 Locations normally form a bounded tree. A node is an area and may contain child areas or spots. A node without children is a leaf location.
 
+The catalog root is the coordinate-less `Known Space` navigation node. Its children are known star systems. `Helios System` is a spatial child centred at `::pos{0,0,0,0,0}` with a 100,000,000-metre area radius; all known planets are its children. Both nodes expose their children globally, preserving the rule that planets remain available throughout known space while also allowing detailed-view navigation from a planet to Helios and then Known Space.
+
 ```text
 Universe / system
 └─ Alioth area
@@ -38,6 +40,8 @@ SARN uses a hybrid tree representation.
 
 - A modest branch may store its direct children inline as `children = { ... }`.
 - A large or independently maintained branch uses `childrenModule = "sarn/locations/..."`.
+
+Deferred work: `childrenModule` branches must become genuinely lazy. Initialization will retain the module name without requiring it; SARN will load and cache that branch only when its parent becomes relevant, its detailed view opens, or its children are required for rendering. Inline children in the current file necessarily load with that file.
 - A node can combine inline `children` with `childrenModule` or `childrenModules` when independently maintained branches share the same parent.
 
 The root catalog stays small. SARN loads a deferred branch only when its parent area becomes relevant to navigation or the player explicitly requests its sub-locations. A regional file may still contain a readable inline sub-tree when that region is modest in size.
@@ -51,7 +55,7 @@ An entry may contain:
 - `icon`: optional icon selected for the location. When absent, SARN uses the default icon configured for `kind`.
 - `ownerId`: player or organization ID. This is the only owner field stored in the catalog.
 - `coordinate`: a world-space or planet-relative `::pos{...}` string; world-space `{ x, y, z }` tables remain supported.
-- `atlasBody`: optional `{ systemId, bodyId }` reference to the corresponding body in `atlas.lua`.
+- `atlasBody`: optional `{ systemId, bodyId }` celestial-body identity. Together with the node's centre coordinate and `areaRadius`, it supports body-relative output without loading `atlas.lua`; the runtime atlas may still provide supplementary body information.
 - `coreSize`: optional construct-core size when the location represents a construct.
 - `size`: optional bounding-box dimensions.
 - `areaRadius`: optional radius in metres describing the area governed by this location.
@@ -59,6 +63,7 @@ An entry may contain:
 - `label`: optional supporting information.
 - `description`: optional longer text shown by expanded AR details.
 - `excluded`: optional boolean. When `true`, the entry remains in the catalog but does not become an AR object or count in active-location HUD statistics. Its children remain independently eligible unless they are also excluded.
+- `showChildrenGlobally`: optional boolean. When `true`, coordinate-bearing direct children remain eligible throughout known space instead of only near their parent.
 - `children`: optional inline sub-location list.
 - `childrenModule`: optional Lua module path containing an additional sub-location list.
 - `childrenModules`: optional list of additional child-module paths.
@@ -77,9 +82,11 @@ Distance to the player, hierarchy depth, parent/child area size or boundaries, s
 
 SARN selects the deepest catalog node whose boundary contains the player as the current node. Its normal hierarchy view contains:
 
-- every depth-1 location;
+- every coordinate-bearing location whose parent enables `showChildrenGlobally`;
 - the current node's direct parent or parents;
 - the current node's direct children.
+
+The exported Programming Board parameter `showSystemPlanets` initializes a mutable runtime switch. When enabled, every planet directly below a star-system node is part of the baseline system view without becoming pinned. When disabled, those baseline markers and a system current node's planet children are hidden; a planet may still appear when hierarchy navigation requires it as the current area's direct parent. Future AR controls will change the runtime switch without modifying the PB parameter or creating pin records.
 
 The current node itself is omitted from AR because the player is already inside it, but its name appears in the HUD. Siblings of the current node and children of unrelated locations remain hidden. Entering a child boundary makes that child current and replaces the visible branch with its parent and children.
 

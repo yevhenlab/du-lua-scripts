@@ -1,6 +1,6 @@
 # Settlers AR Navigator
 
-SARN renders AR assistance only for known, established places stored in `sarn/locations.lua`. It does not scan Radar contacts or use a Databank.
+SARN renders AR assistance only for known, established places stored in `sarn/locations.lua`. It does not scan Radar contacts. A Databank is optional and stores player-selected runtime settings.
 
 Each visible place is shown as a dot with:
 
@@ -24,4 +24,4 @@ Each visible place is shown as a dot with:
 .\build-lua-configuration.ps1 -CopyToClipboard
 ```
 
-No linked Radar, Core, or Databank is required.
+No linked Radar or Core is required. A linked Databank is optional; the Settings menu can save runtime overrides that replace exported PB parameter defaults on later starts.

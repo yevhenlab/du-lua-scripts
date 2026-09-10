@@ -36,7 +36,9 @@ The current mini-project establishes the reusable foundation for known-location 
 
 ## Scope boundary
 
-SARN does not use Radar, scan constructs, or persist runtime catalog data in a Databank. Radar-assisted construct discovery belongs to the separate `lua radar AR static constructs` mini-project.
+SARN does not use Radar, scan constructs, or persist runtime catalog data in a Databank. An optional Databank stores player-selected SARN settings. Radar-assisted construct discovery belongs to the separate `lua radar AR static constructs` mini-project.
+
+SARN is a location navigator rather than a piloting assistant. It does not require a linked Core Unit and does not present construct braking, planet, gravity, atmosphere, or similar flight-system information.
 
 ## Player-facing marker
 

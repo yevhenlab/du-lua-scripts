@@ -1,22 +1,29 @@
 -- Loads the known-location catalog and starts the adaptive SARN renderer.
--- Library dependencies: SARNLocationCatalog and SARNRenderer.
-adaptArRedrawFrequencyToFps = true --export -- adapt AR redraw frequency to FPS
-maximumArRedrawPercentOfFps = 100 --export -- cap AR redraw rate to 1-100% of FPS
+-- Library dependencies: SARNSettings, SARNLocationCatalog, and SARNRenderer.
 
+SARNSettings.load()
 local loaded = SARNLocationCatalog.initialize()
 local initializeLiby4performance = require("liby.liby4performance")
-SARNPerformance = initializeLiby4performance(unit, system, {
-    adaptArRedrawFrequencyToFps = adaptArRedrawFrequencyToFps,
-    maximumArRedrawPercentOfFps = maximumArRedrawPercentOfFps,
-    minimumArRedrawFrequency = 5,
-    minimumWorkStepsPerUpdate = 1,
-    maximumWorkStepsPerUpdate = 4,
-    maximumWorkSecondsPerUpdate = 0.002,
-    onError = function(kind, message)
-        system.print("[SARN] Performance " .. tostring(kind) .. " error: " .. tostring(message))
-    end
-})
-SARNPerformance.setContentRenderer(SARNRenderer.getHtml)
+local function createPerformance()
+    local performance = initializeLiby4performance(unit, system, {
+        adaptArRedrawFrequencyToFps = SARNConfiguration.adaptArRedrawFrequencyToFps,
+        maximumArRedrawPercentOfFps = SARNConfiguration.maximumArRedrawPercentOfFps,
+        minimumArRedrawFrequency = 5,
+        minimumWorkStepsPerUpdate = 1,
+        maximumWorkStepsPerUpdate = 4,
+        maximumWorkSecondsPerUpdate = 0.002,
+        onError = function(kind, message)
+            system.print("[SARN] Performance " .. tostring(kind) .. " error: " .. tostring(message))
+        end
+    })
+    performance.setContentRenderer(SARNRenderer.getHtml)
+    return performance
+end
+SARNPerformance = createPerformance()
+function SARNRestartPerformance()
+    SARNPerformance = createPerformance()
+    SARNPerformance.start()
+end
 
 system.print("")
 system.print("[SARN] " .. SARN.startupCaption())

@@ -4,9 +4,9 @@ SARN runs on a Programming Board and uses DU Lua APIs for AR projection, screen 
 
 ## Modules
 
-The project separates configuration, helpers, catalog loading, AR drawing, HUD drawing, and rendering into dedicated Lua files. The board startup loads the catalog and starts the adaptive renderer supplied by `liby4performance`.
+The project separates configuration, settings persistence, helpers, catalog loading, AR drawing, HUD drawing, and rendering into dedicated Lua files. The board startup loads optional Databank overrides, loads the catalog, and starts the adaptive renderer supplied by `liby4performance`.
 
-SARN requires no linked Core, Radar, or Databank. It does require the client-side Lua library files that its `require(...)` calls reference.
+SARN requires no linked Core or Radar. A Databank is optional and is discovered from the PB's linked slots. Without one, exported PB parameters remain the startup defaults. It does require the client-side Lua library files that its `require(...)` calls reference.
 
 ## Normalized runtime location
 

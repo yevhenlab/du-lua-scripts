@@ -11,7 +11,7 @@ function SARN.applicationCaption()
 end
 
 function SARN.startupCaption()
-    return SARN.applicationCaption() .. string.char(32, 118, 48, 46, 52, 46, 49)
+    return SARN.applicationCaption() .. string.char(32, 118, 48, 46, 57, 46, 49)
 end
 
 function SARN.reportWarning(code, message)
@@ -94,6 +94,70 @@ function SARN.distance(from, to)
     if fx == nil or tx == nil then return nil end
     local dx, dy, dz = tx - fx, ty - fy, tz - fz
     return math.sqrt(dx * dx + dy * dy + dz * dz)
+end
+
+function SARN.worldPositionString(point)
+    local x, y, z = SARN.components(point)
+    if x == nil then return nil end
+    return string.format("::pos{0,0,%.4f,%.4f,%.4f}", x, y, z)
+end
+
+local function relativePositionString(point, systemId, bodyId, center, radius)
+    local x, y, z = SARN.components(point)
+    local cx, cy, cz = SARN.components(center)
+    radius = tonumber(radius)
+    systemId, bodyId = tonumber(systemId), tonumber(bodyId)
+    if x == nil or cx == nil or radius == nil or radius <= 0
+        or systemId == nil or bodyId == nil then return nil end
+    local dx, dy, dz = x - cx, y - cy, z - cz
+    local radialDistance = math.sqrt(dx * dx + dy * dy + dz * dz)
+    if radialDistance <= 0.0001 then
+        return string.format("::pos{%d,%d,0.0000,0.0000,%.4f}",
+            systemId, bodyId, -radius)
+    end
+    local latitude = math.deg(math.asin(dz / radialDistance))
+    local longitude = math.deg(math.atan(dy, dx))
+    local altitude = radialDistance - radius
+    return string.format("::pos{%d,%d,%.4f,%.4f,%.4f}",
+        systemId, bodyId, latitude, longitude, altitude)
+end
+
+function SARN.bodyRelativePositionString(point, bodyTarget)
+    local atlasBody = type(bodyTarget) == "table" and bodyTarget.atlasBody or nil
+    if type(atlasBody) ~= "table" then return nil end
+    return relativePositionString(
+        point,
+        atlasBody.systemId or atlasBody[1],
+        atlasBody.bodyId or atlasBody[2],
+        bodyTarget.worldPosition,
+        bodyTarget.areaRadius)
+end
+
+function SARN.closestPlanetPositionString(point)
+    local x, y, z = SARN.components(point)
+    local atlas = SARN.getAtlas()
+    if x == nil or type(atlas) ~= "table" then return nil end
+    local bestSystemId, bestBodyId, bestBody, bestDistance
+    for systemId, bodies in pairs(atlas) do
+        if type(bodies) == "table" then
+            for bodyId, body in pairs(bodies) do
+                local cx, cy, cz = SARN.components(type(body) == "table" and body.center or nil)
+                local radius = type(body) == "table" and tonumber(body.radius) or nil
+                if cx ~= nil and radius ~= nil and radius > 0 and tonumber(bodyId) ~= 0 then
+                    local dx, dy, dz = x - cx, y - cy, z - cz
+                    local centerDistance = math.sqrt(dx * dx + dy * dy + dz * dz)
+                    local surfaceDistance = math.abs(centerDistance - radius)
+                    if bestDistance == nil or surfaceDistance < bestDistance then
+                        bestSystemId, bestBodyId, bestBody, bestDistance =
+                            tonumber(systemId), tonumber(bodyId), body, surfaceDistance
+                    end
+                end
+            end
+        end
+    end
+    if bestBody == nil or bestSystemId == nil or bestBodyId == nil then return nil end
+    return relativePositionString(
+        point, bestSystemId, bestBodyId, bestBody.center, bestBody.radius)
 end
 
 function SARN.escapeHtml(value)

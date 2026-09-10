@@ -36,8 +36,23 @@ function SARNHudDrawing.drawInteractionDebug(lines)
     if type(lines) ~= "table" or #lines == 0 then return "" end
     local escaped = {}
     for _, line in ipairs(lines) do escaped[#escaped + 1] = SARN.escapeHtml(line) end
-    return '<div style="position:absolute;left:18px;top:145px;padding:6px 8px;max-width:calc(100vw - 36px);'
+    return '<div style="position:absolute;right:18px;top:145px;padding:6px 8px;max-width:calc(100vw - 36px);'
         .. 'overflow:hidden;color:#bcefff;background:rgba(3,12,18,.90);border-left:2px solid #52ff72;'
         .. 'font:10px Consolas,monospace;line-height:12px;white-space:nowrap;text-shadow:0 1px 2px #000;">'
-        .. '<b>VIEW/SCROLL DEBUG — last 20 samples</b><br>' .. table.concat(escaped, '<br>') .. '</div>'
+        .. '<b>VIEW/SCROLL DEBUG &#8212; last 20 samples</b><br>' .. table.concat(escaped, '<br>') .. '</div>'
+end
+
+function SARNHudDrawing.drawPinnedLocations(entries)
+    if type(entries) ~= "table" or #entries == 0 then return "" end
+    local rows = {}
+    for _, entry in ipairs(entries) do
+        rows[#rows + 1] = '<span style="color:#fff">&#9670;</span> '
+            .. SARN.escapeHtml(entry.name) .. ' <span style="color:#86b7c8">&#8212; '
+            .. SARN.escapeHtml(entry.mode) .. '</span>'
+    end
+    return '<div style="position:absolute;left:18px;top:145px;padding:7px 10px;'
+        .. 'color:#dff8ff;background:rgba(3,12,18,.90);border-left:2px solid rgb('
+        .. SARNConfiguration.highlightMarkerColor .. ');font:13px Arial,sans-serif;line-height:18px;'
+        .. 'text-shadow:0 1px 3px #000;"><b>PINNED LOCATIONS</b><br>'
+        .. table.concat(rows, '<br>') .. '</div>'
 end

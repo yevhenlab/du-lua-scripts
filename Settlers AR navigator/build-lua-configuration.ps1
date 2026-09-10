@@ -27,16 +27,18 @@ $slots['-5'] = New-Slot 'library'
 $handlers = @(
     (New-Handler 0 '-5' 'onStart()' (Read-LuaFile 'library.onStart.configuration.lua'))
     (New-Handler 1 '-5' 'onStart()' (Read-LuaFile 'library.onStart.helpers.lua'))
-    (New-Handler 2 '-5' 'onStart()' (Read-LuaFile 'library.onStart.locationCatalog.lua'))
-    (New-Handler 3 '-5' 'onStart()' (Read-LuaFile 'library.onStart.arDrawing.lua'))
-    (New-Handler 4 '-5' 'onStart()' (Read-LuaFile 'library.onStart.hudDrawing.lua'))
-    (New-Handler 5 '-5' 'onStart()' (Read-LuaFile 'library.onStart.renderer.lua'))
-    (New-Handler 6 '-1' 'onStart()' (Read-LuaFile 'unit.onStart.lua'))
-    (New-Handler 7 '-1' 'onTimer(tag)' (Read-LuaFile 'unit.onTimer.performance.lua') @(
+    (New-Handler 2 '-5' 'onStart()' (Read-LuaFile 'library.onStart.settings.lua'))
+    (New-Handler 3 '-5' 'onStart()' (Read-LuaFile 'library.onStart.locationCatalog.lua'))
+    (New-Handler 4 '-5' 'onStart()' (Read-LuaFile 'library.onStart.arDrawing.lua'))
+    (New-Handler 5 '-5' 'onStart()' (Read-LuaFile 'library.onStart.controller.lua'))
+    (New-Handler 6 '-5' 'onStart()' (Read-LuaFile 'library.onStart.hudDrawing.lua'))
+    (New-Handler 7 '-5' 'onStart()' (Read-LuaFile 'library.onStart.renderer.lua'))
+    (New-Handler 8 '-1' 'onStart()' (Read-LuaFile 'unit.onStart.lua'))
+    (New-Handler 9 '-1' 'onTimer(tag)' (Read-LuaFile 'unit.onTimer.performance.lua') @(
         [pscustomobject]@{ value = 'liby4performanceHud' }
     ))
-    (New-Handler 8 '-4' 'onUpdate()' (Read-LuaFile 'system.onUpdate.lua'))
-    (New-Handler 9 '-4' 'onActionStart(action)' (Read-LuaFile 'system.onActionStart.parent.lua') @(
+    (New-Handler 10 '-4' 'onUpdate()' (Read-LuaFile 'system.onUpdate.lua'))
+    (New-Handler 11 '-4' 'onActionStart(action)' (Read-LuaFile 'system.onActionStart.parent.lua') @(
         [pscustomobject]@{ value = 'leftmouse' }
     ))
 )
