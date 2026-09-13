@@ -1,6 +1,11 @@
--- Loads known SARN locations, resolves default kind icons and owner display names, and assigns runtime-only IDs.
--- Library dependencies: SARN helpers, sarn/locations.lua, and its optional catalog modules.
+-- Loads known SARN locations, resolves default kind icons and literal owner names, and assigns runtime-only IDs.
+-- Library dependencies: SARN helpers, root locations injected by unit.onStart, sarn/icons.lua, and optional catalog modules.
 SARNLocationCatalog = SARNLocationCatalog or {}
+
+function SARNLocationCatalog.setRootConfig(config, loadError)
+    SARNLocationCatalog.rootConfig = type(config) == "table" and config or nil
+    SARNLocationCatalog.rootConfigError = loadError
+end
 
 local function normalizeCoreSize(value)
     local size = string.upper(tostring(value or "?")):gsub("%s+", "")
@@ -26,21 +31,6 @@ local function paleColor(color)
         .. tostring(blend(blue, defaultBlue))
 end
 
-function SARNLocationCatalog.resolveOwner(ownerId)
-    if ownerId == nil or tostring(ownerId) == "" then return "owner", "unknown" end
-    local entityId = tonumber(ownerId) or ownerId
-    local organization = SARN.call(system, "getOrganization", entityId)
-    if type(organization) == "table" then
-        local organizationName = organization.name or organization.tag
-        if organizationName ~= nil and tostring(organizationName) ~= "" then
-            return "owner-org", tostring(organizationName)
-        end
-    end
-    local playerName = SARN.call(system, "getPlayerName", entityId)
-    if playerName ~= nil and tostring(playerName) ~= "" then return "owner-p", tostring(playerName) end
-    return "owner", "unknown"
-end
-
 function SARNLocationCatalog.initialize()
     SARNLocationCatalog.targets = {}
     SARNLocationCatalog.allTargets = {}
@@ -48,10 +38,15 @@ function SARNLocationCatalog.initialize()
     SARNLocationCatalog.nextRuntimeId = 1
     SARNLocationCatalog.statistics = { total = 0, byDepth = {} }
     SARNLocationCatalog.showSystemPlanets = SARNConfiguration.showSystemPlanets == true
+    SARNLocationCatalog.showSatellites = SARNConfiguration.showSatellites == true
+    SARNLocationCatalog.showCurrentNodeChildren =
+        SARNConfiguration.showCurrentNodeChildren == true
+    SARNLocationCatalog.showNearbyPlaces = SARNConfiguration.showNearbyPlaces == true
 
-    local ok, config = pcall(require, "sarn/locations")
-    if not ok or type(config) ~= "table" then
-        SARN.reportWarning("catalog-unavailable", "Could not load required Lua file 'sarn/locations.lua'.")
+    local config = SARNLocationCatalog.rootConfig
+    if type(config) ~= "table" then
+        SARN.reportWarning("catalog-unavailable", "Could not load required Lua file 'sarn/locations.lua': "
+            .. tostring(SARNLocationCatalog.rootConfigError or "invalid module result"))
         return false
     end
     local primaryLocations = config.locations or config
@@ -134,7 +129,14 @@ function SARNLocationCatalog.initialize()
                         if kinds[kind] == nil then kinds[kind] = definition end
                     end
                 end
-                local moduleChildren = moduleConfig.locations or moduleConfig.children or moduleConfig
+                local moduleKey = type(entry.childrenModuleKey) == "string"
+                    and entry.childrenModuleKey or nil
+                local moduleChildren
+                if moduleKey ~= nil then
+                    moduleChildren = moduleConfig[moduleKey]
+                else
+                    moduleChildren = moduleConfig.locations or moduleConfig.children or moduleConfig
+                end
                 if type(moduleChildren) == "table" then
                     for _, child in ipairs(moduleChildren) do visitor(child) end
                 end
@@ -170,25 +172,31 @@ function SARNLocationCatalog.initialize()
             or (parentColor ~= nil and paleColor(parentColor) or SARNConfiguration.markerColor)
         local coordinate = entry.coordinate or entry.coordinates or entry.worldPosition or entry.pos
         local wx, wy, wz = SARN.components(coordinate)
+        local upX, upY, upZ = SARN.components(entry.worldUp)
         local sx, sy, sz = SARN.components(entry.size or entry.boundingBoxSize)
-        local ownerType, ownerName = SARNLocationCatalog.resolveOwner(entry.ownerId)
+        local owner = entry.owner ~= nil and tostring(entry.owner) or nil
+        if owner == "" then owner = nil end
         local kind = normalizeKind(entry.kind)
         local kindConfiguration = type(kinds[kind]) == "table" and kinds[kind] or {}
         local coreSize = normalizeCoreSize(entry.coreSize)
         local icon = entry.icon or kindConfiguration.icon
+        local parentTarget = parentId ~= nil and targetsByRuntimeId[parentId] or nil
+        local persistenceSegment = kind .. ":" .. tostring(entry.name or ("Location " .. runtimeId))
+        local persistenceKey = parentTarget ~= nil
+            and (parentTarget.persistenceKey .. "/" .. persistenceSegment) or persistenceSegment
         local target = {
             id = runtimeId,
+            persistenceKey = persistenceKey,
             depth = depth,
             parentIds = parentId ~= nil and { parentId } or {},
             name = entry.name or ("Location " .. tostring(runtimeId)),
+            sourceId = entry.id,
+            type = entry.type,
             kind = kind,
             icon = icon,
             iconDefinition = resolveIcon(icon),
             coreSize = coreSize,
-            constructId = entry.constructId,
-            ownerId = entry.ownerId,
-            ownerType = ownerType,
-            ownerName = ownerName,
+            owner = owner,
             color = resolvedColor,
             sourceColor = entry.color,
             label = entry.label,
@@ -197,8 +205,9 @@ function SARNLocationCatalog.initialize()
             areaRadius = tonumber(entry.areaRadius),
             sourceCoordinate = coordinate,
             excluded = entry.excluded == true,
-            showChildrenGlobally = entry.showChildrenGlobally == true,
-            worldPosition = wx ~= nil and wy ~= nil and wz ~= nil and { x = wx, y = wy, z = wz } or nil
+            worldPosition = wx ~= nil and wy ~= nil and wz ~= nil and { x = wx, y = wy, z = wz } or nil,
+            worldUp = upX ~= nil and upY ~= nil and upZ ~= nil
+                and { x = upX, y = upY, z = upZ } or nil
         }
         if sx ~= nil and sy ~= nil and sz ~= nil then target.size = { x = sx, y = sy, z = sz } end
         targetsByRuntimeId[runtimeId] = target
@@ -243,9 +252,43 @@ function SARNLocationCatalog.getShowSystemPlanets()
     return SARNLocationCatalog.showSystemPlanets == true
 end
 
+function SARNLocationCatalog.setShowSatellites(enabled)
+    SARNLocationCatalog.showSatellites = enabled == true
+    return SARNLocationCatalog.showSatellites
+end
+
+function SARNLocationCatalog.getShowSatellites()
+    return SARNLocationCatalog.showSatellites == true
+end
+
+function SARNLocationCatalog.setShowCurrentNodeChildren(enabled)
+    SARNLocationCatalog.showCurrentNodeChildren = enabled == true
+    return SARNLocationCatalog.showCurrentNodeChildren
+end
+
+function SARNLocationCatalog.getShowCurrentNodeChildren()
+    return SARNLocationCatalog.showCurrentNodeChildren == true
+end
+
+function SARNLocationCatalog.setShowNearbyPlaces(enabled)
+    SARNLocationCatalog.showNearbyPlaces = enabled == true
+    return SARNLocationCatalog.showNearbyPlaces
+end
+
+function SARNLocationCatalog.getShowNearbyPlaces()
+    return SARNLocationCatalog.showNearbyPlaces == true
+end
+
 function SARNLocationCatalog.getTargetById(targetId)
     for _, target in ipairs(SARNLocationCatalog.allTargets or {}) do
         if target.id == targetId then return target end
+    end
+    return nil
+end
+
+function SARNLocationCatalog.getTargetByPersistenceKey(persistenceKey)
+    for _, target in ipairs(SARNLocationCatalog.allTargets or {}) do
+        if target.persistenceKey == persistenceKey then return target end
     end
     return nil
 end
@@ -272,6 +315,27 @@ function SARNLocationCatalog.getNearestCoordinateBody(target)
                 and tonumber(candidate.areaRadius) > 0 then
                 return candidate
             end
+            for _, parentId in ipairs(candidate.parentIds or {}) do
+                local parent = SARNLocationCatalog.getTargetById(parentId)
+                if parent ~= nil then queue[#queue + 1] = parent end
+            end
+        end
+    end
+    return nil
+end
+
+function SARNLocationCatalog.getNearestSystem(target)
+    if target == nil then return nil end
+    local queue = { target }
+    local seen = {}
+    local queueIndex = 1
+    while queueIndex <= #queue do
+        local candidate = queue[queueIndex]
+        queueIndex = queueIndex + 1
+        local candidateId = candidate and (candidate.id or candidate)
+        if candidate ~= nil and not seen[candidateId] then
+            seen[candidateId] = true
+            if candidate.kind == "system" then return candidate end
             for _, parentId in ipairs(candidate.parentIds or {}) do
                 local parent = SARNLocationCatalog.getTargetById(parentId)
                 if parent ~= nil then queue[#queue + 1] = parent end
@@ -331,8 +395,116 @@ function SARNLocationCatalog.getCurrentTarget(playerPosition)
     return current
 end
 
+local function isDirectChildOf(target, parent)
+    if target == nil or parent == nil then return false end
+    for _, parentId in ipairs(target.parentIds or {}) do
+        if parentId == parent.id then return true end
+    end
+    return false
+end
+
+local function isCelestial(target)
+    local locationType = target and target.type
+    return locationType == "space" or locationType == "system"
+        or locationType == "planet" or locationType == "satellite"
+        or locationType == "asteroid"
+end
+
+local function limitedNearestIds(candidates)
+    table.sort(candidates, function(first, second)
+        if first.distance == second.distance then
+            return string.lower(tostring(first.target.name))
+                < string.lower(tostring(second.target.name))
+        end
+        return first.distance < second.distance
+    end)
+    local ids = {}
+    local maximum = math.max(1,
+        math.floor(tonumber(SARNConfiguration.maximumNearbyPlaces) or 10))
+    for index = 1, math.min(maximum, #candidates) do
+        ids[candidates[index].target.id] = true
+    end
+    return ids
+end
+
+local function getAreaPlaceIds(current, playerPosition)
+    if current == nil or not SARNLocationCatalog.getShowCurrentNodeChildren() then return {} end
+    local candidates = {}
+    for _, child in ipairs(SARNLocationCatalog.getChildren(current)) do
+        if not child.excluded and child.worldPosition ~= nil and not isCelestial(child) then
+            local distance = SARN.distance(playerPosition, child.worldPosition)
+            if distance ~= nil then
+                candidates[#candidates + 1] = { target = child, distance = distance }
+            end
+        end
+    end
+    return limitedNearestIds(candidates)
+end
+
+local function getNearbyTargetIds(current, playerPosition)
+    local nearbyIds = {}
+    if current == nil or not SARNLocationCatalog.getShowNearbyPlaces() then return nearbyIds end
+    local inAtmosphere = (tonumber(unit.getAtmosphereDensity()) or 0) > 0
+    local rangeKm = inAtmosphere and SARNConfiguration.nearbyAtmoRangeKm
+        or SARNConfiguration.nearbySpaceRangeKm
+    local rangeMeters = math.max(0, tonumber(rangeKm) or 0) * 1000
+    local candidates = {}
+    local visited = {}
+    local function visitOrganizationalChildren(parent)
+        if parent == nil or visited[parent.id] then return end
+        visited[parent.id] = true
+        for _, child in ipairs(SARNLocationCatalog.getChildren(parent)) do
+            if child.worldPosition ~= nil then
+                local distance = SARN.distance(playerPosition, child.worldPosition)
+                if not child.excluded and not isCelestial(child)
+                    and distance ~= nil and distance <= rangeMeters then
+                    candidates[#candidates + 1] = { target = child, distance = distance }
+                end
+            else
+                visitOrganizationalChildren(child)
+            end
+        end
+    end
+    visitOrganizationalChildren(current)
+    return limitedNearestIds(candidates)
+end
+
+local function getClosestPlanet(systemTarget, playerPosition)
+    if systemTarget == nil then return nil end
+    local closest = nil
+    local closestDistance = nil
+    for _, target in ipairs(SARNLocationCatalog.allTargets or {}) do
+        if target.type == "planet" and target.worldPosition ~= nil
+            and isDirectChildOf(target, systemTarget) then
+            local centerDistance = SARN.distance(playerPosition, target.worldPosition)
+            local surfaceDistance = centerDistance ~= nil
+                and math.abs(centerDistance - (tonumber(target.areaRadius) or 0)) or nil
+            if surfaceDistance ~= nil
+                and (closestDistance == nil or surfaceDistance < closestDistance) then
+                closest = target
+                closestDistance = surfaceDistance
+            end
+        end
+    end
+    return closest
+end
+
+local function getSatelliteIds(systemTarget, playerPosition)
+    if not SARNLocationCatalog.getShowSatellites() then return {} end
+    local planet = getClosestPlanet(systemTarget, playerPosition)
+    local ids = {}
+    for _, child in ipairs(SARNLocationCatalog.getChildren(planet)) do
+        if not child.excluded and child.type == "satellite" then ids[child.id] = true end
+    end
+    return ids
+end
+
 function SARNLocationCatalog.getVisibleTargets(playerPosition)
     local current = SARNLocationCatalog.getCurrentTarget(playerPosition)
+    local activeSystem = SARNLocationCatalog.getNearestSystem(current)
+    local areaPlaceIds = getAreaPlaceIds(current, playerPosition)
+    local nearbyIds = getNearbyTargetIds(current, playerPosition)
+    local satelliteIds = getSatelliteIds(activeSystem, playerPosition)
     local visible = {}
     local parentIds = {}
     if current ~= nil then
@@ -340,36 +512,30 @@ function SARNLocationCatalog.getVisibleTargets(playerPosition)
     end
     for _, target in ipairs(SARNLocationCatalog.targets or {}) do
         local isTopLevel = (target.depth or 1) == 1
-        local isGloballyVisibleChild = false
         local isSystemPlanet = false
         for _, parentId in ipairs(target.parentIds or {}) do
             local parent = SARNLocationCatalog.getTargetById(parentId)
-            if target.kind == "planet" and parent ~= nil and parent.kind == "system" then
+            if target.kind == "planet" and parent ~= nil and activeSystem ~= nil
+                and parent.id == activeSystem.id then
                 isSystemPlanet = true
             end
-            if parent ~= nil and parent.showChildrenGlobally then
-                if target.kind ~= "planet" or parent.kind ~= "system"
-                    or SARNLocationCatalog.getShowSystemPlanets() then
-                    isGloballyVisibleChild = true
-                    break
-                end
-            end
         end
-        local isParent = current ~= nil and parentIds[target.id] == true
-        local isCurrentChild = false
-        if current ~= nil then
-            for _, parentId in ipairs(target.parentIds or {}) do
-                if parentId == current.id then
-                    isCurrentChild = true
-                    break
-                end
-            end
+        local isCurrent = current ~= nil and target.id == current.id
+        local currentAllowsParent = current ~= nil
+            and current.kind ~= "planet" and current.kind ~= "system"
+        local isParent = currentAllowsParent and parentIds[target.id] == true
+        local isAreaPlace = areaPlaceIds[target.id] == true
+        local isSatellite = satelliteIds[target.id] == true
+        local isHighLevelHiddenByDefault = target.kind == "known-space"
+            or target.kind == "system"
+        local isBaselineVisible = false
+        if isSystemPlanet then
+            isBaselineVisible = SARNLocationCatalog.getShowSystemPlanets()
+        elseif not isHighLevelHiddenByDefault then
+            isBaselineVisible = isTopLevel
         end
-        if isSystemPlanet and not SARNLocationCatalog.getShowSystemPlanets()
-            and current ~= nil and current.kind == "system" then
-            isCurrentChild = false
-        end
-        if isTopLevel or isGloballyVisibleChild or isParent or isCurrentChild then
+        local isNearby = nearbyIds[target.id] == true
+        if isCurrent or isParent or isSatellite or isAreaPlace or isNearby or isBaselineVisible then
             visible[#visible + 1] = target
         end
     end

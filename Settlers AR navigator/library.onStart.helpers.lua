@@ -1,5 +1,5 @@
 -- Provides shared coordinate conversion, diagnostics, safe-call, HTML, and distance helpers.
--- Library dependencies: SARNConfiguration from library.onStart.configuration.lua and DU atlas.lua.
+-- Library dependencies: SARNConfiguration and atlas data injected by unit.onStart.
 SARN = SARN or {}
 SARN.warnings = SARN.warnings or {}
 SARN.errors = SARN.errors or {}
@@ -11,7 +11,7 @@ function SARN.applicationCaption()
 end
 
 function SARN.startupCaption()
-    return SARN.applicationCaption() .. string.char(32, 118, 48, 46, 57, 46, 49)
+    return SARN.applicationCaption() .. string.char(32, 118, 48, 46, 49, 48, 46, 56, 52)
 end
 
 function SARN.reportWarning(code, message)
@@ -20,6 +20,15 @@ function SARN.reportWarning(code, message)
     SARN._reportedDiagnostics[key] = true
     SARN.warnings[#SARN.warnings + 1] = { code = code, message = message }
     if system and type(system.print) == "function" then system.print("[SARN] Warning: " .. message) end
+end
+
+function SARN.setAtlas(atlas, loadError)
+    SARN._atlasAttempted = true
+    SARN._atlas = type(atlas) == "table" and atlas or nil
+    if SARN._atlas == nil then
+        SARN.reportWarning("atlas-unavailable", "Could not load DU atlas.lua: "
+            .. tostring(loadError or "invalid module result"))
+    end
 end
 
 function SARN.call(element, methodName, ...)
@@ -40,14 +49,6 @@ function SARN.parsePosition(value)
 end
 
 function SARN.getAtlas()
-    if SARN._atlasAttempted then return SARN._atlas end
-    SARN._atlasAttempted = true
-    local ok, atlasOrError = pcall(require, "atlas")
-    if ok and type(atlasOrError) == "table" then
-        SARN._atlas = atlasOrError
-    else
-        SARN.reportWarning("atlas-unavailable", "Could not load DU atlas.lua: " .. tostring(atlasOrError))
-    end
     return SARN._atlas
 end
 

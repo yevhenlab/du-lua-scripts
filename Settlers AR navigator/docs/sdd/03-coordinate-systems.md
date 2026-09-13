@@ -11,7 +11,7 @@ Players may save either form. SARN retains the original catalog value and produc
 
 ## Conversion
 
-SARN loads the client-provided `atlas` Lua module from `<Dual Universe>/Game/data/lua/atlas.lua`. For planet-relative input it looks up the specified system and body, then calculates:
+SARN prefers the client-provided `atlas` Lua module from `<Dual Universe>/Game/data/lua/atlas.lua`. The primary location catalog also contains a limited offline atlas generated from the supported source atlas. Each fallback body contains its ID, name, structural type, world-space centre, surface radius, and atmosphere radius. SARN uses this fallback only when the client atlas cannot be loaded. For planet-relative input it looks up the specified system and body, then calculates:
 
 ```text
 worldPosition = bodyCenter + (bodyRadius + altitude) * direction(latitude, longitude)
@@ -23,7 +23,7 @@ A planet or moon catalog node is anchored at the celestial body's exact centre, 
 
 ## Invalid atlas bodies
 
-If a planet-relative coordinate refers to a system/body absent from `atlas`:
+If a planet-relative coordinate refers to a system/body absent from the active client or fallback atlas:
 
 - skip the catalog entry for AR rendering;
 - print one warning in chat for that unique coordinate/body;

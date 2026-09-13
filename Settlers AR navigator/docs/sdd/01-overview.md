@@ -30,13 +30,13 @@ The current mini-project establishes the reusable foundation for known-location 
 - a Lua catalog of places and areas;
 - a bounded hierarchy of areas and sub-areas;
 - AR and HUD presentation separated from catalog and helper code;
-- ownership display resolved from a saved `ownerId`;
+- ownership display read directly from a saved owner name;
 - support for both world-space and planet-relative coordinates;
 - reliable diagnostics for invalid catalog data, including unknown atlas bodies.
 
 ## Scope boundary
 
-SARN does not use Radar, scan constructs, or persist runtime catalog data in a Databank. An optional Databank stores player-selected SARN settings. Radar-assisted construct discovery belongs to the separate `lua radar AR static constructs` mini-project.
+SARN does not use Radar, scan constructs, or persist the location catalog in a Databank. An optional Databank stores selected SARN settings and pin state. Radar-assisted construct discovery belongs to the separate `lua radar AR static constructs` mini-project.
 
 SARN is a location navigator rather than a piloting assistant. It does not require a linked Core Unit and does not present construct braking, planet, gravity, atmosphere, or similar flight-system information.
 
@@ -47,7 +47,7 @@ For a known place, SARN draws an AR object. Its smallest form includes a name an
 The current simple label form is:
 
 1. `Location name [size, when relevant] | distance`
-2. `owner-p: Name`, `owner-org: Name`, or `owner: unknown`
+2. `Owner: Name` when the catalog provides an owner
 3. Optional supporting label or extra information.
 
 The exact visual and interaction rules are owned by `04-ar-and-hud-rendering.md`.

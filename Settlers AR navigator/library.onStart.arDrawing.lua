@@ -8,7 +8,6 @@ SARNArDrawing.hoverOutsideSince = nil
 SARNArDrawing.candidateTargetId = nil
 SARNArDrawing.candidateSince = nil
 SARNArDrawing.candidateSeen = false
-SARNArDrawing.debugLines = SARNArDrawing.debugLines or {}
 SARNArDrawing.pins = SARNArDrawing.pins or {}
 
 local waypointIcon = {
@@ -19,13 +18,9 @@ local pinIcon = {
     viewBox = "0 0 2.82 2.82",
     body = '<polygon points="2.48 .88 1.95 .34 1.25 .87 1.96 1.57"/><polygon points="0 2.83 1.05 1.42 1.4 1.78"/><polygon points="1.98 0 2 .27 2.56 .82 2.83 .84"/><polygon points="1.32 1.5 1.94 2.11 1.88 1.65 1.18 .94 .72 .9"/>'
 }
-local planetCoordinateIcon = {
-    viewBox = "0 0 300 300",
-    body = '<path d="M173.8 200.2c-22.6 12.6-46.4 22.9-71.1 30.8 40.2 27 94.4 16.2 121.4-24.7 10.4-15.4 15.5-33.8 14.5-52.3-20 16.7-41.8 31.4-64.8 43.8z"/><path d="M148.8 154.8c33.2-18.2 59.2-39 69.7-54.2-27-39.3-80.7-49.3-120-22.3-34.2 23.5-46.9 68-30.1 106 18.8-1.3 48.8-11.9 80.4-29.2z"/><path d="M206.3 74.1c45.1-15.8 79.2-18.6 86.9-4.6 11.8 21.5-44 74.8-124.4 118.7S13.4 250.7 1.6 229.2c-7.7-13.9 13.1-41.2 50.4-70.6l1 4.9C39.7 177.2 33.5 189 37.3 196c8.5 15.4 62 2.3 119.5-29.3s97.3-69.6 88.9-85c-3.8-7-17.1-8.1-35.8-4.2z"/>'
-}
-local spaceCoordinateIcon = {
-    viewBox = "0 0 300 300",
-    body = '<path d="M281 112.4l19-4.2-19.3-3.8-4.1-19-3.9 19.1-19.2 4.2 19.5 3.9 4.3 19.2zM137.8 73.4l31.5-6.9-32-6.2-6.9-31.5-6.3 31.6-31.9 6.9 32.3 6.4 7.1 31.8zM25.6 162.6l18.3-4.1-18.6-3.5-4-18.3-3.6 18.3-18.5 4 18.7 3.7 4.1 18.5zM260 211.3l29-6.4-29.4-5.8-6.3-29-5.8 29.1-29.4 6.4 29.7 5.9 6.5 29.3z"/>'
+local coordinatesIcon = {
+    viewBox = "0 0 15.8 15.1",
+    body = '<path d="M0 15.1v-4.6h4v4H1.4v.7H0zm2.7-2v-1.3H1.4v1.3h1.3zM10 10.4V15H6v-4.6h4zm-1.3 1.4H7.3v2h1.3v-2zM.5 9.6c.9-2.5 3.9-3.9 5.2-4.3l.5 3.2 2.1-3.2L10 2.8 7.3 1.6 3.3 0l1.5 2.8C.5 4.5-.1 7.7 0 9.6h.5zM13.3 10.4h2.3v1.3h-2.3v.3h1c.4 0 .8.1 1.1.4s.4.6.4 1.1-.1.8-.4 1.1-.6.4-1 .4h-2.3v-1.3h2.3v-.3h-1c-.4 0-.8-.1-1.1-.4s-.4-.6-.4-1.1.1-.8.4-1.1.6-.4 1-.4z"/><polygon points="11.1,3 9.5,5.4 9.5,9.4 15.8,9.4 15.8,3"/>'
 }
 
 local nodeActionMocks = {
@@ -33,10 +28,8 @@ local nodeActionMocks = {
         requiresCoordinate = true, svg = waypointIcon },
     { key = "pin-place", title = "Pin location", action = "pin-place",
         requiresCoordinate = true, svg = pinIcon },
-    { key = "planet-coordinate", title = "Show planet coordinate", action = "planet-coordinate",
-        requiresCoordinate = true, svg = planetCoordinateIcon },
-    { key = "space-coordinate", title = "Show space coordinate", action = "space-coordinate",
-        requiresCoordinate = true, svg = spaceCoordinateIcon }
+    { key = "coordinates", title = "Show coordinates", action = "coordinates",
+        requiresCoordinate = true, svg = coordinatesIcon }
 }
 
 local childrenActionMocks = {
@@ -62,12 +55,6 @@ end
 
 local function cursorInside(bounds)
     return cursorHitMode(bounds) ~= nil
-end
-
-local function appendDebugLine(line)
-    local lines = SARNArDrawing.debugLines
-    lines[#lines + 1] = line
-    while #lines > 20 do table.remove(lines, 1) end
 end
 
 local function getPinState(target, create)
@@ -119,6 +106,78 @@ function SARNArDrawing.getPinnedEntries()
     return entries
 end
 
+function SARNArDrawing.getPinMenuEntries()
+    local entries = {}
+    for targetId, state in pairs(SARNArDrawing.pins) do
+        if state.target ~= nil then
+            local name = tostring(state.target.name or "Location")
+            local parent = SARNLocationCatalog.getPrimaryParent(state.target)
+            local qualifiedName = parent ~= nil
+                and (tostring(parent.name or "Location") .. " > " .. name) or name
+            if state.place then
+                entries[#entries + 1] = {
+                    targetId = targetId, mode = "place", label = qualifiedName
+                }
+            end
+            if state.children then
+                entries[#entries + 1] = {
+                    targetId = targetId, mode = "children", label = qualifiedName .. " children"
+                }
+            end
+        end
+    end
+    table.sort(entries, function(first, second)
+        local firstLabel, secondLabel = string.lower(first.label), string.lower(second.label)
+        if firstLabel == secondLabel then return first.mode < second.mode end
+        return firstLabel < secondLabel
+    end)
+    return entries
+end
+
+function SARNArDrawing.setPinMode(targetId, mode, enabled)
+    if mode ~= "place" and mode ~= "children" then return false end
+    local state = SARNArDrawing.pins[targetId]
+    if state == nil then return false end
+    state[mode] = enabled == true
+    if not state.place and not state.children then SARNArDrawing.pins[targetId] = nil end
+    return true
+end
+
+function SARNArDrawing.clearPins()
+    SARNArDrawing.pins = {}
+end
+
+function SARNArDrawing.getPersistedPins()
+    local entries = {}
+    for _, state in pairs(SARNArDrawing.pins) do
+        local persistenceKey = state.target and state.target.persistenceKey
+        if persistenceKey ~= nil then
+            if state.place then
+                entries[#entries + 1] = { key = persistenceKey, mode = "place" }
+            end
+            if state.children then
+                entries[#entries + 1] = { key = persistenceKey, mode = "children" }
+            end
+        end
+    end
+    table.sort(entries, function(first, second)
+        if first.key == second.key then return first.mode < second.mode end
+        return first.key < second.key
+    end)
+    return entries
+end
+
+function SARNArDrawing.restorePins(entries)
+    SARNArDrawing.pins = {}
+    for _, entry in ipairs(type(entries) == "table" and entries or {}) do
+        local target = SARNLocationCatalog.getTargetByPersistenceKey(entry.key)
+        if target ~= nil and (entry.mode == "place" or entry.mode == "children") then
+            local state = getPinState(target, true)
+            state[entry.mode] = true
+        end
+    end
+end
+
 function SARNArDrawing.beginFrame()
     local screenWidth = tonumber(SARN.call(system, "getScreenWidth")) or 1920
     local screenHeight = tonumber(SARN.call(system, "getScreenHeight")) or 1080
@@ -130,7 +189,6 @@ function SARNArDrawing.beginFrame()
     SARNArDrawing.cursorCandidates = candidates
     SARNArDrawing.screenWidth = screenWidth
     SARNArDrawing.screenHeight = screenHeight
-    SARNArDrawing.debugViewSample = nil
     SARNArDrawing.selectedAction = nil
     SARNArDrawing.cursorInsideExpandedView = false
     SARNArDrawing.childrenListHovered = false
@@ -141,7 +199,6 @@ end
 
 function SARNArDrawing.endFrame()
     if SARNArDrawing.hoveredTargetId ~= nil and not SARNArDrawing.hoveredSeen then
-        local oldBounds = SARNArDrawing.hoveredBounds
         SARNArDrawing.hoveredTargetId = nil
         SARNArDrawing.hoveredBounds = nil
         SARNArDrawing.hoverOutsideSince = nil
@@ -149,29 +206,11 @@ function SARNArDrawing.endFrame()
         SARNArDrawing.viewTopOffset = nil
         SARNArDrawing.navigationBounds = nil
         SARNArDrawing.navigationUntil = nil
-        if oldBounds ~= nil then
-            SARNArDrawing.debugViewSample = { state = "CLOSE-NOT-VISIBLE", bounds = oldBounds, inside = false }
-        end
     end
     if SARNArDrawing.candidateTargetId ~= nil and not SARNArDrawing.candidateSeen then
         SARNArDrawing.candidateTargetId = nil
         SARNArDrawing.candidateSince = nil
     end
-    local sample = SARNArDrawing.debugViewSample
-    if sample ~= nil and sample.bounds ~= nil then
-        local cursor = SARNArDrawing.cursorCandidates[1]
-        local bounds = sample.bounds
-        appendDebugLine(tostring(sample.state) .. " center(" .. string.format("%.0f", cursor.x) .. ","
-            .. string.format("%.0f", cursor.y) .. ") view[" .. string.format("%.0f", bounds.left) .. ","
-            .. string.format("%.0f", bounds.top) .. "," .. string.format("%.0f", bounds.right) .. ","
-            .. string.format("%.0f", bounds.bottom) .. "] inside=" .. (sample.inside and "yes" or "no")
-            .. " outside=" .. string.format("%.2f", sample.outsideFor or 0) .. "s bgAlpha="
-            .. string.format("%.2f", sample.backgroundAlpha or 0.68))
-    end
-end
-
-function SARNArDrawing.getDebugLines()
-    return SARNArDrawing.debugLines
 end
 
 function SARNArDrawing.captureMouseWheel()
@@ -179,7 +218,6 @@ function SARNArDrawing.captureMouseWheel()
     local previous = SARNArDrawing.previousMouseWheel or 0
     if SARNArDrawing.childrenListHovered and wheel ~= 0 and previous == 0 then
         SARNArDrawing.pendingMouseWheel = (SARNArDrawing.pendingMouseWheel or 0) + (wheel > 0 and 1 or -1)
-        SARNArDrawing.lastCapturedMouseWheel = wheel
     end
     SARNArDrawing.previousMouseWheel = wheel
 end
@@ -215,22 +253,18 @@ function SARNArDrawing.activateSelectedAction()
             local ok = pcall(system.setWaypoint, waypoint, true)
             if ok then system.print('[SARN] Waypoint set to "' .. name .. '".') end
             return ok
-        elseif action.action == "planet-coordinate" then
+        elseif action.action == "coordinates" then
             local coordinateBody = SARNLocationCatalog.getNearestCoordinateBody(target)
-            local coordinate = SARN.bodyRelativePositionString(target.worldPosition, coordinateBody)
-            if coordinate == nil then
-                coordinate = SARN.closestPlanetPositionString(target.worldPosition)
+            local planetCoordinate = SARN.bodyRelativePositionString(
+                target.worldPosition, coordinateBody)
+            if planetCoordinate == nil then
+                planetCoordinate = SARN.closestPlanetPositionString(target.worldPosition)
             end
-            if coordinate == nil then
-                system.print('[SARN] "' .. name .. '": unknown body ID; use world coordinates.')
-                return false
-            end
-            system.print('[SARN] "' .. name .. '" planet-relative position: ' .. coordinate)
-            return true
-        elseif action.action == "space-coordinate" then
-            local coordinate = SARN.worldPositionString(target.worldPosition)
-            if coordinate == nil then return false end
-            system.print('[SARN] "' .. name .. '" world-space position: ' .. coordinate)
+            local worldCoordinate = SARN.worldPositionString(target.worldPosition)
+            if worldCoordinate == nil then return false end
+            system.print('[SARN] "' .. name .. '" | planet: '
+                .. (planetCoordinate or "unavailable (unknown body ID)")
+                .. ' | world: ' .. worldCoordinate)
             return true
         elseif action.action == "pin-place" then
             local pinned = togglePin(target, "place")
@@ -248,8 +282,6 @@ function SARNArDrawing.activateSelectedAction()
         SARNArDrawing.activatedMockActionKey = action.key
         SARNArDrawing.activatedMockActionUntil =
             (tonumber(SARN.call(system, "getArkTime")) or SARNArDrawing.now or 0) + 0.5
-        appendDebugLine("MOCK-ACTION " .. tostring(action.scope) .. " "
-            .. tostring(action.title) .. " @ " .. tostring(action.target.name or "Location"))
         return true
     end
     if action.kind ~= "open-parent" and action.kind ~= "open-child" then return false end
@@ -279,9 +311,8 @@ local function compactLayoutSize(target, cameraPosition, pinned)
     if distance ~= nil then name = name .. " | " .. SARN.formatDistance(distance) end
     local longest = #name
     local lineCount = 1
-    if target.ownerId ~= nil and tostring(target.ownerId) ~= "" then
-        local owner = tostring(target.ownerType or "owner") .. ": "
-            .. tostring(target.ownerName or "unknown")
+    if target.owner ~= nil and tostring(target.owner) ~= "" then
+        local owner = "Owner: " .. tostring(target.owner)
         longest = math.max(longest, #owner)
         lineCount = lineCount + 1
     end
@@ -430,8 +461,6 @@ function SARNArDrawing.getStyles()
 .sarn-ar-action{position:relative;display:flex;align-items:center;justify-content:center;width:26px;height:26px;box-sizing:border-box;color:#d8edf3;background:transparent;border:1px solid transparent;border-radius:4px;font:18px Arial,sans-serif;line-height:24px;text-shadow:0 1px 2px #000}
 .sarn-ar-action svg{width:18px;height:18px;fill:currentColor;filter:drop-shadow(0 1px 2px #000)}
 .sarn-ar-children-actions{top:-2px}
-.sarn-ar-children-actions .sarn-ar-action{width:24px;height:24px;font-size:16px;line-height:22px}
-.sarn-ar-children-actions .sarn-ar-action svg{width:16px;height:16px}
 .sarn-ar-action.sarn-action-selected{color:#fff;background:rgba(45,85,100,.94);border-color:currentColor;box-shadow:0 0 7px currentColor}
 .sarn-ar-action.sarn-action-activated{color:#061219;background:rgba(216,237,243,.96);border-color:#fff;box-shadow:0 0 9px currentColor}
 .sarn-ar-action.sarn-action-toggled{color:#fff;background:rgba(45,85,100,.72);box-shadow:inset 0 0 0 1px currentColor}
@@ -659,9 +688,8 @@ function SARNArDrawing.drawConfiguredLocation(target, pinned)
     local distance = SARN.distance(system.getCameraWorldPos(), displayTarget.worldPosition)
     if distance ~= nil then nameAndSize = nameAndSize .. " | " .. SARN.formatDistance(distance) end
     local rawLines = { nameAndSize }
-    if displayTarget.ownerId ~= nil and tostring(displayTarget.ownerId) ~= "" then
-        rawLines[#rawLines + 1] = tostring(displayTarget.ownerType or "owner")
-            .. ": " .. tostring(displayTarget.ownerName or "unknown")
+    if displayTarget.owner ~= nil and tostring(displayTarget.owner) ~= "" then
+        rawLines[#rawLines + 1] = "Owner: " .. tostring(displayTarget.owner)
     end
     if displayTarget.label ~= nil and tostring(displayTarget.label) ~= "" then
         rawLines[#rawLines + 1] = tostring(displayTarget.label)
@@ -677,9 +705,8 @@ function SARNArDrawing.drawConfiguredLocation(target, pinned)
     if displayTarget.areaRadius ~= nil and displayTarget.areaRadius > 0 then
         details[#details + 1] = "Radius: " .. SARN.escapeHtml(SARN.formatDistance(displayTarget.areaRadius))
     end
-    if displayTarget.ownerId ~= nil and tostring(displayTarget.ownerId) ~= "" then
-        details[#details + 1] = SARN.escapeHtml(tostring(displayTarget.ownerType or "owner")
-            .. ": " .. tostring(displayTarget.ownerName or "unknown"))
+    if displayTarget.owner ~= nil and tostring(displayTarget.owner) ~= "" then
+        details[#details + 1] = SARN.escapeHtml("Owner: " .. tostring(displayTarget.owner))
     end
     if displayTarget.description ~= nil and tostring(displayTarget.description) ~= "" then
         details[#details + 1] = SARN.escapeHtml(displayTarget.description)
@@ -694,7 +721,17 @@ function SARNArDrawing.drawConfiguredLocation(target, pinned)
     local viewBorderWidth = 1
     local viewRenderTopOffset = 0
     local parent = SARNLocationCatalog.getPrimaryParent(displayTarget)
-    local children = SARNLocationCatalog.getChildren(displayTarget)
+    local children = {}
+    for index, child in ipairs(SARNLocationCatalog.getChildren(displayTarget)) do
+        children[#children + 1] = { child = child, originalIndex = index }
+    end
+    table.sort(children, function(first, second)
+        local firstMoon = first.child.type == "satellite" or first.child.kind == "moon"
+        local secondMoon = second.child.type == "satellite" or second.child.kind == "moon"
+        if firstMoon ~= secondMoon then return firstMoon end
+        return first.originalIndex < second.originalIndex
+    end)
+    for index, entry in ipairs(children) do children[index] = entry.child end
     local secondaryLabel = displayTarget.label ~= nil and tostring(displayTarget.label) or ""
     local titleExtraHeight = secondaryLabel ~= "" and 16 or 0
     local childrenBlockHeight = #children > 0 and 162 or 20
@@ -783,7 +820,7 @@ function SARNArDrawing.drawConfiguredLocation(target, pinned)
             nodeActionSize,
             nodeActionGap)
 
-        local childrenActionSize, childrenActionGap = 24, 3
+        local childrenActionSize, childrenActionGap = nodeActionSize, nodeActionGap
         local childrenActionsWidth = #childrenActionMocks * childrenActionSize
             + (#childrenActionMocks - 1) * childrenActionGap
         local childrenHeaderTop = viewTop + 9 + parentHeight + 27
@@ -816,13 +853,9 @@ function SARNArDrawing.drawConfiguredLocation(target, pinned)
             SARNArDrawing.childrenListHovered = listHovered
             local wheel = SARNArDrawing.pendingMouseWheel or 0
             if listHovered and wheel ~= 0 and #children > 5 then
-                local oldStart = scrollStart
                 scrollStart = math.max(1, math.min(maximumStart,
                     scrollStart + (wheel > 0 and -1 or 1)))
                 SARNArDrawing.childScrollByTargetId[displayTarget.id] = scrollStart
-                appendDebugLine("SCROLL " .. tostring(displayTarget.name) .. " wheel="
-                    .. tostring(SARNArDrawing.lastCapturedMouseWheel or wheel) .. " start="
-                    .. tostring(oldStart) .. "->" .. tostring(scrollStart) .. "/" .. tostring(#children))
             end
             SARNArDrawing.pendingMouseWheel = 0
             if listHovered then
@@ -835,17 +868,6 @@ function SARNArDrawing.drawConfiguredLocation(target, pinned)
                         SARNArDrawing.selectedAction = { kind = "open-child", target = children[childIndex] }
                     end
                 end
-                local signature = tostring(displayTarget.id) .. ":" .. tostring(scrollStart)
-                    .. ":" .. tostring(selectedChildIndex or 0)
-                if signature ~= SARNArDrawing.lastChildrenHoverDebug then
-                    appendDebugLine("LIST-HOVER " .. tostring(displayTarget.name) .. " rows="
-                        .. tostring(scrollStart) .. "-" .. tostring(math.min(#children, scrollStart + 4))
-                        .. "/" .. tostring(#children) .. " selected="
-                        .. tostring(selectedChildIndex and children[selectedChildIndex].name or "none"))
-                    SARNArDrawing.lastChildrenHoverDebug = signature
-                end
-            else
-                SARNArDrawing.lastChildrenHoverDebug = nil
             end
             SARNArDrawing.currentChildScrollStart = scrollStart
         else
@@ -883,23 +905,9 @@ function SARNArDrawing.drawConfiguredLocation(target, pinned)
             SARNArDrawing.viewTopOffset = nil
             SARNArDrawing.navigationBounds = nil
             SARNArDrawing.navigationUntil = nil
-            SARNArDrawing.debugViewSample = {
-                state = "CLOSE",
-                bounds = viewBounds,
-                inside = false,
-                outsideFor = outsideFor,
-                backgroundAlpha = viewBackgroundAlpha
-            }
         else
             SARNArDrawing.hoveredSeen = true
             SARNArDrawing.hoveredBounds = viewBounds
-            SARNArDrawing.debugViewSample = {
-                state = "OPEN",
-                bounds = viewBounds,
-                inside = inside,
-                outsideFor = outsideFor,
-                backgroundAlpha = viewBackgroundAlpha
-            }
         end
     end
     local markerHtml = drawMarker(displayTarget)
@@ -928,9 +936,13 @@ function SARNArDrawing.drawConfiguredLocation(target, pinned)
         local rows = {}
         for childIndex = scrollStart, math.min(#children, scrollStart + 4) do
             local child = children[childIndex]
+            local descendantCount = #SARNLocationCatalog.getChildren(child)
+            local descendantSuffix = descendantCount > 0
+                and " (" .. tostring(descendantCount) .. " descendants)" or ""
             rows[#rows + 1] = '<div class="sarn-ar-child'
                 .. (selectedChildIndex == childIndex and ' sarn-action-selected' or '') .. '">&#8250; '
-                .. SARN.escapeHtml(child.name or "Location") .. '</div>'
+                .. SARN.escapeHtml(child.name or "Location")
+                .. descendantSuffix .. '</div>'
         end
         childrenHtml = childrenHtml .. '<div class="sarn-ar-children-list">'
             .. table.concat(rows) .. '</div><div class="sarn-ar-children-footer">'

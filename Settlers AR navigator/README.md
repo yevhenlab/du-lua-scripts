@@ -1,11 +1,11 @@
 # Settlers AR Navigator
 
-SARN renders AR assistance only for known, established places stored in `sarn/locations.lua`. It does not scan Radar contacts. A Databank is optional and stores player-selected runtime settings.
+SARN renders AR assistance only for known, established places stored in `sarn/locations.lua`. It does not scan Radar contacts. A Databank is optional and stores selected runtime settings and pins.
 
 Each visible place is shown as a dot with:
 
 - `Construct name [size]`
-- `owner-p: Name`, `owner-org: Name`, or `owner: unknown`
+- `Owner: Name` when the catalog provides an owner
 - Optional supporting `label`
 
 ## Setup
@@ -17,11 +17,11 @@ Each visible place is shown as a dot with:
 .\install-local.ps1
 ```
 
-3. Edit `<DU Root>/Game/data/lua/sarn/locations.lua` for standard locations or `locations-settlers.lua` for Settlers destinations. Each location uses `name`, `label`, `kind`, `coordinate`, `ownerId`, `atlasBody`, and `areaRadius`; optional `icon` and `excluded` fields override the kind icon or suppress its AR object.
+3. Edit `<DU Root>/Game/data/lua/sarn/locations.lua` for standard locations or `locations-settlers.lua` for Settlers destinations. Each real place may retain its DU `id` and uses structural `type`, semantic `kind`, `name`, `label`, `coordinate`, literal `owner`, `atlasBody`, and `areaRadius`; planet and satellite nodes also define `radius` and `atmosphereRadius` for the limited fallback atlas. Optional `icon` and `excluded` fields override the kind icon or suppress its AR object.
 4. Build and paste the generated Programming Board configuration:
 
 ```powershell
 .\build-lua-configuration.ps1 -CopyToClipboard
 ```
 
-No linked Radar or Core is required. A linked Databank is optional; the Settings menu can save runtime overrides that replace exported PB parameter defaults on later starts.
+No linked Radar or Core is required. A linked Databank is optional; the main-menu Save to databank action stores all Locations and Settings menu values, plus pins, for later starts.

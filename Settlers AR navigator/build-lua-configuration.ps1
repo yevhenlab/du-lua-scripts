@@ -41,6 +41,9 @@ $handlers = @(
     (New-Handler 11 '-4' 'onActionStart(action)' (Read-LuaFile 'system.onActionStart.parent.lua') @(
         [pscustomobject]@{ value = 'leftmouse' }
     ))
+    (New-Handler 12 '-4' 'onActionStart(action)' (Read-LuaFile 'system.onActionStart.parent.lua') @(
+        [pscustomobject]@{ value = 'option5' }
+    ))
 )
 $configuration = [pscustomobject][ordered]@{ slots = [pscustomobject]$slots; handlers = $handlers; methods = @(); events = @() }
 $json = $configuration | ConvertTo-Json -Depth 20 -Compress
