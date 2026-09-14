@@ -1,6 +1,5 @@
 -- SARN location data maintained specifically for Settlers server destinations.
 -- Settlers outposts and other custom public locations belong in this data module.
-
 return {
     locations = {
         {
@@ -9,86 +8,86 @@ return {
             type = "group",
             kind = "location-group",
             children = {
-        {
-            name = "Loaded Outpost",
-            label = "Settlers outpost",
-            kind = "outpost",
-            type = "constructStatic",
-            coordinate = "::pos{0,27,37.1186,127.1793,84.0775}",
-            owner = nil
-        },
-        {
-            name = "Outpost Pilot",
-            label = "Settlers outpost",
-            kind = "outpost",
-            type = "constructStatic",
-            coordinate = "::pos{0,27,-38.7040,104.0518,14.5254}",
-            owner = nil
-        },
-        {
-            name = "Outpost Platform",
-            label = "Settlers outpost",
-            kind = "outpost",
-            type = "constructStatic",
-            coordinate = "::pos{0,27,-35.9356,179.2421,33.3149}",
-            owner = nil
-        },
-        {
-            name = "Outpost Station",
-            label = "Settlers outpost",
-            kind = "outpost",
-            type = "constructStatic",
-            coordinate = "::pos{0,27,-38.0879,-89.9850,18.9140}",
-            owner = nil
-        },
-        {
-            name = "Outpost Train",
-            label = "Settlers outpost",
-            kind = "outpost",
-            type = "constructStatic",
-            coordinate = "::pos{0,27,38.5003,36.6209,53.2553}",
-            owner = nil
-        },
-        {
-            name = "Outpost Tri",
-            label = "Settlers outpost",
-            kind = "outpost",
-            type = "constructStatic",
-            coordinate = "::pos{0,27,-41.9946,-24.8714,33.3484}",
-            owner = nil
-        },
-        {
-            name = "Outpost Valiant",
-            label = "Settlers outpost",
-            kind = "outpost",
-            type = "constructStatic",
-            coordinate = "::pos{0,27,32.9666,-47.1015,4.2835}",
-            owner = nil
-        },
-        {
-            name = "Outpost Villa",
-            label = "Settlers outpost",
-            kind = "outpost",
-            type = "constructStatic",
-            coordinate = "::pos{0,27,-42.8144,45.6020,20.2540}",
-            owner = nil
-        },
-        {
-            name = "Outpost Wave",
-            label = "Settlers outpost",
-            kind = "outpost",
-            type = "constructStatic",
-            coordinate = "::pos{0,27,24.8495,75.8674,6.3104}",
-            owner = nil
-        },
-        {
-            name = "YOS Legacy Outpost",
-            label = "Settlers outpost",
-            kind = "outpost",
-            type = "constructStatic",
-            coordinate = "::pos{0,27,34.8766,-142.4270,26.6025}",
-            owner = nil
-        }
+                {
+                    name = "Loaded Outpost",
+                    label = "Settlers outpost",
+                    kind = "outpost",
+                    type = "constructStatic",
+                    coordinate = "::pos{0,27,37.1186,127.1793,84.0775}",
+                    owner = nil
+                },
+                {
+                    name = "Outpost Pilot",
+                    label = "Settlers outpost",
+                    kind = "outpost",
+                    type = "constructStatic",
+                    coordinate = "::pos{0,27,-38.7040,104.0518,14.5254}",
+                    owner = nil
+                },
+                {
+                    name = "Outpost Platform",
+                    label = "Settlers outpost",
+                    kind = "outpost",
+                    type = "constructStatic",
+                    coordinate = "::pos{0,27,-35.9356,179.2421,33.3149}",
+                    owner = nil
+                },
+                {
+                    name = "Outpost Station",
+                    label = "Settlers outpost",
+                    kind = "outpost",
+                    type = "constructStatic",
+                    coordinate = "::pos{0,27,-38.0879,-89.9850,18.9140}",
+                    owner = nil
+                },
+                {
+                    name = "Outpost Train",
+                    label = "Settlers outpost",
+                    kind = "outpost",
+                    type = "constructStatic",
+                    coordinate = "::pos{0,27,38.5003,36.6209,53.2553}",
+                    owner = nil
+                },
+                {
+                    name = "Outpost Tri",
+                    label = "Settlers outpost",
+                    kind = "outpost",
+                    type = "constructStatic",
+                    coordinate = "::pos{0,27,-41.9946,-24.8714,33.3484}",
+                    owner = nil
+                },
+                {
+                    name = "Outpost Valiant",
+                    label = "Settlers outpost",
+                    kind = "outpost",
+                    type = "constructStatic",
+                    coordinate = "::pos{0,27,32.9666,-47.1015,4.2835}",
+                    owner = nil
+                },
+                {
+                    name = "Outpost Villa",
+                    label = "Settlers outpost",
+                    kind = "outpost",
+                    type = "constructStatic",
+                    coordinate = "::pos{0,27,-42.8144,45.6020,20.2540}",
+                    owner = nil
+                },
+                {
+                    name = "Outpost Wave",
+                    label = "Settlers outpost",
+                    kind = "outpost",
+                    type = "constructStatic",
+                    coordinate = "::pos{0,27,24.8495,75.8674,6.3104}",
+                    owner = nil
+                },
+                {
+                    name = "YOS Legacy Outpost",
+                    label = "Settlers outpost",
+                    kind = "outpost",
+                    type = "constructStatic",
+                    coordinate = "::pos{0,27,34.8766,-142.4270,26.6025}",
+                    owner = nil
+                }
             }
         }
     },
@@ -154,18 +153,6 @@ return {
                     owner = "Aphelia"
                 }
             }
-        }
-    },
-    institutes = {
-        {
-            name = "Hadron Quantum Teleporter",
-            label = "Settlers Institute location",
-            kind = "teleporter",
-            type = "constructStatic",
-            coordinate = "::pos{0,2,29.0677,95.2200,295.6887}",
-            id = 1038443,
-            coreSize = "S",
-            owner = nil
         },
         {
             name = "Neon Abyss Parking",
@@ -246,6 +233,18 @@ return {
                     }
                 }
             }
+        }
+    },
+    institutes = {
+        {
+            name = "Hadron Quantum Teleporter",
+            label = "Settlers Institute location",
+            kind = "teleporter",
+            type = "constructStatic",
+            coordinate = "::pos{0,2,29.0677,95.2200,295.6887}",
+            id = 1038443,
+            coreSize = "S",
+            owner = nil
         }
     }
 }

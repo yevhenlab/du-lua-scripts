@@ -31,6 +31,72 @@ local function paleColor(color)
         .. tostring(blend(blue, defaultBlue))
 end
 
+local currentAreaColor = "85,232,255"
+local nearbyAreaColors = {
+    "255,193,92", "174,133,255", "104,225,166", "255,126,153",
+    "112,178,255", "241,145,89", "214,117,235", "155,214,87"
+}
+
+local function tintColor(color, amount)
+    local red, green, blue = tostring(color or ""):match("(%d+)%s*,%s*(%d+)%s*,%s*(%d+)")
+    if red == nil then return color end
+    local factor = math.max(0, math.min(1, tonumber(amount) or 0))
+    local function tint(value)
+        return math.floor(tonumber(value) + (255 - tonumber(value)) * factor + 0.5)
+    end
+    return tostring(tint(red)) .. "," .. tostring(tint(green)) .. "," .. tostring(tint(blue))
+end
+
+local function paletteStart(target)
+    local key = tostring(target and (target.persistenceKey or target.id or target.name) or "")
+    local hash = 0
+    for index = 1, #key do hash = (hash * 33 + string.byte(key, index)) % 65521 end
+    return hash % #nearbyAreaColors + 1
+end
+
+local function assignVisibilityColors(current, areaPlaceIds, nearbyInfo)
+    for _, target in ipairs(SARNLocationCatalog.visibilityColoredTargets or {}) do
+        target.visibilityColor = nil
+    end
+    local coloredTargets = {}
+    SARNLocationCatalog.visibilityColoredTargets = coloredTargets
+    local function setColor(target, color)
+        if target == nil then return end
+        if target.visibilityColor == nil then coloredTargets[#coloredTargets + 1] = target end
+        target.visibilityColor = color
+    end
+    if current == nil then return end
+    setColor(current, currentAreaColor)
+    for targetId in pairs(areaPlaceIds or {}) do
+        setColor(SARNLocationCatalog.getTargetById(targetId), tintColor(currentAreaColor, 0.32))
+    end
+    if type(nearbyInfo) ~= "table" then return end
+    local colorsByAreaId = { [current.id] = currentAreaColor }
+    local used = {}
+    for _, contextInfo in ipairs(nearbyInfo.contexts or {}) do
+        local area = contextInfo.target
+        local color = colorsByAreaId[area.id]
+        if color == nil then
+            local start = paletteStart(area)
+            local selected = start
+            for offset = 0, #nearbyAreaColors - 1 do
+                local candidate = (start + offset - 1) % #nearbyAreaColors + 1
+                if not used[candidate] then selected = candidate break end
+            end
+            used[selected] = true
+            color = nearbyAreaColors[selected]
+            colorsByAreaId[area.id] = color
+        end
+        contextInfo.color = color
+        setColor(area, color)
+    end
+    for targetId, areaId in pairs(nearbyInfo.selectedContextByTargetId or {}) do
+        local areaColor = colorsByAreaId[areaId]
+        if areaColor ~= nil then
+            setColor(SARNLocationCatalog.getTargetById(targetId), tintColor(areaColor, 0.32))
+        end
+    end
+end
 function SARNLocationCatalog.initialize()
     SARNLocationCatalog.targets = {}
     SARNLocationCatalog.allTargets = {}
@@ -39,9 +105,11 @@ function SARNLocationCatalog.initialize()
     SARNLocationCatalog.statistics = { total = 0, byDepth = {} }
     SARNLocationCatalog.showSystemPlanets = SARNConfiguration.showSystemPlanets == true
     SARNLocationCatalog.showSatellites = SARNConfiguration.showSatellites == true
-    SARNLocationCatalog.showCurrentNodeChildren =
-        SARNConfiguration.showCurrentNodeChildren == true
-    SARNLocationCatalog.showNearbyPlaces = SARNConfiguration.showNearbyPlaces == true
+    SARNLocationCatalog.showCurrentAreaPlaces =
+        SARNConfiguration.showCurrentAreaPlaces == true
+    SARNLocationCatalog.showNearbyAreas = SARNConfiguration.showNearbyAreas == true
+    SARNLocationCatalog.showNearbyAreaPlaces =
+        SARNConfiguration.showNearbyAreaPlaces == true
 
     local config = SARNLocationCatalog.rootConfig
     if type(config) ~= "table" then
@@ -202,6 +270,7 @@ function SARNLocationCatalog.initialize()
             label = entry.label,
             description = entry.description,
             atlasBody = entry.atlasBody,
+            radius = tonumber(entry.radius),
             areaRadius = tonumber(entry.areaRadius),
             sourceCoordinate = coordinate,
             excluded = entry.excluded == true,
@@ -226,6 +295,149 @@ function SARNLocationCatalog.initialize()
     end
 
     for _, entry in ipairs(locations) do loadEntry(entry, nil, 1, nil) end
+
+    local childrenByParentId = {}
+    local function rebuildChildrenIndex()
+        childrenByParentId = {}
+        for _, target in ipairs(SARNLocationCatalog.allTargets or {}) do
+            for _, parentId in ipairs(target.parentIds or {}) do
+                childrenByParentId[parentId] = childrenByParentId[parentId] or {}
+                childrenByParentId[parentId][#childrenByParentId[parentId] + 1] = target
+            end
+        end
+        SARNLocationCatalog.childrenByParentId = childrenByParentId
+    end
+    rebuildChildrenIndex()
+    local function calculateEnclosingEllipsoid(sources)
+        if #sources == 0 then return nil, nil, nil, nil end
+        if #sources == 1 then
+            local source = sources[1]
+            return { x = source.x, y = source.y, z = source.z },
+                source.radiusX, source.radiusY, source.radiusZ
+        end
+
+        local minimumX, minimumY, minimumZ = math.huge, math.huge, math.huge
+        local maximumX, maximumY, maximumZ = -math.huge, -math.huge, -math.huge
+        for _, source in ipairs(sources) do
+            local radiusX = math.max(0, tonumber(source.radiusX) or 0)
+            local radiusY = math.max(0, tonumber(source.radiusY) or 0)
+            local radiusZ = math.max(0, tonumber(source.radiusZ) or 0)
+            minimumX = math.min(minimumX, source.x - radiusX)
+            maximumX = math.max(maximumX, source.x + radiusX)
+            minimumY = math.min(minimumY, source.y - radiusY)
+            maximumY = math.max(maximumY, source.y + radiusY)
+            minimumZ = math.min(minimumZ, source.z - radiusZ)
+            maximumZ = math.max(maximumZ, source.z + radiusZ)
+        end
+
+        local center = {
+            x = (minimumX + maximumX) * 0.5,
+            y = (minimumY + maximumY) * 0.5,
+            z = (minimumZ + maximumZ) * 0.5
+        }
+        local radiusX = (maximumX - minimumX) * 0.5
+        local radiusY = (maximumY - minimumY) * 0.5
+        local radiusZ = (maximumZ - minimumZ) * 0.5
+        if radiusX <= 0 and radiusY <= 0 and radiusZ <= 0 then return center, nil, nil, nil end
+
+        -- A line or plane still needs a visible three-dimensional cross-section.
+        radiusX, radiusY, radiusZ = math.max(radiusX, 1), math.max(radiusY, 1), math.max(radiusZ, 1)
+
+        -- Expand the parent to include every child ellipsoid's six axis extrema.
+        -- A single child is returned unchanged, so hierarchy-only wrappers do not grow it.
+        local requiredScale = 1
+        local function includePoint(x, y, z)
+            local dx = (x - center.x) / radiusX
+            local dy = (y - center.y) / radiusY
+            local dz = (z - center.z) / radiusZ
+            requiredScale = math.max(requiredScale, math.sqrt(dx * dx + dy * dy + dz * dz))
+        end
+        for _, source in ipairs(sources) do
+            local childRadiusX = math.max(0, tonumber(source.radiusX) or 0)
+            local childRadiusY = math.max(0, tonumber(source.radiusY) or 0)
+            local childRadiusZ = math.max(0, tonumber(source.radiusZ) or 0)
+            includePoint(source.x - childRadiusX, source.y, source.z)
+            includePoint(source.x + childRadiusX, source.y, source.z)
+            includePoint(source.x, source.y - childRadiusY, source.z)
+            includePoint(source.x, source.y + childRadiusY, source.z)
+            includePoint(source.x, source.y, source.z - childRadiusZ)
+            includePoint(source.x, source.y, source.z + childRadiusZ)
+        end
+        return center, radiusX * requiredScale, radiusY * requiredScale, radiusZ * requiredScale
+    end
+
+    local function calculateBounds(target, visiting, complete)
+        if complete[target.id] then
+            return target.boundsCenter, target.boundsRadiusX, target.boundsRadiusY,
+                target.boundsRadiusZ, target.boundsSourceCount
+        end
+        if visiting[target.id] then return nil, nil, nil, nil, 0 end
+        visiting[target.id] = true
+        local sources = {}
+        local sourceCount = 0
+        for _, child in ipairs(childrenByParentId[target.id] or {}) do
+            local childCenter, childRadiusX, childRadiusY, childRadiusZ, childCount =
+                calculateBounds(child, visiting, complete)
+            if childCenter ~= nil then
+                sources[#sources + 1] = {
+                    x = childCenter.x,
+                    y = childCenter.y,
+                    z = childCenter.z,
+                    radiusX = childRadiusX or 0,
+                    radiusY = childRadiusY or 0,
+                    radiusZ = childRadiusZ or 0
+                }
+                sourceCount = sourceCount + (childCount or 0)
+            end
+        end
+        if target.worldPosition ~= nil then
+            local ownRadius = math.max(0, tonumber(target.areaRadius) or 0)
+            sources[#sources + 1] = {
+                x = target.worldPosition.x,
+                y = target.worldPosition.y,
+                z = target.worldPosition.z,
+                radiusX = ownRadius,
+                radiusY = ownRadius,
+                radiusZ = ownRadius
+            }
+            sourceCount = sourceCount + 1
+        end
+        visiting[target.id] = nil
+        complete[target.id] = true
+        if #sources == 0 then
+            target.boundsCenter = nil
+            target.boundsRadiusX = nil
+            target.boundsRadiusY = nil
+            target.boundsRadiusZ = nil
+            target.boundsSourceCount = 0
+        else
+            target.boundsCenter, target.boundsRadiusX, target.boundsRadiusY, target.boundsRadiusZ =
+                calculateEnclosingEllipsoid(sources)
+            target.boundsSourceCount = sourceCount
+        end
+        return target.boundsCenter, target.boundsRadiusX, target.boundsRadiusY,
+            target.boundsRadiusZ, target.boundsSourceCount
+    end
+    local function refreshDisplayPositions()
+        for _, target in ipairs(SARNLocationCatalog.allTargets or {}) do
+            target.displayPosition = target.worldPosition or target.boundsCenter
+        end
+    end
+
+    function SARNLocationCatalog.recalculateBounds()
+        rebuildChildrenIndex()
+        local visiting, complete = {}, {}
+        for _, target in ipairs(SARNLocationCatalog.allTargets or {}) do
+            calculateBounds(target, visiting, complete)
+        end
+        refreshDisplayPositions()
+    end
+    SARNLocationCatalog.recalculateBounds()
+    for _, target in ipairs(SARNLocationCatalog.allTargets) do
+        if not target.excluded and target.worldPosition == nil and target.displayPosition ~= nil then
+            SARNLocationCatalog.targets[#SARNLocationCatalog.targets + 1] = target
+        end
+    end
     for _, target in ipairs(SARNLocationCatalog.allTargets) do
         if not target.excluded then
         local targetDepth = target.depth or 1
@@ -261,22 +473,31 @@ function SARNLocationCatalog.getShowSatellites()
     return SARNLocationCatalog.showSatellites == true
 end
 
-function SARNLocationCatalog.setShowCurrentNodeChildren(enabled)
-    SARNLocationCatalog.showCurrentNodeChildren = enabled == true
-    return SARNLocationCatalog.showCurrentNodeChildren
+function SARNLocationCatalog.setShowCurrentAreaPlaces(enabled)
+    SARNLocationCatalog.showCurrentAreaPlaces = enabled == true
+    return SARNLocationCatalog.showCurrentAreaPlaces
 end
 
-function SARNLocationCatalog.getShowCurrentNodeChildren()
-    return SARNLocationCatalog.showCurrentNodeChildren == true
+function SARNLocationCatalog.getShowCurrentAreaPlaces()
+    return SARNLocationCatalog.showCurrentAreaPlaces == true
 end
 
-function SARNLocationCatalog.setShowNearbyPlaces(enabled)
-    SARNLocationCatalog.showNearbyPlaces = enabled == true
-    return SARNLocationCatalog.showNearbyPlaces
+function SARNLocationCatalog.setShowNearbyAreas(enabled)
+    SARNLocationCatalog.showNearbyAreas = enabled == true
+    return SARNLocationCatalog.showNearbyAreas
 end
 
-function SARNLocationCatalog.getShowNearbyPlaces()
-    return SARNLocationCatalog.showNearbyPlaces == true
+function SARNLocationCatalog.getShowNearbyAreas()
+    return SARNLocationCatalog.showNearbyAreas == true
+end
+
+function SARNLocationCatalog.setShowNearbyAreaPlaces(enabled)
+    SARNLocationCatalog.showNearbyAreaPlaces = enabled == true
+    return SARNLocationCatalog.showNearbyAreaPlaces
+end
+
+function SARNLocationCatalog.getShowNearbyAreaPlaces()
+    return SARNLocationCatalog.showNearbyAreaPlaces == true
 end
 
 function SARNLocationCatalog.getTargetById(targetId)
@@ -348,13 +569,8 @@ end
 function SARNLocationCatalog.getChildren(target)
     local children = {}
     if target == nil then return children end
-    for _, candidate in ipairs(SARNLocationCatalog.allTargets or {}) do
-        for _, parentId in ipairs(candidate.parentIds or {}) do
-            if parentId == target.id then
-                children[#children + 1] = candidate
-                break
-            end
-        end
+    for _, candidate in ipairs((SARNLocationCatalog.childrenByParentId or {})[target.id] or {}) do
+        children[#children + 1] = candidate
     end
     table.sort(children, function(first, second)
         return string.lower(tostring(first.name)) < string.lower(tostring(second.name))
@@ -362,27 +578,42 @@ function SARNLocationCatalog.getChildren(target)
     return children
 end
 
-local function activationRadius(target)
-    local radius = tonumber(target and target.areaRadius)
-    if radius == nil or radius <= 0 then return nil end
-    if type(target.atlasBody) ~= "table" then return radius end
-    local systemId = target.atlasBody.systemId or target.atlasBody[1]
-    local bodyId = target.atlasBody.bodyId or target.atlasBody[2]
-    local atlas = SARN.getAtlas()
-    local bodies = atlas and (atlas[systemId] or atlas[tostring(systemId)])
-    local body = bodies and (bodies[bodyId] or bodies[tostring(bodyId)])
-    local atmosphereRadius = body and tonumber(body.atmosphereRadius)
-    local surfaceRadius = body and tonumber(body.radius) or radius
-    return math.max(radius, surfaceRadius + 5000, atmosphereRadius or 0)
+local function boundsContainmentDistance(target, playerPosition)
+    local center = target and target.boundsCenter
+    local radiusX = tonumber(target and target.boundsRadiusX)
+    local radiusY = tonumber(target and target.boundsRadiusY)
+    local radiusZ = tonumber(target and target.boundsRadiusZ)
+    local px, py, pz = SARN.components(playerPosition)
+    if center == nil or radiusX == nil or radiusY == nil or radiusZ == nil
+        or radiusX <= 0 or radiusY <= 0 or radiusZ <= 0 or px == nil then return nil end
+    local centerDistance = SARN.distance(playerPosition, center)
+    if centerDistance == nil then return nil end
+    -- Derived bounds use one consistent 75% outer entry margin.
+    local entryScale = 1.75
+    local dx = (px - center.x) / (radiusX * entryScale)
+    local dy = (py - center.y) / (radiusY * entryScale)
+    local dz = (pz - center.z) / (radiusZ * entryScale)
+    if dx * dx + dy * dy + dz * dz > 1 then return nil end
+    return centerDistance
+end
+
+local function currentContainmentDistance(target, playerPosition)
+    return boundsContainmentDistance(target, playerPosition)
 end
 
 function SARNLocationCatalog.getCurrentTarget(playerPosition)
+    local now = tonumber(SARN.call(system, "getArkTime")) or 0
+    local cached = SARNLocationCatalog.currentTargetCache
+    -- Current-area containment checks every catalog node. The short cache avoids
+    -- repeating that full scan on every renderer frame while keeping transitions responsive.
+    if cached ~= nil and now - cached.time < 0.15 then return cached.target end
     local current = nil
     local currentDistance = nil
     for _, target in ipairs(SARNLocationCatalog.allTargets or {}) do
-        local radius = activationRadius(target)
-        local distance = radius ~= nil and SARN.distance(playerPosition, target.worldPosition) or nil
-        if distance ~= nil and distance <= radius then
+        local isGroup = target.type == "group" or target.kind == "location-group"
+        local distance = (not isGroup or SARNConfiguration.allowGroupsAsCurrentArea)
+            and currentContainmentDistance(target, playerPosition) or nil
+        if distance ~= nil then
             local deeper = current == nil or (target.depth or 1) > (current.depth or 1)
             local nearer = current ~= nil and (target.depth or 1) == (current.depth or 1)
                 and (currentDistance == nil or distance < currentDistance)
@@ -392,6 +623,7 @@ function SARNLocationCatalog.getCurrentTarget(playerPosition)
             end
         end
     end
+    SARNLocationCatalog.currentTargetCache = { time = now, target = current }
     return current
 end
 
@@ -419,56 +651,180 @@ local function limitedNearestIds(candidates)
         return first.distance < second.distance
     end)
     local ids = {}
+    local ranks = {}
+    local selected = {}
     local maximum = math.max(1,
         math.floor(tonumber(SARNConfiguration.maximumNearbyPlaces) or 10))
     for index = 1, math.min(maximum, #candidates) do
-        ids[candidates[index].target.id] = true
+        local candidate = candidates[index]
+        local id = candidate.target.id
+        ids[id] = true
+        ranks[id] = index - 1
+        selected[#selected + 1] = candidate
     end
-    return ids
+    return ids, ranks, selected
 end
 
 local function getAreaPlaceIds(current, playerPosition)
-    if current == nil or not SARNLocationCatalog.getShowCurrentNodeChildren() then return {} end
-    local candidates = {}
-    for _, child in ipairs(SARNLocationCatalog.getChildren(current)) do
-        if not child.excluded and child.worldPosition ~= nil and not isCelestial(child) then
-            local distance = SARN.distance(playerPosition, child.worldPosition)
-            if distance ~= nil then
-                candidates[#candidates + 1] = { target = child, distance = distance }
-            end
-        end
+    if current == nil or not SARNLocationCatalog.getShowCurrentAreaPlaces() then
+        return {}, {}, {}, 0, 0
     end
-    return limitedNearestIds(candidates)
-end
-
-local function getNearbyTargetIds(current, playerPosition)
-    local nearbyIds = {}
-    if current == nil or not SARNLocationCatalog.getShowNearbyPlaces() then return nearbyIds end
     local inAtmosphere = (tonumber(unit.getAtmosphereDensity()) or 0) > 0
     local rangeKm = inAtmosphere and SARNConfiguration.nearbyAtmoRangeKm
         or SARNConfiguration.nearbySpaceRangeKm
     local rangeMeters = math.max(0, tonumber(rangeKm) or 0) * 1000
+    local rangeSquared = rangeMeters * rangeMeters
+    local px, py, pz = SARN.components(playerPosition)
     local candidates = {}
+    local total = 0
     local visited = {}
-    local function visitOrganizationalChildren(parent)
+    local function visitChildren(parent)
         if parent == nil or visited[parent.id] then return end
         visited[parent.id] = true
         for _, child in ipairs(SARNLocationCatalog.getChildren(parent)) do
-            if child.worldPosition ~= nil then
-                local distance = SARN.distance(playerPosition, child.worldPosition)
-                if not child.excluded and not isCelestial(child)
-                    and distance ~= nil and distance <= rangeMeters then
-                    candidates[#candidates + 1] = { target = child, distance = distance }
+            local position = child.displayPosition
+            if not child.excluded and position ~= nil and not isCelestial(child) then
+                total = total + 1
+                local x, y, z = SARN.components(position)
+                if px ~= nil and x ~= nil then
+                    local dx, dy, dz = x - px, y - py, z - pz
+                    local squared = dx * dx + dy * dy + dz * dz
+                    if squared <= rangeSquared then
+                        candidates[#candidates + 1] = { target = child, distance = squared }
+                    end
                 end
-            else
-                visitOrganizationalChildren(child)
+            elseif position == nil then
+                visitChildren(child)
             end
         end
     end
-    visitOrganizationalChildren(current)
-    return limitedNearestIds(candidates)
+    visitChildren(current)
+    local ids, ranks, selected = limitedNearestIds(candidates)
+    return ids, ranks, selected, #candidates, total
 end
+local function getNearbyTargetIds(current, playerPosition)
+    local nearbyIds = {}
+    local nearbyRanks = {}
+    if current == nil or (not SARNLocationCatalog.getShowNearbyAreas()
+        and not SARNLocationCatalog.getShowNearbyAreaPlaces()) then
+        return nearbyIds, nearbyRanks, nil, {}
+    end
+    local inAtmosphere = (tonumber(unit.getAtmosphereDensity()) or 0) > 0
+    local rangeKm = inAtmosphere and SARNConfiguration.nearbyAtmoRangeKm
+        or SARNConfiguration.nearbySpaceRangeKm
+    local rangeMeters = math.max(0, tonumber(rangeKm) or 0) * 1000
+    local rangeSquared = rangeMeters * rangeMeters
+    local candidates = {}
+    local contextIds = {}
+    local nearbyInfo = {
+        root = current,
+        contexts = {},
+        contextIds = contextIds,
+        selectedContextByTargetId = {},
+        contextTotal = 0,
+        candidateCount = 0,
+        selectedCount = 0,
+        maximum = math.max(1,
+            math.floor(tonumber(SARNConfiguration.maximumNearbyPlaces) or 10))
+    }
+    local px, py, pz = SARN.components(playerPosition)
+    local function distanceSquared(position)
+        local x, y, z = SARN.components(position)
+        if px == nil or x == nil then return nil end
+        local dx, dy, dz = x - px, y - py, z - pz
+        return dx * dx + dy * dy + dz * dz
+    end
+    local function inspectChildren(parent, contextId, collectPlaces)
+        local total = 0
+        local inRange = 0
+        for _, child in ipairs(SARNLocationCatalog.getChildren(parent)) do
+            if not child.excluded and not isCelestial(child) then
+                total = total + 1
+                local squared = distanceSquared(child.displayPosition)
+                if squared ~= nil and squared <= rangeSquared then
+                    inRange = inRange + 1
+                    if collectPlaces then
+                        candidates[#candidates + 1] = {
+                            target = child,
+                            distance = squared,
+                            contextId = contextId
+                        }
+                    end
+                end
+            end
+        end
+        return total, inRange
+    end
 
+    -- Nearby areas are non-celestial siblings of the current area. Their markers
+    -- and their direct places are controlled independently, although both use
+    -- the same inexpensive centre-distance preselection.
+    local parent = not isCelestial(current) and SARNLocationCatalog.getPrimaryParent(current) or nil
+    if parent ~= nil then
+        nearbyInfo.root = parent
+        local contextRange = rangeMeters * 2 * 1.2
+        local contextRangeSquared = contextRange * contextRange
+        local contextCandidates = {}
+        for _, sibling in ipairs(SARNLocationCatalog.getChildren(parent)) do
+            if not sibling.excluded and not isCelestial(sibling) then
+                nearbyInfo.contextTotal = nearbyInfo.contextTotal + 1
+                local squared = distanceSquared(sibling.displayPosition)
+                if sibling.id == current.id
+                    or (squared ~= nil and squared <= contextRangeSquared) then
+                    contextCandidates[#contextCandidates + 1] = {
+                        target = sibling,
+                        distanceSquared = squared or 0
+                    }
+                end
+            end
+        end
+        table.sort(contextCandidates, function(first, second)
+            if first.target.id == current.id then return true end
+            if second.target.id == current.id then return false end
+            if first.distanceSquared == second.distanceSquared then
+                return string.lower(tostring(first.target.name))
+                    < string.lower(tostring(second.target.name))
+            end
+            return first.distanceSquared < second.distanceSquared
+        end)
+        for _, contextCandidate in ipairs(contextCandidates) do
+            local context = contextCandidate.target
+            local isCurrent = context.id == current.id
+            local total, inRange = 0, 0
+            if not isCurrent then
+                total, inRange = inspectChildren(context, context.id,
+                    SARNLocationCatalog.getShowNearbyAreaPlaces())
+            end
+            local markerEligible = not isCurrent and inRange > 0
+            if markerEligible and SARNLocationCatalog.getShowNearbyAreas() then
+                contextIds[context.id] = true
+            end
+            nearbyInfo.contexts[#nearbyInfo.contexts + 1] = {
+                target = context,
+                totalChildren = total,
+                inRangeChildren = inRange,
+                selectedChildren = 0,
+                current = isCurrent,
+                markerEligible = markerEligible
+            }
+        end
+    end
+    local ids, ranks, selected = limitedNearestIds(candidates)
+    nearbyInfo.candidateCount = #candidates
+    nearbyInfo.selectedCount = #selected
+    local contextInfoById = {}
+    for _, contextInfo in ipairs(nearbyInfo.contexts) do
+        contextInfoById[contextInfo.target.id] = contextInfo
+    end
+    for _, candidate in ipairs(selected) do
+        nearbyInfo.selectedContextByTargetId[candidate.target.id] = candidate.contextId
+        local contextInfo = contextInfoById[candidate.contextId]
+        if contextInfo ~= nil then
+            contextInfo.selectedChildren = contextInfo.selectedChildren + 1
+        end
+    end
+    return ids, ranks, nearbyInfo, contextIds
+end
 local function getClosestPlanet(systemTarget, playerPosition)
     if systemTarget == nil then return nil end
     local closest = nil
@@ -502,9 +858,47 @@ end
 function SARNLocationCatalog.getVisibleTargets(playerPosition)
     local current = SARNLocationCatalog.getCurrentTarget(playerPosition)
     local activeSystem = SARNLocationCatalog.getNearestSystem(current)
-    local areaPlaceIds = getAreaPlaceIds(current, playerPosition)
-    local nearbyIds = getNearbyTargetIds(current, playerPosition)
+    local areaPlaceIds, areaPlaceRanks, areaPlaceSelected, areaPlaceInRange, areaPlaceTotal =
+        getAreaPlaceIds(current, playerPosition)
+    local nearbyIds, nearbyRanks, nearbyInfo, contextIds =
+        getNearbyTargetIds(current, playerPosition)
+    if current ~= nil and SARNLocationCatalog.getShowCurrentAreaPlaces() then
+        if type(nearbyInfo) ~= "table" then
+            nearbyInfo = {
+                root = current,
+                contexts = {},
+                contextIds = {},
+                selectedContextByTargetId = {},
+                contextTotal = 1,
+                candidateCount = 0,
+                selectedCount = 0,
+                maximum = math.max(1,
+                    math.floor(tonumber(SARNConfiguration.maximumNearbyPlaces) or 10)),
+                suppressContextSummary = true
+            }
+        end
+        local currentInfo = nil
+        for _, contextInfo in ipairs(nearbyInfo.contexts or {}) do
+            if contextInfo.target.id == current.id then currentInfo = contextInfo break end
+        end
+        if currentInfo == nil then
+            currentInfo = { target = current, current = true }
+            table.insert(nearbyInfo.contexts, 1, currentInfo)
+        end
+        currentInfo.totalChildren = areaPlaceTotal or 0
+        currentInfo.inRangeChildren = areaPlaceInRange or 0
+        currentInfo.selectedChildren = #(areaPlaceSelected or {})
+        for _, candidate in ipairs(areaPlaceSelected or {}) do
+            nearbyInfo.selectedContextByTargetId[candidate.target.id] = current.id
+        end
+        nearbyInfo.candidateCount = (nearbyInfo.candidateCount or 0) + (areaPlaceInRange or 0)
+        nearbyInfo.selectedCount = (nearbyInfo.selectedCount or 0) + #(areaPlaceSelected or {})
+    end
+    local visibleRanks = {}
+    for targetId, rank in pairs(areaPlaceRanks or {}) do visibleRanks[targetId] = rank end
+    for targetId, rank in pairs(nearbyRanks or {}) do visibleRanks[targetId] = rank end
     local satelliteIds = getSatelliteIds(activeSystem, playerPosition)
+    assignVisibilityColors(current, areaPlaceIds, nearbyInfo)
     local visible = {}
     local parentIds = {}
     if current ~= nil then
@@ -520,7 +914,6 @@ function SARNLocationCatalog.getVisibleTargets(playerPosition)
                 isSystemPlanet = true
             end
         end
-        local isCurrent = current ~= nil and target.id == current.id
         local currentAllowsParent = current ~= nil
             and current.kind ~= "planet" and current.kind ~= "system"
         local isParent = currentAllowsParent and parentIds[target.id] == true
@@ -535,11 +928,13 @@ function SARNLocationCatalog.getVisibleTargets(playerPosition)
             isBaselineVisible = isTopLevel
         end
         local isNearby = nearbyIds[target.id] == true
-        if isCurrent or isParent or isSatellite or isAreaPlace or isNearby or isBaselineVisible then
+        local isContext = contextIds[target.id] == true
+        if isParent or isSatellite or isAreaPlace
+            or isNearby or isContext or isBaselineVisible then
             visible[#visible + 1] = target
         end
     end
-    return visible, current
+    return visible, current, visibleRanks, nearbyInfo
 end
 
 function SARNLocationCatalog.getStatistics()

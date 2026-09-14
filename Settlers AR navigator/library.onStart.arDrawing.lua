@@ -9,6 +9,7 @@ SARNArDrawing.candidateTargetId = nil
 SARNArDrawing.candidateSince = nil
 SARNArDrawing.candidateSeen = false
 SARNArDrawing.pins = SARNArDrawing.pins or {}
+SARNArDrawing.childSortStateByTargetId = SARNArDrawing.childSortStateByTargetId or {}
 
 local waypointIcon = {
     viewBox = "0 0 26 26",
@@ -34,10 +35,9 @@ local nodeActionMocks = {
 
 local childrenActionMocks = {
     { key = "pin-children", title = "Pin children", action = "pin-children", svg = pinIcon },
-    { key = "children-sort", icon = "&#8645;", title = "Children action 2" },
-    { key = "children-expand", icon = "&#9660;", title = "Children action 3" },
-    { key = "children-focus", icon = "&#9678;", title = "Children action 4" },
-    { key = "children-more", icon = "&#8943;", title = "Children action 5" }
+    { key = "children-name-order", action = "cycle-children-name-order" },
+    { key = "children-distance-order", action = "cycle-children-distance-order" },
+    { key = "children-server-filter", icon = "&#9661;", title = "Server filter (not implemented)" }
 }
 
 local function pointInside(x, y, bounds)
@@ -75,6 +75,16 @@ local function togglePin(target, mode)
     if not state.place and not state.children then SARNArDrawing.pins[target.id] = nil end
     return state[mode]
 end
+local function getChildSortState(target, create)
+    local targetId = target and target.id
+    if targetId == nil then return nil end
+    local state = SARNArDrawing.childSortStateByTargetId[targetId]
+    if state == nil and create then
+        state = { name = 0, distance = 0 }
+        SARNArDrawing.childSortStateByTargetId[targetId] = state
+    end
+    return state
+end
 
 function SARNArDrawing.isTargetPinned(target)
     local ownState = getPinState(target, false)
@@ -96,7 +106,8 @@ function SARNArDrawing.getPinnedEntries()
             entries[#entries + 1] = {
                 name = state.target.name or "Location",
                 mode = state.place and state.children and "place + children"
-                    or (state.place and "place" or "children")
+                    or (state.place and "place" or "children"),
+                color = state.target.visibilityColor or state.target.color
             }
         end
     end
@@ -275,6 +286,20 @@ function SARNArDrawing.activateSelectedAction()
             system.print('[SARN] Children of "' .. name .. '" '
                 .. (pinned and "pinned." or "unpinned."))
             return true
+        elseif action.action == "cycle-children-name-order" then
+            local state = getChildSortState(target, true)
+            state.name = (state.name + 1) % 3
+            if state.name ~= 0 then state.distance = 0 end
+            SARNArDrawing.childScrollByTargetId = SARNArDrawing.childScrollByTargetId or {}
+            SARNArDrawing.childScrollByTargetId[target.id] = 1
+            return true
+        elseif action.action == "cycle-children-distance-order" then
+            local state = getChildSortState(target, true)
+            state.distance = (state.distance + 1) % 3
+            if state.distance ~= 0 then state.name = 0 end
+            SARNArDrawing.childScrollByTargetId = SARNArDrawing.childScrollByTargetId or {}
+            SARNArDrawing.childScrollByTargetId[target.id] = 1
+            return true
         end
         return false
     end
@@ -302,12 +327,16 @@ function SARNArDrawing.projectWorldPoint(point)
     return { x = sx, y = sy }
 end
 
+local function displayPosition(target)
+    return target and (target.displayPosition or target.worldPosition) or nil
+end
+
 local function compactLayoutSize(target, cameraPosition, pinned)
     local name = tostring(target.name or "Location")
     if target.coreSize ~= nil and target.coreSize ~= "?" then
         name = name .. " [" .. tostring(target.coreSize) .. "]"
     end
-    local distance = SARN.distance(cameraPosition, target.worldPosition)
+    local distance = SARN.distance(cameraPosition, displayPosition(target))
     if distance ~= nil then name = name .. " | " .. SARN.formatDistance(distance) end
     local longest = #name
     local lineCount = 1
@@ -345,7 +374,7 @@ function SARNArDrawing.prepareCompactLayout(targets)
     -- most relevant labels retain the slots closest to their projected points.
     for targetIndex = #targets, 1, -1 do
         local target = targets[targetIndex]
-        local projected = SARNArDrawing.projectWorldPoint(target.worldPosition)
+        local projected = SARNArDrawing.projectWorldPoint(displayPosition(target))
         if projected ~= nil and projected.x >= 0.05 and projected.x <= 0.95
             and projected.y >= 0.05 and projected.y <= 0.95 then
             local anchorX, anchorY = projected.x * width, projected.y * height
@@ -439,6 +468,7 @@ function SARNArDrawing.getStyles()
 .sarn-ar-object.sarn-expanded{z-index:1000}
 .sarn-ar-object.sarn-expanded .sarn-ar-compact{display:none}
 .sarn-ar-object.sarn-expanded .sarn-ar-details{display:block}
+.sarn-ar-bounds{position:fixed;left:0;top:0;width:100vw;height:100vh;overflow:hidden;pointer-events:none;z-index:0}
 .sarn-ar-guide{position:fixed;left:0;top:0;width:100vw;height:100vh;overflow:hidden;pointer-events:none}
 .sarn-ar-guide-label{position:fixed;padding:2px 5px;color:inherit;background:rgba(3,12,18,.72);border:1px solid currentColor;font-weight:bold;text-shadow:-2px -2px 2px #000,2px -2px 2px #000,-2px 2px 2px #000,2px 2px 2px #000,0 0 6px #000}
 .sarn-ar-parent{height:24px;box-sizing:border-box;margin-bottom:5px;padding:3px 5px;color:#d8edf3;border:1px solid rgba(216,237,243,.42);background:rgba(20,40,50,.48);font-weight:bold}
@@ -449,7 +479,6 @@ function SARNArDrawing.getStyles()
 .sarn-ar-child.sarn-action-selected{color:#fff;background:rgba(45,85,100,.88);border:1px solid currentColor;box-shadow:inset 0 0 6px currentColor}
 .sarn-ar-children-footer{height:18px;box-sizing:border-box;padding-top:2px;color:#85aeba;text-align:center;font-size:11px}
 .sarn-ar-icon{display:inline-block;align-self:center;flex:none;margin-right:8px;color:inherit;filter:drop-shadow(-1px -1px .5px #000) drop-shadow(1px -1px .5px #000) drop-shadow(-1px 1px .5px #000) drop-shadow(1px 1px .5px #000) drop-shadow(0 0 2px #000)}
-.sarn-ar-dot{display:inline-block;align-self:center;width:8px;height:8px;margin:7px 15px 7px 7px;border-radius:50%;background:currentColor;border:1px solid #e8fbff;box-shadow:0 0 6px #001820;flex:none}
 .sarn-ar-text{text-shadow:-2px -2px 2px #000,2px -2px 2px #000,-2px 2px 2px #000,2px 2px 2px #000,0 0 6px #000}
 .sarn-ar-compact-name{font-weight:bold}
 .sarn-ar-details-title{position:relative;display:flex;align-items:center;margin-bottom:5px}
@@ -472,9 +501,7 @@ end
 
 local function drawMarker(target)
     local definition = target and target.iconDefinition
-    if type(definition) ~= "table" then
-        return '<span class="sarn-ar-dot"></span>'
-    end
+    if type(definition) ~= "table" then return "" end
     local size = 22
     local scale = math.max(0.1, math.min(1, tonumber(definition.scale) or 1))
     local body = definition.body
@@ -497,6 +524,96 @@ local function projectWorldPointRaw(point)
     local sx, sy, sz = SARN.components(projected)
     if sx == nil or sy == nil or sz == nil then return nil end
     return { x = sx, y = sy, visible = sz ~= 0 }
+end
+
+local function drawBoundsRings(target, color, width, height)
+    local center = target and target.boundsCenter
+    local radiusX = tonumber(target and target.boundsRadiusX)
+    local radiusY = tonumber(target and target.boundsRadiusY)
+    local radiusZ = tonumber(target and target.boundsRadiusZ)
+    if center == nil or radiusX == nil or radiusY == nil or radiusZ == nil
+        or radiusX <= 0 or radiusY <= 0 or radiusZ <= 0 then return "" end
+
+    local seed = tonumber(target.id) or 0
+    local now = SARNArDrawing.now or 0
+    local function driftingAngle(phaseSeed, basePeriod, amplitude, variationPeriod)
+        -- Base rate is 2x; the smooth field changes it between 1.5x and 2.5x.
+        local phase = 2 * now / basePeriod
+            - 0.5 * variationPeriod / basePeriod * math.cos(now / variationPeriod + phaseSeed)
+            + 0.32 * math.sin(now / (variationPeriod * 1.61) + phaseSeed * 1.17)
+        return math.sin(phase + phaseSeed) * amplitude
+    end
+    local planes = {
+        { { 1, 0, 0 }, { 0, 1, 0 } },
+        { { 1, 0, 0 }, { 0, 0, 1 } }
+    }
+    local paths = {}
+    local segments = 24
+    local minX, minY = math.huge, math.huge
+    local maxX, maxY = -math.huge, -math.huge
+    for ringIndex, plane in ipairs(planes) do
+        local ringSeed = seed + ringIndex * 97.31
+        local rotationX = (ringSeed % 37) * 0.13 + driftingAngle(ringSeed, 5.5, 0.55, 13)
+        local rotationY = (ringSeed % 53) * 0.11 + driftingAngle(ringSeed * 0.7, 7, 0.48, 17)
+        local rotationZ = (ringSeed % 71) * 0.09 + driftingAngle(ringSeed * 1.3, 9, 0.42, 21)
+        local cosX, sinX = math.cos(rotationX), math.sin(rotationX)
+        local cosY, sinY = math.cos(rotationY), math.sin(rotationY)
+        local cosZ, sinZ = math.cos(rotationZ), math.sin(rotationZ)
+        local function rotate(x, y, z)
+            local y1, z1 = y * cosX - z * sinX, y * sinX + z * cosX
+            local x2, z2 = x * cosY + z1 * sinY, -x * sinY + z1 * cosY
+            return x2 * cosZ - y1 * sinZ, x2 * sinZ + y1 * cosZ, z2
+        end
+        local current = {}
+        for index = 0, segments do
+            local angle = (index / segments) * math.pi * 2
+            local cosine, sine = math.cos(angle), math.sin(angle)
+            local unitX = plane[1][1] * cosine + plane[2][1] * sine
+            local unitY = plane[1][2] * cosine + plane[2][2] * sine
+            local unitZ = plane[1][3] * cosine + plane[2][3] * sine
+            local offsetX, offsetY, offsetZ = rotate(unitX, unitY, unitZ)
+            local point = {
+                x = center.x + offsetX * radiusX,
+                y = center.y + offsetY * radiusY,
+                z = center.z + offsetZ * radiusZ
+            }
+            local projected = projectWorldPointRaw(point)
+            if projected ~= nil and projected.visible then
+                local screenX, screenY = projected.x * width, projected.y * height
+                minX, maxX = math.min(minX, screenX), math.max(maxX, screenX)
+                minY, maxY = math.min(minY, screenY), math.max(maxY, screenY)
+                current[#current + 1] = string.format("%.1f,%.1f", screenX, screenY)
+            elseif #current > 1 then
+                paths[#paths + 1] = '<polyline points="' .. table.concat(current, " ") .. '"/>'
+                current = {}
+            else
+                current = {}
+            end
+        end
+        if #current > 1 then paths[#paths + 1] = '<polyline points="' .. table.concat(current, " ") .. '"/>' end
+    end
+    if #paths == 0 then return "" end
+    local screenLimit = math.min(width, height)
+    local projectedSize = math.max(maxX - minX, maxY - minY)
+    local ringKey = tostring(target.id or target.name or target)
+    SARNArDrawing.boundsRingsSuppressed = SARNArDrawing.boundsRingsSuppressed or {}
+    local suppressed = SARNArDrawing.boundsRingsSuppressed[ringKey] == true
+    if suppressed then
+        if projectedSize < screenLimit * (2 / 3) then
+            SARNArDrawing.boundsRingsSuppressed[ringKey] = nil
+        else
+            return ""
+        end
+    elseif projectedSize > screenLimit * (3 / 4) then
+        SARNArDrawing.boundsRingsSuppressed[ringKey] = true
+        return ""
+    end
+    local dashOffset = (((SARNArDrawing.now or 0) * 1.5) % 16) / 16 * 52
+    return '<svg class="sarn-ar-bounds" viewBox="0 0 ' .. tostring(width) .. ' ' .. tostring(height)
+        .. '" fill="none" stroke="rgb(' .. tostring(color) .. ')" stroke-width="1.5"'
+        .. ' stroke-dasharray="7 6" stroke-dashoffset="' .. string.format("%.2f", dashOffset)
+        .. '" stroke-linecap="round" opacity=".5">'
+        .. table.concat(paths) .. '</svg>'
 end
 
 local function rayToRectangleEdge(originX, originY, directionX, directionY, bounds)
@@ -523,8 +640,9 @@ local function cameraDirectionToTarget(point)
 end
 
 local function drawNavigationGuide(displayTarget, viewBounds, width, height, distance, anchorX, anchorY)
-    if displayTarget.worldPosition == nil then return "" end
-    local raw = projectWorldPointRaw(displayTarget.worldPosition)
+    local position = displayPosition(displayTarget)
+    if position == nil then return "" end
+    local raw = projectWorldPointRaw(position)
     if raw ~= nil and raw.visible
         and raw.x >= 0.35 and raw.x <= 0.65
         and raw.y >= 0.35 and raw.y <= 0.65 then
@@ -545,7 +663,7 @@ local function drawNavigationGuide(displayTarget, viewBounds, width, height, dis
         targetX, targetY = raw.x * width, raw.y * height
         directionX, directionY = targetX - originX, targetY - originY
     else
-        directionX, directionY = cameraDirectionToTarget(displayTarget.worldPosition)
+        directionX, directionY = cameraDirectionToTarget(position)
         targetX, targetY = originX + directionX, originY + directionY
     end
     if math.abs(directionX) + math.abs(directionY) < 0.001 then return "" end
@@ -607,6 +725,25 @@ local function drawNavigationGuide(displayTarget, viewBounds, width, height, dis
         .. string.format("%.1f", labelWidth) .. 'px">' .. SARN.escapeHtml(label) .. '</div>'
 end
 
+local function actionPresentation(definition, target)
+    local state = getChildSortState(target, false) or { name = 0, distance = 0 }
+    if definition.action == "cycle-children-name-order" then
+        if state.name == 1 then
+            return "Name order: A to Z", '<span style="font-size:9px">A&#8594;Z</span>', true
+        elseif state.name == 2 then
+            return "Name order: Z to A", '<span style="font-size:9px">Z&#8594;A</span>', true
+        end
+        return "Name order: default", '<span style="font-size:11px">A&#8645;</span>', false
+    elseif definition.action == "cycle-children-distance-order" then
+        if state.distance == 1 then
+            return "Distance: near to far", '<span style="font-size:9px">N&#8594;F</span>', true
+        elseif state.distance == 2 then
+            return "Distance: far to near", '<span style="font-size:9px">F&#8594;N</span>', true
+        end
+        return "Distance: default", '<span style="font-size:11px">D&#8645;</span>', false
+    end
+    return definition.title, definition.icon, false
+end
 local function detectMockAction(definitions, scope, target, startX, startY, buttonSize, gap)
     for index, definition in ipairs(definitions) do
         local buttonLeft = startX + (index - 1) * (buttonSize + gap)
@@ -621,12 +758,13 @@ local function detectMockAction(definitions, scope, target, startX, startY, butt
                 and #SARNLocationCatalog.getChildren(target) == 0)
         if not disabled and cursorInside(bounds) then
             local actionKey = scope .. ":" .. tostring(target.id or target) .. ":" .. definition.key
+            local title = actionPresentation(definition, target)
             SARNArDrawing.selectedAction = {
                 kind = definition.action ~= nil and "node-action" or "mock-action",
                 action = definition.action,
                 key = actionKey,
                 scope = scope,
-                title = definition.title,
+                title = title,
                 target = target
             }
             return actionKey
@@ -647,12 +785,14 @@ local function drawMockActions(definitions, scope, target, selectedKey, classNam
         local activated = SARNArDrawing.activatedMockActionKey == actionKey
             and now < (SARNArDrawing.activatedMockActionUntil or 0)
         local pinState = getPinState(target, false)
+        local title, presentedIcon, sortToggled = actionPresentation(definition, target)
         local toggled = definition.action == "pin-place" and pinState ~= nil and pinState.place
             or definition.action == "pin-children" and pinState ~= nil and pinState.children
+            or sortToggled
         local iconHtml = definition.svg ~= nil
             and ('<svg viewBox="' .. definition.svg.viewBox
                 .. '" xmlns="http://www.w3.org/2000/svg">' .. definition.svg.body .. '</svg>')
-            or definition.icon
+            or presentedIcon or ""
         html[#html + 1] = '<span class="sarn-ar-action'
             .. (selected and ' sarn-action-selected' or '')
             .. (activated and ' sarn-action-activated' or '')
@@ -660,14 +800,14 @@ local function drawMockActions(definitions, scope, target, selectedKey, classNam
             .. (disabled and ' sarn-action-disabled' or '') .. '">'
             .. iconHtml
             .. (selected and ('<span class="sarn-ar-action-tooltip">'
-                .. SARN.escapeHtml(definition.title) .. '</span>') or '')
+                .. SARN.escapeHtml(title) .. '</span>') or '')
             .. '</span>'
     end
     return '<span class="sarn-ar-action-group ' .. className .. '">' .. table.concat(html) .. '</span>'
 end
 
 function SARNArDrawing.drawConfiguredLocation(target, pinned)
-    local projected = SARNArDrawing.projectWorldPoint(target and target.worldPosition)
+    local projected = SARNArDrawing.projectWorldPoint(displayPosition(target))
     if projected == nil
         or projected.x < 0.05 or projected.x > 0.95
         or projected.y < 0.05 or projected.y > 0.95 then
@@ -680,12 +820,13 @@ function SARNArDrawing.drawConfiguredLocation(target, pinned)
     local compactLayout = SARNArDrawing.compactLayouts and SARNArDrawing.compactLayouts[targetId]
     local expanded = SARNArDrawing.hoveredTargetId == targetId
     local displayTarget = expanded and (SARNArDrawing.viewContentTarget or target) or target
-    local color = displayTarget.color or SARNConfiguration.markerColor
+    local color = displayTarget.visibilityColor or displayTarget.color or SARNConfiguration.markerColor
     local nameAndSize = tostring(displayTarget.name or "Location")
     if displayTarget.coreSize ~= nil and displayTarget.coreSize ~= "?" then
         nameAndSize = nameAndSize .. " [" .. tostring(displayTarget.coreSize) .. "]"
     end
-    local distance = SARN.distance(system.getCameraWorldPos(), displayTarget.worldPosition)
+    local cameraPosition = system.getCameraWorldPos()
+    local distance = SARN.distance(cameraPosition, displayPosition(displayTarget))
     if distance ~= nil then nameAndSize = nameAndSize .. " | " .. SARN.formatDistance(distance) end
     local rawLines = { nameAndSize }
     if displayTarget.owner ~= nil and tostring(displayTarget.owner) ~= "" then
@@ -721,14 +862,35 @@ function SARNArDrawing.drawConfiguredLocation(target, pinned)
     local viewBorderWidth = 1
     local viewRenderTopOffset = 0
     local parent = SARNLocationCatalog.getPrimaryParent(displayTarget)
+    local childSortState = getChildSortState(displayTarget, false) or { name = 0, distance = 0 }
     local children = {}
     for index, child in ipairs(SARNLocationCatalog.getChildren(displayTarget)) do
-        children[#children + 1] = { child = child, originalIndex = index }
+        children[#children + 1] = {
+            child = child,
+            originalIndex = index,
+            distance = childSortState.distance ~= 0
+                and SARN.distance(cameraPosition, displayPosition(child)) or nil
+        }
     end
     table.sort(children, function(first, second)
         local firstMoon = first.child.type == "satellite" or first.child.kind == "moon"
         local secondMoon = second.child.type == "satellite" or second.child.kind == "moon"
         if firstMoon ~= secondMoon then return firstMoon end
+        if childSortState.name ~= 0 then
+            local firstName = string.lower(tostring(first.child.name or ""))
+            local secondName = string.lower(tostring(second.child.name or ""))
+            if firstName ~= secondName then
+                if childSortState.name == 1 then return firstName < secondName end
+                return firstName > secondName
+            end
+        elseif childSortState.distance ~= 0 then
+            if first.distance == nil then return false end
+            if second.distance == nil then return true end
+            if first.distance ~= second.distance then
+                if childSortState.distance == 1 then return first.distance < second.distance end
+                return first.distance > second.distance
+            end
+        end
         return first.originalIndex < second.originalIndex
     end)
     for index, entry in ipairs(children) do children[index] = entry.child end
@@ -910,6 +1072,7 @@ function SARNArDrawing.drawConfiguredLocation(target, pinned)
             SARNArDrawing.hoveredBounds = viewBounds
         end
     end
+    local boundsHtml = drawBoundsRings(displayTarget, color, width, height)
     local markerHtml = drawMarker(displayTarget)
     local pinnedBadgeHtml = pinned and ('<span class="sarn-ar-pinned-badge"><svg viewBox="'
         .. pinIcon.viewBox .. '" xmlns="http://www.w3.org/2000/svg">'
@@ -974,7 +1137,7 @@ function SARNArDrawing.drawConfiguredLocation(target, pinned)
             .. 'px;color:rgb(' .. color .. ');transform:rotate('
             .. string.format("%.5f", math.atan(linkDy, linkDx)) .. 'rad)"></span>' .. anchorHtml
     end
-    local html = anchorHtml .. underlineHtml
+    local html = boundsHtml .. anchorHtml .. underlineHtml
         .. '<div class="sarn-ar-object' .. (expanded and ' sarn-expanded' or '')
         .. (pinned and ' sarn-pinned' or '')
         .. (candidate and ' sarn-hover-ready' or '')

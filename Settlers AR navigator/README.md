@@ -24,4 +24,4 @@ Each visible place is shown as a dot with:
 .\build-lua-configuration.ps1 -CopyToClipboard
 ```
 
-No linked Radar or Core is required. A linked Databank is optional; the main-menu Save to databank action stores all Locations and Settings menu values, plus pins, for later starts.
+No linked Radar or Core is required. A linked Databank is optional; the main-menu Save to databank action stores all Locations, HUD, and Settings menu values, plus pins, for later starts.

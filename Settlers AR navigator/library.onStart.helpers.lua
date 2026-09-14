@@ -11,7 +11,7 @@ function SARN.applicationCaption()
 end
 
 function SARN.startupCaption()
-    return SARN.applicationCaption() .. string.char(32, 118, 48, 46, 49, 48, 46, 56, 52)
+    return SARN.applicationCaption() .. string.char(32, 118, 48, 46, 49, 48, 46, 49, 52, 55)
 end
 
 function SARN.reportWarning(code, message)

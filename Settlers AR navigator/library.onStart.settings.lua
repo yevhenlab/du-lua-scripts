@@ -80,19 +80,27 @@ function SARNSettings.apply(values)
             SARNLocationCatalog.setShowSatellites(SARNConfiguration.showSatellites)
         end
     end
-    if values.showCurrentNodeChildren ~= nil then
-        SARNConfiguration.showCurrentNodeChildren = values.showCurrentNodeChildren == true
+    if values.showCurrentAreaPlaces ~= nil then
+        SARNConfiguration.showCurrentAreaPlaces = values.showCurrentAreaPlaces == true
         if SARNLocationCatalog ~= nil
-            and type(SARNLocationCatalog.setShowCurrentNodeChildren) == "function" then
-            SARNLocationCatalog.setShowCurrentNodeChildren(
-                SARNConfiguration.showCurrentNodeChildren)
+            and type(SARNLocationCatalog.setShowCurrentAreaPlaces) == "function" then
+            SARNLocationCatalog.setShowCurrentAreaPlaces(
+                SARNConfiguration.showCurrentAreaPlaces)
         end
     end
-    if values.showNearbyPlaces ~= nil then
-        SARNConfiguration.showNearbyPlaces = values.showNearbyPlaces == true
+    if values.showNearbyAreas ~= nil then
+        SARNConfiguration.showNearbyAreas = values.showNearbyAreas == true
         if SARNLocationCatalog ~= nil
-            and type(SARNLocationCatalog.setShowNearbyPlaces) == "function" then
-            SARNLocationCatalog.setShowNearbyPlaces(SARNConfiguration.showNearbyPlaces)
+            and type(SARNLocationCatalog.setShowNearbyAreas) == "function" then
+            SARNLocationCatalog.setShowNearbyAreas(SARNConfiguration.showNearbyAreas)
+        end
+    end
+    if values.showNearbyAreaPlaces ~= nil then
+        SARNConfiguration.showNearbyAreaPlaces = values.showNearbyAreaPlaces == true
+        if SARNLocationCatalog ~= nil
+            and type(SARNLocationCatalog.setShowNearbyAreaPlaces) == "function" then
+            SARNLocationCatalog.setShowNearbyAreaPlaces(
+                SARNConfiguration.showNearbyAreaPlaces)
         end
     end
     if values.nearbyAtmoRangeKm ~= nil then
@@ -106,6 +114,38 @@ function SARNSettings.apply(values)
     if values.maximumNearbyPlaces ~= nil then
         maximumNearbyPlaces = math.floor(clampSetting(values.maximumNearbyPlaces, 1, 100) + 0.5)
         SARNConfiguration.maximumNearbyPlaces = maximumNearbyPlaces
+    end
+    if values.showSarnHudPanel ~= nil then
+        SARNConfiguration.showSarnHudPanel = values.showSarnHudPanel == true
+    end
+    if values.showVisibleMarkersHudPanel ~= nil then
+        SARNConfiguration.showVisibleMarkersHudPanel =
+            values.showVisibleMarkersHudPanel == true
+    end
+    if values.showPinnedLocationsHudPanel ~= nil then
+        SARNConfiguration.showPinnedLocationsHudPanel =
+            values.showPinnedLocationsHudPanel == true
+    end
+    if values.showOffscreenMarkersInHud ~= nil then
+        SARNConfiguration.showOffscreenMarkersInHud =
+            values.showOffscreenMarkersInHud == true
+    end
+    if values.hudFontSize ~= nil then
+        hudFontSize = math.floor(clampSetting(values.hudFontSize, 9, 24) + 0.5)
+        SARNConfiguration.hudFontSize = hudFontSize
+    end
+    if values.showAreaEntryNotifications ~= nil then
+        SARNConfiguration.showAreaEntryNotifications =
+            values.showAreaEntryNotifications == true
+    end
+    if values.showAreaExitNotifications ~= nil then
+        SARNConfiguration.showAreaExitNotifications =
+            values.showAreaExitNotifications == true
+    end
+    if values.allowGroupsAsCurrentArea ~= nil then
+        SARNConfiguration.allowGroupsAsCurrentArea =
+            values.allowGroupsAsCurrentArea == true
+        if SARNLocationCatalog ~= nil then SARNLocationCatalog.currentTargetCache = nil end
     end
     if values.adaptArRedrawFrequencyToFps ~= nil then
         adaptArRedrawFrequencyToFps = values.adaptArRedrawFrequencyToFps == true
@@ -124,23 +164,34 @@ function SARNSettings.getValues()
     if SARNLocationCatalog ~= nil then
         showPlanets = SARNLocationCatalog.getShowSystemPlanets()
     end
-    local showChildren = SARNConfiguration.showCurrentNodeChildren
+    local showCurrentAreaPlaces = SARNConfiguration.showCurrentAreaPlaces
+    local showNearbyAreas = SARNConfiguration.showNearbyAreas
+    local showNearbyAreaPlaces = SARNConfiguration.showNearbyAreaPlaces
     if SARNLocationCatalog ~= nil then
-        showChildren = SARNLocationCatalog.getShowCurrentNodeChildren()
+        showCurrentAreaPlaces = SARNLocationCatalog.getShowCurrentAreaPlaces()
+        showNearbyAreas = SARNLocationCatalog.getShowNearbyAreas()
+        showNearbyAreaPlaces = SARNLocationCatalog.getShowNearbyAreaPlaces()
     end
-    local showNearby = SARNConfiguration.showNearbyPlaces
-    if SARNLocationCatalog ~= nil then showNearby = SARNLocationCatalog.getShowNearbyPlaces() end
     local showMoons = SARNConfiguration.showSatellites
     if SARNLocationCatalog ~= nil then showMoons = SARNLocationCatalog.getShowSatellites() end
     return {
         detailsViewCloseDelaySeconds = SARNConfiguration.detailsViewCloseDelaySeconds,
         showSystemPlanets = showPlanets,
         showSatellites = showMoons,
-        showCurrentNodeChildren = showChildren,
-        showNearbyPlaces = showNearby,
+        showCurrentAreaPlaces = showCurrentAreaPlaces,
+        showNearbyAreas = showNearbyAreas,
+        showNearbyAreaPlaces = showNearbyAreaPlaces,
         nearbyAtmoRangeKm = tonumber(SARNConfiguration.nearbyAtmoRangeKm) or 5,
         nearbySpaceRangeKm = tonumber(SARNConfiguration.nearbySpaceRangeKm) or 50,
         maximumNearbyPlaces = tonumber(SARNConfiguration.maximumNearbyPlaces) or 10,
+        showSarnHudPanel = SARNConfiguration.showSarnHudPanel ~= false,
+        showVisibleMarkersHudPanel = SARNConfiguration.showVisibleMarkersHudPanel ~= false,
+        showPinnedLocationsHudPanel = SARNConfiguration.showPinnedLocationsHudPanel ~= false,
+        showOffscreenMarkersInHud = SARNConfiguration.showOffscreenMarkersInHud ~= false,
+        hudFontSize = tonumber(SARNConfiguration.hudFontSize) or 13,
+        showAreaEntryNotifications = SARNConfiguration.showAreaEntryNotifications ~= false,
+        showAreaExitNotifications = SARNConfiguration.showAreaExitNotifications ~= false,
+        allowGroupsAsCurrentArea = SARNConfiguration.allowGroupsAsCurrentArea == true,
         adaptArRedrawFrequencyToFps = SARNConfiguration.adaptArRedrawFrequencyToFps ~= false,
         maximumArRedrawPercentOfFps =
             tonumber(SARNConfiguration.maximumArRedrawPercentOfFps) or 100
@@ -153,13 +204,22 @@ function SARNSettings.serialize()
         .. ";details=" .. string.format("%.1f", values.detailsViewCloseDelaySeconds)
         .. ";planets=" .. (values.showSystemPlanets and "1" or "0")
         .. ";satellites=" .. (values.showSatellites and "1" or "0")
-        .. ";children=" .. (values.showCurrentNodeChildren and "1" or "0")
-        .. ";nearby=" .. (values.showNearbyPlaces and "1" or "0")
+        .. ";currentPlaces=" .. (values.showCurrentAreaPlaces and "1" or "0")
+        .. ";nearbyAreas=" .. (values.showNearbyAreas and "1" or "0")
+        .. ";nearbyAreaPlaces=" .. (values.showNearbyAreaPlaces and "1" or "0")
         .. ";adapt=" .. (values.adaptArRedrawFrequencyToFps and "1" or "0")
         .. ";maximum=" .. tostring(math.floor(values.maximumArRedrawPercentOfFps + 0.5))
         .. ";nearbyAtmo=" .. tostring(math.floor(values.nearbyAtmoRangeKm + 0.5))
         .. ";nearbySpace=" .. tostring(math.floor(values.nearbySpaceRangeKm + 0.5))
         .. ";nearbyCount=" .. tostring(math.floor(values.maximumNearbyPlaces + 0.5))
+        .. ";hudStatus=" .. (values.showSarnHudPanel and "1" or "0")
+        .. ";hudMarkers=" .. (values.showVisibleMarkersHudPanel and "1" or "0")
+        .. ";hudPins=" .. (values.showPinnedLocationsHudPanel and "1" or "0")
+        .. ";hudOffscreen=" .. (values.showOffscreenMarkersInHud and "1" or "0")
+        .. ";hudFont=" .. tostring(math.floor(values.hudFontSize + 0.5))
+        .. ";hudEntry=" .. (values.showAreaEntryNotifications and "1" or "0")
+        .. ";hudExit=" .. (values.showAreaExitNotifications and "1" or "0")
+        .. ";groupCurrent=" .. (values.allowGroupsAsCurrentArea and "1" or "0")
 end
 
 function SARNSettings.serializePins()
@@ -183,13 +243,46 @@ function SARNSettings.load()
         if fields.details ~= nil then values.detailsViewCloseDelaySeconds = tonumber(fields.details) end
         if fields.planets ~= nil then values.showSystemPlanets = fields.planets == "1" end
         if fields.satellites ~= nil then values.showSatellites = fields.satellites == "1" end
-        if fields.children ~= nil then values.showCurrentNodeChildren = fields.children == "1" end
-        if fields.nearby ~= nil then values.showNearbyPlaces = fields.nearby == "1" end
+        if fields.currentPlaces ~= nil then
+            values.showCurrentAreaPlaces = fields.currentPlaces == "1"
+        elseif fields.children ~= nil then
+            values.showCurrentAreaPlaces = fields.children == "1"
+        end
+        if fields.nearbyAreas ~= nil then
+            values.showNearbyAreas = fields.nearbyAreas == "1"
+        elseif fields.nearby ~= nil then
+            values.showNearbyAreas = fields.nearby == "1"
+        end
+        if fields.nearbyAreaPlaces ~= nil then
+            values.showNearbyAreaPlaces = fields.nearbyAreaPlaces == "1"
+        elseif fields.nearby ~= nil then
+            values.showNearbyAreaPlaces = fields.nearby == "1"
+        end
         if fields.adapt ~= nil then values.adaptArRedrawFrequencyToFps = fields.adapt == "1" end
         if fields.maximum ~= nil then values.maximumArRedrawPercentOfFps = tonumber(fields.maximum) end
         if fields.nearbyAtmo ~= nil then values.nearbyAtmoRangeKm = tonumber(fields.nearbyAtmo) end
         if fields.nearbySpace ~= nil then values.nearbySpaceRangeKm = tonumber(fields.nearbySpace) end
         if fields.nearbyCount ~= nil then values.maximumNearbyPlaces = tonumber(fields.nearbyCount) end
+        if fields.hudStatus ~= nil then values.showSarnHudPanel = fields.hudStatus == "1" end
+        if fields.hudMarkers ~= nil then
+            values.showVisibleMarkersHudPanel = fields.hudMarkers == "1"
+        end
+        if fields.hudPins ~= nil then
+            values.showPinnedLocationsHudPanel = fields.hudPins == "1"
+        end
+        if fields.hudOffscreen ~= nil then
+            values.showOffscreenMarkersInHud = fields.hudOffscreen == "1"
+        end
+        if fields.hudFont ~= nil then values.hudFontSize = tonumber(fields.hudFont) end
+        if fields.hudEntry ~= nil then
+            values.showAreaEntryNotifications = fields.hudEntry == "1"
+        end
+        if fields.hudExit ~= nil then
+            values.showAreaExitNotifications = fields.hudExit == "1"
+        end
+        if fields.groupCurrent ~= nil then
+            values.allowGroupsAsCurrentArea = fields.groupCurrent == "1"
+        end
         loaded = SARNSettings.apply(values)
     end
     local pinsPayload = SARN.call(databank, "getStringValue", SARNSettings.pinsDatabankKey)

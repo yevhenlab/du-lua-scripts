@@ -3,12 +3,18 @@
 SARNRenderer = SARNRenderer or {}
 
 function SARNRenderer.getHtml()
+    if SARNArDrawing == nil or SARNLocationCatalog == nil
+        or SARNController == nil or SARNHudDrawing == nil then
+        return ""
+    end
     local parts = {}
     local foregroundParts = {}
     local rendered = 0
+    local markerEntries = {}
     SARNArDrawing.beginFrame()
-    local visibleTargets, currentTarget =
-        SARNLocationCatalog.getVisibleTargets(system.getCameraWorldPos())
+    local cameraPosition = system.getCameraWorldPos()
+    local visibleTargets, currentTarget, nearbyRanks, nearbyInfo =
+        SARNLocationCatalog.getVisibleTargets(cameraPosition)
     local renderTargets = {}
     local seen = {}
     for _, target in ipairs(visibleTargets) do
@@ -21,16 +27,21 @@ function SARNRenderer.getHtml()
             seen[target.id] = true
         end
     end
-    local cameraPosition = system.getCameraWorldPos()
     table.sort(renderTargets, function(first, second)
-        return (SARN.distance(cameraPosition, first.worldPosition) or 0)
-            > (SARN.distance(cameraPosition, second.worldPosition) or 0)
+        return (SARN.distance(cameraPosition, first.displayPosition or first.worldPosition) or 0)
+            > (SARN.distance(cameraPosition, second.displayPosition or second.worldPosition) or 0)
     end)
     if not SARNController.menuOpen then
         SARNArDrawing.prepareCompactLayout(renderTargets)
         for _, target in ipairs(renderTargets) do
             local html, expanded = SARNArDrawing.drawConfiguredLocation(
                 target, SARNArDrawing.isTargetPinned(target))
+            markerEntries[#markerEntries + 1] = {
+                target = target,
+                nearbyRank = nearbyRanks and nearbyRanks[target.id] or nil,
+                onScreen = html ~= ""
+            }
+
             if html ~= "" then
                 rendered = rendered + 1
                 local destination = expanded and foregroundParts or parts
@@ -42,7 +53,7 @@ function SARNRenderer.getHtml()
     local pinnedEntries = SARNArDrawing.getPinnedEntries()
     return SARNArDrawing.getStyles()
         .. SARNController.getStyles()
-        .. SARNHudDrawing.drawCatalogStatus(rendered, currentTarget, #renderTargets, pinnedEntries)
+        .. SARNHudDrawing.drawCatalogStatus(rendered, currentTarget, #renderTargets, pinnedEntries, markerEntries, nearbyInfo)
         .. table.concat(parts)
         .. table.concat(foregroundParts)
         .. SARNController.draw()

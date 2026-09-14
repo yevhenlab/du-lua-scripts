@@ -22,6 +22,10 @@ local topMenuIcons = {
         viewBox = "0 0 373.5 373.6",
         body = '<path d="M334 153.7l28-27.3-33-59-47.5 7.3c-14.8-13-32.3-20.1-44.9-26.9L220.2 1.6h-64.5L141.4 45C124 54.2 105 62.3 90.8 74.9L49 62.7l-37.5 61.7 31.8 31.7c-6.7 19.7-5 40.5-1.7 65.9l-28.8 28.7 35.8 59.7c13.8-5.5 27.8-9.1 42.2-11.4 13.1 15.4 32 20.1 48.4 29.3l9.8 40.3h72.4c4.3-15.6 6.5-28.4 12.4-42.1 18.3-3.7 30.9-14.5 42.6-22.8l50.9 5.9c13.6-18.9 25.1-38 33.3-57.8L332.2 218c3.3-21.1.4-42.3 1.8-64.3zM187.5 256.7a68.8 68.8 0 1 1 0-137.6 68.8 68.8 0 0 1 0 137.6z"/>'
     },
+    hud = {
+        viewBox = "0 0 300 300",
+        body = '<path d="M288.2 51.9H14.7C6.6 51.9 0 58.5 0 66.6v166.5C0 241.9 7.1 249 15.9 249h272.3c6.5 0 11.8-5.3 11.8-11.8V63.8c0-6.6-5.3-11.9-11.8-11.9zM285.8 109H156V86.8h129.8V109zm0 50.6H156v-22.2h129.8v22.2zm0 51.7H156V189h129.8v22.3zM30.2 182.5c14-22.5 23-17.5 28.3-25.7-8-14.5-7-39.2 2.6-54.3 9.5-14.8 28.2-12.7 38.7.7 10.5 13.5 8 39.6 3.2 53.4 7 6.5 12 8.8 28.2 26l14 22.3h-129l14-22.4z"/>'
+    },
     save = {
         viewBox = "0 0 35 35",
         body = '<rect height="21.2" width="24" x="5.2" y="13.7"/><polygon points="30.9,0 30.9,10 3.4,10 3.4,0 -0.3,0 -0.3,34.9 3.4,34.9 3.4,12 30.9,12 30.9,34.9 34.6,34.9 34.6,0"/><polygon points="25.6,0 25.6,5.3 21,5.3 21,0 5.2,0 5.2,8.3 29.1,8.3 29.1,0"/>'
@@ -90,13 +94,33 @@ local function screenWorldAnchor(screenX, screenY)
         cz + dz * controllerAnchorDistance }
 end
 
+local function isControllerRendered()
+    if SARNArDrawing == nil or type(SARNArDrawing.projectWorldPoint) ~= "function" then return false end
+    if SARNController.hidden or not SARNController.shortcutShown then return false end
+    local anchor = SARNController.menuOpen and SARNController.worldAnchor
+        or SARNController.followAnchor
+    return anchor ~= nil and SARNArDrawing.projectWorldPoint(anchor) ~= nil
+end
+
 function SARNController.showFromShortcut()
+    if isControllerRendered() then
+        SARNController.menuOpen = false
+        SARNController.hidden = true
+        SARNController.shortcutShown = false
+        SARNController.followAnchor = nil
+        SARNController.worldAnchor = nil
+        SARNController.activeMenu = "main"
+        return false
+    end
+
     local anchor = screenWorldAnchor(0.5, 0.7)
     if anchor == nil then return false end
+    SARNController.menuOpen = false
     SARNController.hidden = false
     SARNController.shortcutShown = true
     SARNController.followAnchor = anchor
     SARNController.worldAnchor = anchor
+    SARNController.activeMenu = "main"
     return true
 end
 
@@ -231,20 +255,28 @@ function SARNController.draw()
         local values = SARNSettings.getValues()
         local quickItems = {
             { label = "Planets", checked = values.showSystemPlanets,
-                key = "toggle-planets", icon = quickVisibilityIcons.planets },
+                key = "toggle-planets", icon = quickVisibilityIcons.planets, width = ui(70) },
             { label = "Satellites", checked = values.showSatellites,
-                key = "toggle-satellites", icon = quickVisibilityIcons.satellites },
-            { label = "Area places", checked = values.showCurrentNodeChildren,
-                key = "toggle-children", icon = quickVisibilityIcons.area },
-            { label = "Nearby", checked = values.showNearbyPlaces,
-                key = "toggle-nearby", icon = quickVisibilityIcons.nearby }
+                key = "toggle-satellites", icon = quickVisibilityIcons.satellites, width = ui(80) },
+            { label = "Places of current area", checked = values.showCurrentAreaPlaces,
+                key = "toggle-current-area-places", icon = quickVisibilityIcons.area,
+                width = ui(140) },
+            { label = "Nearby areas", checked = values.showNearbyAreas,
+                key = "toggle-nearby-areas", icon = quickVisibilityIcons.nearby,
+                width = ui(100) },
+            { label = "Places of nearby areas", checked = values.showNearbyAreaPlaces,
+                key = "toggle-nearby-area-places", icon = quickVisibilityIcons.area,
+                width = ui(140) }
         }
-        local quickWidth, quickHeight = ui(76), ui(42)
-        local quickLeft = anchorX - (#quickItems * quickWidth) * 0.5
+        local quickHeight = ui(42)
+        local quickTotalWidth = 0
+        for _, item in ipairs(quickItems) do quickTotalWidth = quickTotalWidth + item.width end
+        local quickLeft = anchorX - quickTotalWidth * 0.5
         local quickTop = main.top - quickHeight - ui(7)
+        local nextQuickLeft = quickLeft
         for index, item in ipairs(quickItems) do
-            local itemBounds = bounds(quickLeft + (index - 1) * quickWidth,
-                quickTop, quickWidth, quickHeight)
+            local itemBounds = bounds(nextQuickLeft, quickTop, item.width, quickHeight)
+            nextQuickLeft = nextQuickLeft + item.width
             local selected = inside(cursorX, cursorY, itemBounds)
             if selected then
                 SARNController.selectedAction = { kind = "setting", key = item.key }
@@ -281,8 +313,8 @@ function SARNController.draw()
     for _, quickPart in ipairs(quickParts) do parts[#parts + 1] = quickPart end
 
     if SARNController.menuOpen then
-        local labels = { "Locations", "Pins", "Settings", "Save to databank" }
-        local keys = { "locations", "pins", "settings", "save" }
+        local labels = { "Locations", "Pins", "HUD", "Settings", "Save to databank" }
+        local keys = { "locations", "pins", "hud", "settings", "save" }
         local menuWidth, menuHeight, gap = ui(118), ui(34), ui(4)
         local menuLeft = main.left + ui(23)
         local menuTop = main.top - (#labels * menuHeight + (#labels - 1) * gap)
@@ -297,12 +329,29 @@ function SARNController.draw()
             { label = "maximumArRedrawPercentOfFps", kind = "number",
                 valueKey = "maximumArRedrawPercentOfFps", decrement = "maximum-dec",
                 increment = "maximum-inc" },
-            { label = "maximumNearbyPlaces", kind = "number", valueKey = "maximumNearbyPlaces",
-                decrement = "nearby-count-dec", increment = "nearby-count-inc" }
+            { label = "Groups can become current area", kind = "checkbox",
+                valueKey = "allowGroupsAsCurrentArea", action = "toggle-group-current" },
+        }
+        local hudRows = {
+            { label = "Settlers AR Navigator", valueKey = "showSarnHudPanel",
+                action = "toggle-hud-status" },
+            { label = "Visible Markers", valueKey = "showVisibleMarkersHudPanel",
+                action = "toggle-hud-markers" },
+            { label = "Pinned Locations", valueKey = "showPinnedLocationsHudPanel",
+                action = "toggle-hud-pins" },
+            { label = "Show off-screen markers", valueKey = "showOffscreenMarkersInHud",
+                action = "toggle-hud-offscreen" },
+            { label = "Area entry message", valueKey = "showAreaEntryNotifications",
+                action = "toggle-hud-area-entry" },
+            { label = "Area exit message", valueKey = "showAreaExitNotifications",
+                action = "toggle-hud-area-exit" },
+            { label = "HUD font size", kind = "number", valueKey = "hudFontSize",
+                decrement = "hud-font-dec", increment = "hud-font-inc" }
         }
         local subWidth = menuWidth
-        local locationsWidth = ui(240)
+        local locationsWidth = ui(300)
         local pinsWidth = ui(240)
+        local hudWidth = ui(250)
         local settingsWidth = ui(180)
         for _, setting in ipairs(settingsRows) do
             local controlsWidth = setting.kind == "checkbox" and ui(42) or ui(104)
@@ -315,12 +364,15 @@ function SARNController.draw()
         end
         local subLeft = menuLeft + menuWidth - subWidth * 0.30
         local subTop = menuTop - menuHeight * 0.25
-        local locationsHeight = 7 * menuHeight + 6 * gap
+        local locationsHeight = 9 * menuHeight + 8 * gap
+        local hudHeight = #hudRows * menuHeight + (#hudRows - 1) * gap
         local settingsHeight = #settingsRows * menuHeight + (#settingsRows - 1) * gap
         local pinsRowCount = #pinEntries > 0 and (#pinEntries + 1) or 1
         local pinsHeight = pinsRowCount * menuHeight + (pinsRowCount - 1) * gap
         if submenu == "locations" then
             subTop = math.min(subTop, hide.bottom - locationsHeight)
+        elseif submenu == "hud" then
+            subTop = math.min(subTop, hide.bottom - hudHeight)
         elseif submenu == "settings" then
             subTop = math.min(subTop, hide.bottom - settingsHeight)
         elseif submenu == "pins" then
@@ -330,6 +382,9 @@ function SARNController.draw()
         if submenu == "locations" then
             submenuHovered = inside(cursorX, cursorY,
                 bounds(subLeft, subTop, locationsWidth, locationsHeight))
+        elseif submenu == "hud" then
+            submenuHovered = inside(cursorX, cursorY,
+                bounds(subLeft, subTop, hudWidth, hudHeight))
         elseif submenu == "settings" then
             submenuHovered = inside(cursorX, cursorY,
                 bounds(subLeft, subTop, settingsWidth, settingsHeight))
@@ -357,10 +412,12 @@ function SARNController.draw()
                     key = "toggle-planets" },
                 { label = "Satellites", checked = values.showSatellites,
                     key = "toggle-satellites" },
-                { label = "Area places", checked = values.showCurrentNodeChildren,
-                    key = "toggle-children" },
-                { label = "Nearby", checked = values.showNearbyPlaces,
-                    key = "toggle-nearby" }
+                { label = "Places of current area", checked = values.showCurrentAreaPlaces,
+                    key = "toggle-current-area-places" },
+                { label = "Nearby areas", checked = values.showNearbyAreas,
+                    key = "toggle-nearby-areas" },
+                { label = "Places of nearby areas", checked = values.showNearbyAreaPlaces,
+                    key = "toggle-nearby-area-places" }
             }
             for index, item in ipairs(locationSettings) do
                 local row = bounds(subLeft, subTop + (index - 1) * (menuHeight + gap),
@@ -382,7 +439,9 @@ function SARNController.draw()
                 { label = "nearbyAtmoRangeKm", valueKey = "nearbyAtmoRangeKm",
                     decrement = "nearby-atmo-dec", increment = "nearby-atmo-inc" },
                 { label = "nearbySpaceRangeKm", valueKey = "nearbySpaceRangeKm",
-                    decrement = "nearby-space-dec", increment = "nearby-space-inc" }
+                    decrement = "nearby-space-dec", increment = "nearby-space-inc" },
+                { label = "maximumNearbyPlaces", valueKey = "maximumNearbyPlaces",
+                    decrement = "nearby-count-dec", increment = "nearby-count-inc" }
             }
             for index, setting in ipairs(locationRanges) do
                 local rowIndex = index + #locationSettings
@@ -420,6 +479,53 @@ function SARNController.draw()
                 SARNController.selectedAction = { kind = "menu-action", key = "mock-known" }
             end
             parts[#parts + 1] = buttonHtml("sub", "Known space", knownSelected, knownBounds)
+        elseif submenu == "hud" then
+            local values = SARNSettings.getValues()
+            for index, item in ipairs(hudRows) do
+                local row = bounds(subLeft, subTop + (index - 1) * (menuHeight + gap),
+                    hudWidth, menuHeight)
+                local selected = false
+                local decrement, valueBounds, increment
+                if item.kind == "number" then
+                    decrement = bounds(row.right - ui(94), row.top + ui(3), ui(28), ui(28))
+                    valueBounds = bounds(row.right - ui(64), row.top + ui(3), ui(34), ui(28))
+                    increment = bounds(row.right - ui(28), row.top + ui(3), ui(28), ui(28))
+                    local decrementSelected = inside(cursorX, cursorY, decrement)
+                    local incrementSelected = inside(cursorX, cursorY, increment)
+                    selected = decrementSelected or incrementSelected
+                    if decrementSelected then
+                        SARNController.selectedAction = { kind = "setting", key = item.decrement }
+                    elseif incrementSelected then
+                        SARNController.selectedAction = { kind = "setting", key = item.increment }
+                    end
+                else
+                    selected = inside(cursorX, cursorY, row)
+                    if selected then
+                        SARNController.selectedAction = { kind = "setting", key = item.action }
+                    end
+                end
+                parts[#parts + 1] = '<div class="sarn-settings-row'
+                    .. (selected and ' selected' or '') .. '" style="left:'
+                    .. string.format("%.1f", row.left) .. 'px;top:'
+                    .. string.format("%.1f", row.top) .. 'px;width:'
+                    .. tostring(hudWidth) .. 'px;height:' .. tostring(menuHeight) .. 'px">'
+                    .. SARN.escapeHtml(item.label) .. '</div>'
+                if item.kind == "number" then
+                    local decrementSelected = inside(cursorX, cursorY, decrement)
+                    local incrementSelected = inside(cursorX, cursorY, increment)
+                    parts[#parts + 1] = triangleButtonHtml("left", decrementSelected, decrement)
+                    parts[#parts + 1] = '<div class="sarn-settings-value" style="left:'
+                        .. string.format("%.1f", valueBounds.left) .. 'px;top:'
+                        .. string.format("%.1f", valueBounds.top) .. 'px;width:'
+                        .. string.format("%.1f", valueBounds.right - valueBounds.left) .. 'px;height:'
+                        .. string.format("%.1f", valueBounds.bottom - valueBounds.top) .. 'px">'
+                        .. settingNumber(values[item.valueKey]) .. '</div>'
+                    parts[#parts + 1] = triangleButtonHtml("right", incrementSelected, increment)
+                else
+                    local checkbox = bounds(row.right - ui(31), row.top + ui(3), ui(28), ui(28))
+                    parts[#parts + 1] = checkboxHtml(values[item.valueKey], selected, checkbox)
+                end
+            end
         elseif submenu == "settings" then
             local values = SARNSettings.getValues()
             for index, setting in ipairs(settingsRows) do
@@ -553,11 +659,36 @@ function SARNController.activateSelectedAction()
             SARNSettings.apply({ showSystemPlanets = enabled })
         elseif action.key == "toggle-satellites" then
             SARNSettings.apply({ showSatellites = not values.showSatellites })
-        elseif action.key == "toggle-children" then
-            local enabled = not values.showCurrentNodeChildren
-            SARNSettings.apply({ showCurrentNodeChildren = enabled })
-        elseif action.key == "toggle-nearby" then
-            SARNSettings.apply({ showNearbyPlaces = not values.showNearbyPlaces })
+        elseif action.key == "toggle-current-area-places" then
+            SARNSettings.apply({ showCurrentAreaPlaces = not values.showCurrentAreaPlaces })
+        elseif action.key == "toggle-nearby-areas" then
+            SARNSettings.apply({ showNearbyAreas = not values.showNearbyAreas })
+        elseif action.key == "toggle-nearby-area-places" then
+            SARNSettings.apply({ showNearbyAreaPlaces = not values.showNearbyAreaPlaces })
+        elseif action.key == "toggle-hud-status" then
+            SARNSettings.apply({ showSarnHudPanel = not values.showSarnHudPanel })
+        elseif action.key == "toggle-hud-markers" then
+            SARNSettings.apply({ showVisibleMarkersHudPanel =
+                not values.showVisibleMarkersHudPanel })
+        elseif action.key == "toggle-hud-pins" then
+            SARNSettings.apply({ showPinnedLocationsHudPanel =
+                not values.showPinnedLocationsHudPanel })
+        elseif action.key == "toggle-hud-offscreen" then
+            SARNSettings.apply({ showOffscreenMarkersInHud =
+                not values.showOffscreenMarkersInHud })
+        elseif action.key == "toggle-hud-area-entry" then
+            SARNSettings.apply({ showAreaEntryNotifications =
+                not values.showAreaEntryNotifications })
+        elseif action.key == "toggle-hud-area-exit" then
+            SARNSettings.apply({ showAreaExitNotifications =
+                not values.showAreaExitNotifications })
+        elseif action.key == "hud-font-dec" then
+            SARNSettings.apply({ hudFontSize = math.max(9, values.hudFontSize - 1) })
+        elseif action.key == "hud-font-inc" then
+            SARNSettings.apply({ hudFontSize = math.min(24, values.hudFontSize + 1) })
+        elseif action.key == "toggle-group-current" then
+            SARNSettings.apply({ allowGroupsAsCurrentArea =
+                not values.allowGroupsAsCurrentArea })
         elseif action.key == "toggle-adapt" then
             SARNSettings.apply({ adaptArRedrawFrequencyToFps =
                 not values.adaptArRedrawFrequencyToFps })
