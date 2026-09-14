@@ -6,7 +6,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 if (-not $PSScriptRoot) { $PSScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition }
-$sourceDirectory = Join-Path $PSScriptRoot 'src\du lua library\sarn'
+$librarySourceRoot = Join-Path $PSScriptRoot 'src\du lua library'
+$libraryNames = @('arn', 'liby')
 
 if (-not $DuRoot) {
     $commonPaths = @(
@@ -28,19 +29,21 @@ if (-not $DuRoot) {
 }
 
 $luaRoot = Join-Path $DuRoot 'Game\data\lua'
-$destinationDirectory = Join-Path $luaRoot 'sarn'
-
-if (-not (Test-Path -LiteralPath $sourceDirectory -PathType Container)) {
-    throw "Library source directory is missing: $sourceDirectory"
-}
 if (-not (Test-Path -LiteralPath $luaRoot -PathType Container)) {
     throw "DU Lua directory does not exist: $luaRoot"
 }
 
-New-Item -ItemType Directory -Path $destinationDirectory -Force | Out-Null
-$files = Get-ChildItem -LiteralPath $sourceDirectory -Filter '*.lua' -File
-foreach ($file in $files) {
-    $destinationFile = Join-Path $destinationDirectory $file.Name
-    Copy-Item -LiteralPath $file.FullName -Destination $destinationFile -Force
-    Write-Host "Installed: $destinationFile"
+foreach ($libraryName in $libraryNames) {
+    $sourceDirectory = Join-Path $librarySourceRoot $libraryName
+    if (-not (Test-Path -LiteralPath $sourceDirectory -PathType Container)) {
+        throw "Library source directory is missing: $sourceDirectory"
+    }
+    $destinationDirectory = Join-Path $luaRoot $libraryName
+    New-Item -ItemType Directory -Path $destinationDirectory -Force | Out-Null
+    $files = Get-ChildItem -LiteralPath $sourceDirectory -Filter '*.lua' -File
+    foreach ($file in $files) {
+        $destinationFile = Join-Path $destinationDirectory $file.Name
+        Copy-Item -LiteralPath $file.FullName -Destination $destinationFile -Force
+        Write-Host "Installed: $destinationFile"
+    }
 }

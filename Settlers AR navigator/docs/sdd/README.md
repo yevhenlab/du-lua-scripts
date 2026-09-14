@@ -1,8 +1,8 @@
-# SARN Software Design Document
+# ARN Software Design Document
 
 Status: living draft.
 
-This is the design record for Settlers AR Navigator (SARN). Newer confirmed decisions supersede older ones. When a new decision conflicts with an established decision, record the conflict in `06-open-questions.md` until it is resolved.
+This is the design record for AR Navigator (ARN). Newer confirmed decisions supersede older ones. When a new decision conflicts with an established decision, record the conflict in `06-open-questions.md` until it is resolved.
 
 ## Reading order
 

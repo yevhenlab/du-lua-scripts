@@ -1,10 +1,10 @@
-<## Builds the known-location-only SARN Programming Board configuration. ##>
+<## Builds the known-location-only ARN Programming Board configuration. ##>
 [CmdletBinding()]
 param([string]$OutputPath, [switch]$CopyToClipboard)
 
 $ErrorActionPreference = 'Stop'
 if (-not $PSScriptRoot) { $PSScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition }
-if (-not $OutputPath) { $OutputPath = Join-Path $PSScriptRoot 'settlers-ar-navigator.generated.json' }
+if (-not $OutputPath) { $OutputPath = Join-Path $PSScriptRoot 'ar-navigator.generated.json' }
 function Read-LuaFile([string]$Name) { Get-Content -LiteralPath (Join-Path $PSScriptRoot $Name) -Raw }
 function New-Slot([string]$Name) {
     [pscustomobject][ordered]@{ name = $Name; type = [pscustomobject][ordered]@{ events = @(); methods = @() } }

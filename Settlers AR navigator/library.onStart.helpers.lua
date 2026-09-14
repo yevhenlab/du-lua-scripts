@@ -1,37 +1,48 @@
 -- Provides shared coordinate conversion, diagnostics, safe-call, HTML, and distance helpers.
--- Library dependencies: SARNConfiguration and atlas data injected by unit.onStart.
-SARN = SARN or {}
-SARN.warnings = SARN.warnings or {}
-SARN.errors = SARN.errors or {}
-SARN._reportedDiagnostics = SARN._reportedDiagnostics or {}
+-- Library dependencies: ARNConfiguration and atlas data injected by unit.onStart.
+ARN = ARN or {}
+ARN.warnings = ARN.warnings or {}
+ARN.errors = ARN.errors or {}
+ARN._reportedDiagnostics = ARN._reportedDiagnostics or {}
 
-function SARN.applicationCaption()
-    return string.char(83, 69, 84, 84, 76, 69, 82, 83, 32, 65, 82, 32,
-        78, 65, 86, 73, 71, 65, 84, 79, 82)
+function ARN.shortName()
+    local value = tostring(ARNConfiguration.applicationShortName or "ARN")
+        :gsub("^%s+", ""):gsub("%s+$", "")
+    return value ~= "" and value or "ARN"
 end
 
-function SARN.startupCaption()
-    return SARN.applicationCaption() .. string.char(32, 118, 48, 46, 49, 48, 46, 49, 52, 55)
+function ARN.applicationCaption()
+    local prefix = tostring(ARNConfiguration.applicationNamePrefix or "")
+        :gsub("^%s+", ""):gsub("%s+$", "")
+    return (prefix ~= "" and (prefix .. " ") or "") .. "AR Navigator"
 end
 
-function SARN.reportWarning(code, message)
+function ARN.chatPrefix()
+    return "[" .. ARN.shortName() .. "] "
+end
+
+function ARN.startupCaption()
+    return ARN.applicationCaption() .. string.char(32, 118, 48, 46, 49, 48, 46, 49, 54, 51)
+end
+
+function ARN.reportWarning(code, message)
     local key = tostring(code) .. ":" .. tostring(message)
-    if SARN._reportedDiagnostics[key] then return end
-    SARN._reportedDiagnostics[key] = true
-    SARN.warnings[#SARN.warnings + 1] = { code = code, message = message }
-    if system and type(system.print) == "function" then system.print("[SARN] Warning: " .. message) end
+    if ARN._reportedDiagnostics[key] then return end
+    ARN._reportedDiagnostics[key] = true
+    ARN.warnings[#ARN.warnings + 1] = { code = code, message = message }
+    if system and type(system.print) == "function" then system.print(ARN.chatPrefix() .. "Warning: " .. message) end
 end
 
-function SARN.setAtlas(atlas, loadError)
-    SARN._atlasAttempted = true
-    SARN._atlas = type(atlas) == "table" and atlas or nil
-    if SARN._atlas == nil then
-        SARN.reportWarning("atlas-unavailable", "Could not load DU atlas.lua: "
+function ARN.setAtlas(atlas, loadError)
+    ARN._atlasAttempted = true
+    ARN._atlas = type(atlas) == "table" and atlas or nil
+    if ARN._atlas == nil then
+        ARN.reportWarning("atlas-unavailable", "Could not load DU atlas.lua: "
             .. tostring(loadError or "invalid module result"))
     end
 end
 
-function SARN.call(element, methodName, ...)
+function ARN.call(element, methodName, ...)
     if element == nil or type(element[methodName]) ~= "function" then return nil end
     local ok, value = pcall(element[methodName], ...)
     return ok and value or nil
@@ -39,7 +50,7 @@ end
 
 local numberPattern = "([+-]?%d*%.?%d+[eE]?[+-]?%d*)"
 
-function SARN.parsePosition(value)
+function ARN.parsePosition(value)
     if type(value) ~= "string" then return nil end
     local systemId, bodyId, x, y, z = value:match("^%s*::pos%s*{%s*" .. numberPattern
         .. "%s*,%s*" .. numberPattern .. "%s*,%s*" .. numberPattern
@@ -48,12 +59,12 @@ function SARN.parsePosition(value)
     return tonumber(systemId), tonumber(bodyId), tonumber(x), tonumber(y), tonumber(z)
 end
 
-function SARN.getAtlas()
-    return SARN._atlas
+function ARN.getAtlas()
+    return ARN._atlas
 end
 
-function SARN.planetToWorld(systemId, bodyId, latitude, longitude, altitude)
-    local atlas = SARN.getAtlas()
+function ARN.planetToWorld(systemId, bodyId, latitude, longitude, altitude)
+    local atlas = ARN.getAtlas()
     local bodies = atlas and (atlas[systemId] or atlas[tostring(systemId)])
     local body = bodies and (bodies[bodyId] or bodies[tostring(bodyId)])
     local center = body and body.center
@@ -62,7 +73,7 @@ function SARN.planetToWorld(systemId, bodyId, latitude, longitude, altitude)
     local cy = center and tonumber(center.y or center[2])
     local cz = center and tonumber(center.z or center[3])
     if cx == nil or cy == nil or cz == nil or radius == nil then
-        SARN.reportWarning("atlas-body-unknown", "No atlas body for ::pos{" .. tostring(systemId)
+        ARN.reportWarning("atlas-body-unknown", "No atlas body for ::pos{" .. tostring(systemId)
             .. "," .. tostring(bodyId) .. ",...}; location skipped.")
         return nil, nil, nil
     end
@@ -74,38 +85,38 @@ function SARN.planetToWorld(systemId, bodyId, latitude, longitude, altitude)
         cz + radialDistance * math.sin(lat)
 end
 
-function SARN.components(value)
+function ARN.components(value)
     if type(value) == "table" then
         return tonumber(value.x or value[1]), tonumber(value.y or value[2]), tonumber(value.z or value[3])
     elseif type(value) == "string" then
-        local systemId, bodyId, x, y, z = SARN.parsePosition(value)
+        local systemId, bodyId, x, y, z = ARN.parsePosition(value)
         if systemId == nil then
-            SARN.reportWarning("coordinate-invalid", "Invalid coordinate '" .. value .. "'; location skipped.")
+            ARN.reportWarning("coordinate-invalid", "Invalid coordinate '" .. value .. "'; location skipped.")
             return nil, nil, nil
         end
         if systemId == 0 and bodyId == 0 then return x, y, z end
-        return SARN.planetToWorld(systemId, bodyId, x, y, z)
+        return ARN.planetToWorld(systemId, bodyId, x, y, z)
     end
     return nil, nil, nil
 end
 
-function SARN.distance(from, to)
-    local fx, fy, fz = SARN.components(from)
-    local tx, ty, tz = SARN.components(to)
+function ARN.distance(from, to)
+    local fx, fy, fz = ARN.components(from)
+    local tx, ty, tz = ARN.components(to)
     if fx == nil or tx == nil then return nil end
     local dx, dy, dz = tx - fx, ty - fy, tz - fz
     return math.sqrt(dx * dx + dy * dy + dz * dz)
 end
 
-function SARN.worldPositionString(point)
-    local x, y, z = SARN.components(point)
+function ARN.worldPositionString(point)
+    local x, y, z = ARN.components(point)
     if x == nil then return nil end
     return string.format("::pos{0,0,%.4f,%.4f,%.4f}", x, y, z)
 end
 
 local function relativePositionString(point, systemId, bodyId, center, radius)
-    local x, y, z = SARN.components(point)
-    local cx, cy, cz = SARN.components(center)
+    local x, y, z = ARN.components(point)
+    local cx, cy, cz = ARN.components(center)
     radius = tonumber(radius)
     systemId, bodyId = tonumber(systemId), tonumber(bodyId)
     if x == nil or cx == nil or radius == nil or radius <= 0
@@ -123,7 +134,7 @@ local function relativePositionString(point, systemId, bodyId, center, radius)
         systemId, bodyId, latitude, longitude, altitude)
 end
 
-function SARN.bodyRelativePositionString(point, bodyTarget)
+function ARN.bodyRelativePositionString(point, bodyTarget)
     local atlasBody = type(bodyTarget) == "table" and bodyTarget.atlasBody or nil
     if type(atlasBody) ~= "table" then return nil end
     return relativePositionString(
@@ -134,15 +145,15 @@ function SARN.bodyRelativePositionString(point, bodyTarget)
         bodyTarget.areaRadius)
 end
 
-function SARN.closestPlanetPositionString(point)
-    local x, y, z = SARN.components(point)
-    local atlas = SARN.getAtlas()
+function ARN.closestPlanetPositionString(point)
+    local x, y, z = ARN.components(point)
+    local atlas = ARN.getAtlas()
     if x == nil or type(atlas) ~= "table" then return nil end
     local bestSystemId, bestBodyId, bestBody, bestDistance
     for systemId, bodies in pairs(atlas) do
         if type(bodies) == "table" then
             for bodyId, body in pairs(bodies) do
-                local cx, cy, cz = SARN.components(type(body) == "table" and body.center or nil)
+                local cx, cy, cz = ARN.components(type(body) == "table" and body.center or nil)
                 local radius = type(body) == "table" and tonumber(body.radius) or nil
                 if cx ~= nil and radius ~= nil and radius > 0 and tonumber(bodyId) ~= 0 then
                     local dx, dy, dz = x - cx, y - cy, z - cz
@@ -161,12 +172,12 @@ function SARN.closestPlanetPositionString(point)
         point, bestSystemId, bestBodyId, bestBody.center, bestBody.radius)
 end
 
-function SARN.escapeHtml(value)
+function ARN.escapeHtml(value)
     local escaped = tostring(value):gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
     return escaped
 end
 
-function SARN.formatWholeWithSeparators(value)
+function ARN.formatWholeWithSeparators(value)
     local whole = math.max(0, math.floor((tonumber(value) or 0) + 0.5))
     local groups = {}
     repeat
@@ -177,7 +188,7 @@ function SARN.formatWholeWithSeparators(value)
     return table.concat(groups, "'")
 end
 
-function SARN.formatDistance(distanceMeters)
+function ARN.formatDistance(distanceMeters)
     local meters = math.max(0, tonumber(distanceMeters) or 0)
     if meters < 100 then
         local rounded = math.floor(meters * 10 + 0.5) / 10
@@ -209,5 +220,5 @@ function SARN.formatDistance(distanceMeters)
         local rounded = math.floor(su * 10 + 0.5) / 10
         if rounded < 100 then return string.format("%.1f su", rounded) end
     end
-    return SARN.formatWholeWithSeparators(su) .. " su"
+    return ARN.formatWholeWithSeparators(su) .. " su"
 end

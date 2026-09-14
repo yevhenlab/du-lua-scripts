@@ -1,10 +1,10 @@
--- Draws and controls the Alt+5 SARN menu starter and its prototype menus.
--- Library dependencies: SARN, SARNLocationCatalog, and SARNArDrawing.
-SARNController = SARNController or {}
-SARNController.menuOpen = SARNController.menuOpen == true
-SARNController.hidden = SARNController.hidden == true
-SARNController.shortcutShown = SARNController.shortcutShown == true
-SARNController.activeMenu = SARNController.activeMenu or "main"
+-- Draws and controls the Alt+5 ARN menu starter and its prototype menus.
+-- Library dependencies: ARN, ARNLocationCatalog, and ARNArDrawing.
+ARNController = ARNController or {}
+ARNController.menuOpen = ARNController.menuOpen == true
+ARNController.hidden = ARNController.hidden == true
+ARNController.shortcutShown = ARNController.shortcutShown == true
+ARNController.activeMenu = ARNController.activeMenu or "main"
 
 local controllerAnchorDistance = 1000000
 local controllerUiScale = 1.5
@@ -56,7 +56,7 @@ local function ui(value)
 end
 
 local function vector(value)
-    local x, y, z = SARN.components(value)
+    local x, y, z = ARN.components(value)
     return x, y, z
 end
 
@@ -76,13 +76,13 @@ local function bounds(left, top, width, height)
 end
 
 local function screenWorldAnchor(screenX, screenY)
-    local cx, cy, cz = vector(SARN.call(system, "getCameraWorldPos"))
-    local fx, fy, fz = normalise(vector(SARN.call(system, "getCameraWorldForward")))
-    local rx, ry, rz = normalise(vector(SARN.call(system, "getCameraWorldRight")))
-    local ux, uy, uz = normalise(vector(SARN.call(system, "getCameraWorldUp")))
+    local cx, cy, cz = vector(ARN.call(system, "getCameraWorldPos"))
+    local fx, fy, fz = normalise(vector(ARN.call(system, "getCameraWorldForward")))
+    local rx, ry, rz = normalise(vector(ARN.call(system, "getCameraWorldRight")))
+    local ux, uy, uz = normalise(vector(ARN.call(system, "getCameraWorldUp")))
     if cx == nil or fx == nil or rx == nil or ux == nil then return nil end
-    local verticalFov = tonumber(SARN.call(system, "getCameraVerticalFov")) or math.rad(60)
-    local horizontalFov = tonumber(SARN.call(system, "getCameraHorizontalFov")) or math.rad(90)
+    local verticalFov = tonumber(ARN.call(system, "getCameraVerticalFov")) or math.rad(60)
+    local horizontalFov = tonumber(ARN.call(system, "getCameraHorizontalFov")) or math.rad(90)
     if verticalFov > math.pi then verticalFov = math.rad(verticalFov) end
     if horizontalFov > math.pi then horizontalFov = math.rad(horizontalFov) end
     local horizontal = (screenX - 0.5) * 2 * math.tan(horizontalFov * 0.5)
@@ -95,32 +95,32 @@ local function screenWorldAnchor(screenX, screenY)
 end
 
 local function isControllerRendered()
-    if SARNArDrawing == nil or type(SARNArDrawing.projectWorldPoint) ~= "function" then return false end
-    if SARNController.hidden or not SARNController.shortcutShown then return false end
-    local anchor = SARNController.menuOpen and SARNController.worldAnchor
-        or SARNController.followAnchor
-    return anchor ~= nil and SARNArDrawing.projectWorldPoint(anchor) ~= nil
+    if ARNArDrawing == nil or type(ARNArDrawing.projectWorldPoint) ~= "function" then return false end
+    if ARNController.hidden or not ARNController.shortcutShown then return false end
+    local anchor = ARNController.menuOpen and ARNController.worldAnchor
+        or ARNController.followAnchor
+    return anchor ~= nil and ARNArDrawing.projectWorldPoint(anchor) ~= nil
 end
 
-function SARNController.showFromShortcut()
+function ARNController.showFromShortcut()
     if isControllerRendered() then
-        SARNController.menuOpen = false
-        SARNController.hidden = true
-        SARNController.shortcutShown = false
-        SARNController.followAnchor = nil
-        SARNController.worldAnchor = nil
-        SARNController.activeMenu = "main"
+        ARNController.menuOpen = false
+        ARNController.hidden = true
+        ARNController.shortcutShown = false
+        ARNController.followAnchor = nil
+        ARNController.worldAnchor = nil
+        ARNController.activeMenu = "main"
         return false
     end
 
     local anchor = screenWorldAnchor(0.5, 0.7)
     if anchor == nil then return false end
-    SARNController.menuOpen = false
-    SARNController.hidden = false
-    SARNController.shortcutShown = true
-    SARNController.followAnchor = anchor
-    SARNController.worldAnchor = anchor
-    SARNController.activeMenu = "main"
+    ARNController.menuOpen = false
+    ARNController.hidden = false
+    ARNController.shortcutShown = true
+    ARNController.followAnchor = anchor
+    ARNController.worldAnchor = anchor
+    ARNController.activeMenu = "main"
     return true
 end
 
@@ -129,11 +129,11 @@ local function buttonHtml(className, label, selected, actionBounds, icon)
         .. string.format("%.1f", actionBounds.top) .. "px;width:"
         .. string.format("%.1f", actionBounds.right - actionBounds.left) .. "px;height:"
         .. string.format("%.1f", actionBounds.bottom - actionBounds.top) .. "px;"
-    local iconHtml = icon and ('<svg class="sarn-controller-menu-icon" viewBox="'
+    local iconHtml = icon and ('<svg class="arn-controller-menu-icon" viewBox="'
         .. icon.viewBox .. '">' .. icon.body .. '</svg>') or ""
-    return '<div class="sarn-controller-button ' .. className
+    return '<div class="arn-controller-button ' .. className
         .. (selected and ' selected' or '') .. '" style="' .. style .. '">'
-        .. iconHtml .. '<span>' .. SARN.escapeHtml(label) .. '</span></div>'
+        .. iconHtml .. '<span>' .. ARN.escapeHtml(label) .. '</span></div>'
 end
 
 local function triangleButtonHtml(direction, selected, actionBounds)
@@ -142,7 +142,7 @@ local function triangleButtonHtml(direction, selected, actionBounds)
         .. string.format("%.1f", actionBounds.top) .. "px;width:"
         .. string.format("%.1f", actionBounds.right - actionBounds.left) .. "px;height:"
         .. string.format("%.1f", actionBounds.bottom - actionBounds.top) .. "px;"
-    return '<div class="sarn-settings-control' .. (selected and ' selected' or '')
+    return '<div class="arn-settings-control' .. (selected and ' selected' or '')
         .. '" style="' .. style .. '"><svg viewBox="0 0 28 28">'
         .. '<polygon points="' .. points .. '"/></svg></div>'
 end
@@ -152,7 +152,7 @@ local function checkboxHtml(checked, selected, actionBounds)
         .. string.format("%.1f", actionBounds.top) .. "px;width:"
         .. string.format("%.1f", actionBounds.right - actionBounds.left) .. "px;height:"
         .. string.format("%.1f", actionBounds.bottom - actionBounds.top) .. "px;"
-    return '<div class="sarn-settings-control checkbox' .. (selected and ' selected' or '')
+    return '<div class="arn-settings-control checkbox' .. (selected and ' selected' or '')
         .. '" style="' .. style .. '"><span>' .. (checked and 'X' or '') .. '</span></div>'
 end
 
@@ -161,10 +161,10 @@ local function quickToggleHtml(item, checked, selected, actionBounds)
         .. string.format("%.1f", actionBounds.top) .. "px;width:"
         .. string.format("%.1f", actionBounds.right - actionBounds.left) .. "px;height:"
         .. string.format("%.1f", actionBounds.bottom - actionBounds.top) .. "px;"
-    return '<div class="sarn-quick-toggle' .. (checked and ' active' or '')
+    return '<div class="arn-quick-toggle' .. (checked and ' active' or '')
         .. (selected and ' hover' or '') .. '" style="' .. style .. '">'
         .. '<svg viewBox="' .. item.icon.viewBox .. '">' .. item.icon.body .. '</svg>'
-        .. '<span>' .. SARN.escapeHtml(item.label) .. '</span>'
+        .. '<span>' .. ARN.escapeHtml(item.label) .. '</span>'
         .. '<i>' .. (checked and 'X' or '') .. '</i></div>'
 end
 
@@ -175,67 +175,67 @@ local function settingNumber(value)
     return string.format("%.1f", value)
 end
 
-function SARNController.getStyles()
+function ARNController.getStyles()
     return [[<style>
-.sarn-controller{position:absolute;left:0;top:0;z-index:9000;font-family:Arial,sans-serif;color:#e8eef0;font-size:20px;font-weight:bold;pointer-events:none}
-.sarn-controller-button{position:absolute;box-sizing:border-box;text-align:center;background:rgba(5,18,24,.82);color:#e8eef0;border:1.5px solid rgba(112,225,255,.48);text-shadow:0 1.5px 3px #000;filter:drop-shadow(0 0 6px rgba(62,214,255,.28))}
-.sarn-controller-starter{position:absolute;box-sizing:border-box;text-align:center;color:#e8eef0;text-shadow:0 1.5px 3px #000;filter:drop-shadow(0 0 6px rgba(62,214,255,.28))}
-.sarn-controller-shape{position:absolute;left:0;top:0;width:100%;height:100%}
-.sarn-controller-shape polygon{fill:rgba(5,18,24,.82);stroke:rgba(112,225,255,.48);stroke-width:1.5}
-.sarn-controller-starter.main{display:flex;align-items:center;justify-content:center;gap:15px;font-size:27px;letter-spacing:1.5px}
-.sarn-controller-starter.main>span{display:inline-flex;align-items:center;justify-content:center;height:36px;line-height:36px}
-.sarn-controller-starter.hide{display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:18px;font-weight:normal;line-height:17px}
-.sarn-controller-starter>span{position:relative}
-.sarn-controller-hide-arrow{font-size:30px;line-height:23px}
-.sarn-controller-button.selected{background:rgba(16,70,85,.94);border-color:#55e8ff;filter:drop-shadow(0 0 10.5px rgba(62,214,255,.75));color:#fff}
-.sarn-controller-starter.hover{filter:drop-shadow(0 0 10.5px rgba(62,214,255,.75));color:#fff}
-.sarn-controller-starter.hover .sarn-controller-shape polygon{fill:rgba(16,70,85,.94);stroke:#55e8ff}
-.sarn-controller-starter.active .sarn-controller-shape polygon{fill:rgba(19,99,119,.96);stroke:#7af0ff}
-.sarn-controller-gem{font-size:33px;color:#55e8ff;transform:translateY(-3px)}
-.sarn-controller-button{display:flex;align-items:center;justify-content:center;padding:6px 12px}
-.sarn-controller-menu-icon{width:24px;height:24px;margin-right:9px;fill:currentColor;flex:none;filter:drop-shadow(0 1px 2px #000)}
-.sarn-controller-button.primary{clip-path:polygon(8% 0,92% 0,100% 50%,92% 100%,8% 100%,0 50%);justify-content:flex-start;text-align:left;padding:4px 12px 4px 15px;line-height:20px}
-.sarn-controller-button.primary>span{white-space:normal}
-.sarn-controller-button.sub{font-size:18px;background:rgba(7,23,31,.9)}
-.sarn-controller-button.disabled{color:#75909a;background:rgba(5,18,24,.65);border-color:rgba(112,225,255,.20)}
-.sarn-controller-button.checked{color:#65efff}
-.sarn-settings-row{position:absolute;box-sizing:border-box;background:rgba(5,18,24,.90);border:1.5px solid rgba(112,225,255,.32);color:#cfeef5;font:17px Arial,sans-serif;font-weight:normal;text-shadow:0 1.5px 3px #000;display:flex;align-items:center;padding-left:12px}
-.sarn-pin-row{padding-right:48px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sarn-settings-row.selected{background:rgba(16,70,85,.96);border-color:#55e8ff;filter:drop-shadow(0 0 9px rgba(62,214,255,.7));color:#fff}
-.sarn-settings-control{position:absolute;box-sizing:border-box;background:rgba(4,28,34,.92);border:1.5px solid rgba(112,225,255,.45);display:flex;align-items:center;justify-content:center;color:#e8eef0}
-.sarn-settings-control.selected{background:rgba(16,70,85,.96);border-color:#55e8ff;filter:drop-shadow(0 0 9px rgba(62,214,255,.7))}
-.sarn-settings-control svg{width:100%;height:100%;fill:#dff8ff}
-.sarn-settings-control.checkbox span{width:23px;height:23px;box-sizing:border-box;border:1.5px solid #dff8ff;text-align:center;font:bold 17px/21px Arial,sans-serif;color:#55e8ff}
-.sarn-settings-value{position:absolute;box-sizing:border-box;background:rgba(4,36,34,.92);border:1.5px solid rgba(112,225,255,.28);display:flex;align-items:center;justify-content:center;color:#fff;font:20px Arial,sans-serif}
-.sarn-settings-message{position:absolute;box-sizing:border-box;padding:10.5px 13.5px;background:rgba(5,18,24,.96);border:1.5px solid #55e8ff;color:#dff8ff;font:18px Arial,sans-serif;text-shadow:0 1.5px 3px #000;text-align:center;display:flex;align-items:center;justify-content:center}
-.sarn-settings-message.error{border-color:#ffb24a;color:#ffd59c}
-.sarn-quick-toggle{position:absolute;box-sizing:border-box;background:transparent;border:0;color:#dff8ff;display:flex;align-items:center;justify-content:center;gap:7px;padding:6px 24px 6px 7px;font:14px Arial,sans-serif;font-weight:normal;text-shadow:0 1.5px 3px #000}
-.sarn-quick-toggle.active{background:rgba(19,99,119,.50);color:#fff}
-.sarn-quick-toggle.hover{background:rgba(16,70,85,.38);filter:drop-shadow(0 0 8px rgba(62,214,255,.72));color:#fff}
-.sarn-quick-toggle.active.hover{background:rgba(19,99,119,.68)}
-.sarn-quick-toggle svg{width:22px;height:22px;fill:currentColor;flex:none}
-.sarn-quick-toggle>span{white-space:nowrap}
-.sarn-quick-toggle>i{position:absolute;right:5px;top:5px;width:15px;height:15px;box-sizing:border-box;border:1px solid #dff8ff;color:#55e8ff;font:bold 11px/13px Arial,sans-serif;font-style:normal;text-align:center}
-.sarn-quick-divider{position:absolute;width:1px;background:rgba(185,235,247,.58)}
+.arn-controller{position:absolute;left:0;top:0;z-index:9000;font-family:Arial,sans-serif;color:#e8eef0;font-size:20px;font-weight:bold;pointer-events:none}
+.arn-controller-button{position:absolute;box-sizing:border-box;text-align:center;background:rgba(5,18,24,.82);color:#e8eef0;border:1.5px solid rgba(112,225,255,.48);text-shadow:0 1.5px 3px #000;filter:drop-shadow(0 0 6px rgba(62,214,255,.28))}
+.arn-controller-starter{position:absolute;box-sizing:border-box;text-align:center;color:#e8eef0;text-shadow:0 1.5px 3px #000;filter:drop-shadow(0 0 6px rgba(62,214,255,.28))}
+.arn-controller-shape{position:absolute;left:0;top:0;width:100%;height:100%}
+.arn-controller-shape polygon{fill:rgba(5,18,24,.82);stroke:rgba(112,225,255,.48);stroke-width:1.5}
+.arn-controller-starter.main{display:flex;align-items:center;justify-content:center;gap:15px;font-size:27px;letter-spacing:1.5px}
+.arn-controller-starter.main>span{display:inline-flex;align-items:center;justify-content:center;height:36px;line-height:36px}
+.arn-controller-starter.hide{display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:18px;font-weight:normal;line-height:17px}
+.arn-controller-starter>span{position:relative}
+.arn-controller-hide-arrow{font-size:30px;line-height:23px}
+.arn-controller-button.selected{background:rgba(16,70,85,.94);border-color:#55e8ff;filter:drop-shadow(0 0 10.5px rgba(62,214,255,.75));color:#fff}
+.arn-controller-starter.hover{filter:drop-shadow(0 0 10.5px rgba(62,214,255,.75));color:#fff}
+.arn-controller-starter.hover .arn-controller-shape polygon{fill:rgba(16,70,85,.94);stroke:#55e8ff}
+.arn-controller-starter.active .arn-controller-shape polygon{fill:rgba(19,99,119,.96);stroke:#7af0ff}
+.arn-controller-gem{font-size:33px;color:#55e8ff;transform:translateY(-3px)}
+.arn-controller-button{display:flex;align-items:center;justify-content:center;padding:6px 12px}
+.arn-controller-menu-icon{width:24px;height:24px;margin-right:9px;fill:currentColor;flex:none;filter:drop-shadow(0 1px 2px #000)}
+.arn-controller-button.primary{clip-path:polygon(8% 0,92% 0,100% 50%,92% 100%,8% 100%,0 50%);justify-content:flex-start;text-align:left;padding:4px 12px 4px 15px;line-height:20px}
+.arn-controller-button.primary>span{white-space:normal}
+.arn-controller-button.sub{font-size:18px;background:rgba(7,23,31,.9)}
+.arn-controller-button.disabled{color:#75909a;background:rgba(5,18,24,.65);border-color:rgba(112,225,255,.20)}
+.arn-controller-button.checked{color:#65efff}
+.arn-settings-row{position:absolute;box-sizing:border-box;background:rgba(5,18,24,.90);border:1.5px solid rgba(112,225,255,.32);color:#cfeef5;font:17px Arial,sans-serif;font-weight:normal;text-shadow:0 1.5px 3px #000;display:flex;align-items:center;padding-left:12px}
+.arn-pin-row{padding-right:48px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.arn-settings-row.selected{background:rgba(16,70,85,.96);border-color:#55e8ff;filter:drop-shadow(0 0 9px rgba(62,214,255,.7));color:#fff}
+.arn-settings-control{position:absolute;box-sizing:border-box;background:rgba(4,28,34,.92);border:1.5px solid rgba(112,225,255,.45);display:flex;align-items:center;justify-content:center;color:#e8eef0}
+.arn-settings-control.selected{background:rgba(16,70,85,.96);border-color:#55e8ff;filter:drop-shadow(0 0 9px rgba(62,214,255,.7))}
+.arn-settings-control svg{width:100%;height:100%;fill:#dff8ff}
+.arn-settings-control.checkbox span{width:23px;height:23px;box-sizing:border-box;border:1.5px solid #dff8ff;text-align:center;font:bold 17px/21px Arial,sans-serif;color:#55e8ff}
+.arn-settings-value{position:absolute;box-sizing:border-box;background:rgba(4,36,34,.92);border:1.5px solid rgba(112,225,255,.28);display:flex;align-items:center;justify-content:center;color:#fff;font:20px Arial,sans-serif}
+.arn-settings-message{position:absolute;box-sizing:border-box;padding:10.5px 13.5px;background:rgba(5,18,24,.96);border:1.5px solid #55e8ff;color:#dff8ff;font:18px Arial,sans-serif;text-shadow:0 1.5px 3px #000;text-align:center;display:flex;align-items:center;justify-content:center}
+.arn-settings-message.error{border-color:#ffb24a;color:#ffd59c}
+.arn-quick-toggle{position:absolute;box-sizing:border-box;background:transparent;border:0;color:#dff8ff;display:flex;align-items:center;justify-content:center;gap:7px;padding:6px 24px 6px 7px;font:14px Arial,sans-serif;font-weight:normal;text-shadow:0 1.5px 3px #000}
+.arn-quick-toggle.active{background:rgba(19,99,119,.50);color:#fff}
+.arn-quick-toggle.hover{background:rgba(16,70,85,.38);filter:drop-shadow(0 0 8px rgba(62,214,255,.72));color:#fff}
+.arn-quick-toggle.active.hover{background:rgba(19,99,119,.68)}
+.arn-quick-toggle svg{width:22px;height:22px;fill:currentColor;flex:none}
+.arn-quick-toggle>span{white-space:nowrap}
+.arn-quick-toggle>i{position:absolute;right:5px;top:5px;width:15px;height:15px;box-sizing:border-box;border:1px solid #dff8ff;color:#55e8ff;font:bold 11px/13px Arial,sans-serif;font-style:normal;text-align:center}
+.arn-quick-divider{position:absolute;width:1px;background:rgba(185,235,247,.58)}
 </style>]]
 end
 
-function SARNController.draw()
-    local width = SARNArDrawing.screenWidth or tonumber(SARN.call(system, "getScreenWidth")) or 1920
-    local height = SARNArDrawing.screenHeight or tonumber(SARN.call(system, "getScreenHeight")) or 1080
+function ARNController.draw()
+    local width = ARNArDrawing.screenWidth or tonumber(ARN.call(system, "getScreenWidth")) or 1920
+    local height = ARNArDrawing.screenHeight or tonumber(ARN.call(system, "getScreenHeight")) or 1080
     local cursorX, cursorY = width * 0.5, height * 0.5
-    SARNController.selectedAction = nil
+    ARNController.selectedAction = nil
 
-    if SARNController.hidden or not SARNController.shortcutShown then return "" end
+    if ARNController.hidden or not ARNController.shortcutShown then return "" end
 
     local anchorX, anchorY
-    if not SARNController.menuOpen then
-        local projected = SARNController.followAnchor
-            and SARNArDrawing.projectWorldPoint(SARNController.followAnchor) or nil
+    if not ARNController.menuOpen then
+        local projected = ARNController.followAnchor
+            and ARNArDrawing.projectWorldPoint(ARNController.followAnchor) or nil
         if projected == nil then return "" end
         anchorX, anchorY = projected.x * width, projected.y * height
     else
-        local projected = SARNArDrawing.projectWorldPoint(SARNController.worldAnchor)
+        local projected = ARNArDrawing.projectWorldPoint(ARNController.worldAnchor)
         if projected == nil then return "" end
         anchorX, anchorY = projected.x * width, projected.y * height
     end
@@ -245,14 +245,14 @@ function SARNController.draw()
     local mainHovered = inside(cursorX, cursorY, main)
     local hideHovered = inside(cursorX, cursorY, hide)
     if hideHovered then
-        SARNController.selectedAction = { kind = "hide" }
+        ARNController.selectedAction = { kind = "hide" }
     elseif mainHovered then
-        SARNController.selectedAction = { kind = "toggle" }
+        ARNController.selectedAction = { kind = "toggle" }
     end
 
     local quickParts = {}
-    if not SARNController.menuOpen then
-        local values = SARNSettings.getValues()
+    if not ARNController.menuOpen then
+        local values = ARNSettings.getValues()
         local quickItems = {
             { label = "Planets", checked = values.showSystemPlanets,
                 key = "toggle-planets", icon = quickVisibilityIcons.planets, width = ui(70) },
@@ -279,12 +279,12 @@ function SARNController.draw()
             nextQuickLeft = nextQuickLeft + item.width
             local selected = inside(cursorX, cursorY, itemBounds)
             if selected then
-                SARNController.selectedAction = { kind = "setting", key = item.key }
+                ARNController.selectedAction = { kind = "setting", key = item.key }
             end
             quickParts[#quickParts + 1] = quickToggleHtml(
                 item, item.checked, selected, itemBounds)
             if index > 1 then
-                quickParts[#quickParts + 1] = '<div class="sarn-quick-divider" style="left:'
+                quickParts[#quickParts + 1] = '<div class="arn-quick-divider" style="left:'
                     .. string.format("%.1f", itemBounds.left) .. 'px;top:'
                     .. string.format("%.1f", itemBounds.top + ui(5)) .. 'px;height:'
                     .. string.format("%.1f", quickHeight - ui(10)) .. 'px"></div>'
@@ -293,33 +293,34 @@ function SARNController.draw()
     end
 
     local parts = {
-        '<div class="sarn-controller">',
-        '<div class="sarn-controller-starter main'
-            .. (mainHovered and ' hover' or '') .. (SARNController.menuOpen and ' active' or '')
+        '<div class="arn-controller">',
+        '<div class="arn-controller-starter main'
+            .. (mainHovered and ' hover' or '') .. (ARNController.menuOpen and ' active' or '')
             .. '" style="left:' .. string.format("%.1f", main.left) .. 'px;top:'
             .. string.format("%.1f", main.top) .. 'px;width:' .. string.format("%.1f", ui(164))
             .. 'px;height:' .. string.format("%.1f", ui(56)) .. 'px">'
-            .. '<svg class="sarn-controller-shape" viewBox="0 0 164 56" preserveAspectRatio="none">'
+            .. '<svg class="arn-controller-shape" viewBox="0 0 164 56" preserveAspectRatio="none">'
             .. '<polygon points="23,0 141,0 164,28 141,56 23,56 0,28"/></svg>'
-            .. '<span class="sarn-controller-gem">&#9672;</span><span>SARN</span></div>',
-        '<div class="sarn-controller-starter hide' .. (hideHovered and ' hover' or '')
+            .. '<span class="arn-controller-gem">&#9672;</span><span>'
+            .. ARN.escapeHtml(ARN.shortName()) .. '</span></div>',
+        '<div class="arn-controller-starter hide' .. (hideHovered and ' hover' or '')
             .. '" style="left:' .. string.format("%.1f", hide.left) .. 'px;top:'
             .. string.format("%.1f", hide.top) .. 'px;width:' .. string.format("%.1f", ui(164))
             .. 'px;height:' .. string.format("%.1f", ui(31)) .. 'px">'
-            .. '<svg class="sarn-controller-shape" viewBox="0 0 164 31" preserveAspectRatio="none">'
+            .. '<svg class="arn-controller-shape" viewBox="0 0 164 31" preserveAspectRatio="none">'
             .. '<polygon points="23,0 141,0 118,31 46,31"/></svg>'
-            .. '<span>Hide</span><span class="sarn-controller-hide-arrow">&#9662;</span></div>'
+            .. '<span>Hide</span><span class="arn-controller-hide-arrow">&#9662;</span></div>'
     }
     for _, quickPart in ipairs(quickParts) do parts[#parts + 1] = quickPart end
 
-    if SARNController.menuOpen then
+    if ARNController.menuOpen then
         local labels = { "Locations", "Pins", "HUD", "Settings", "Save to databank" }
         local keys = { "locations", "pins", "hud", "settings", "save" }
         local menuWidth, menuHeight, gap = ui(118), ui(34), ui(4)
         local menuLeft = main.left + ui(23)
         local menuTop = main.top - (#labels * menuHeight + (#labels - 1) * gap)
-        local submenu = SARNController.activeMenu or "main"
-        local pinEntries = submenu == "pins" and SARNArDrawing.getPinMenuEntries() or {}
+        local submenu = ARNController.activeMenu or "main"
+        local pinEntries = submenu == "pins" and ARNArDrawing.getPinMenuEntries() or {}
         local settingsRows = {
             { label = "detailsViewCloseDelaySeconds", kind = "number",
                 valueKey = "detailsViewCloseDelaySeconds", decrement = "details-dec",
@@ -333,7 +334,7 @@ function SARNController.draw()
                 valueKey = "allowGroupsAsCurrentArea", action = "toggle-group-current" },
         }
         local hudRows = {
-            { label = "Settlers AR Navigator", valueKey = "showSarnHudPanel",
+            { label = ARN.applicationCaption(), valueKey = "showNavigatorHudPanel",
                 action = "toggle-hud-status" },
             { label = "Visible Markers", valueKey = "showVisibleMarkersHudPanel",
                 action = "toggle-hud-markers" },
@@ -397,7 +398,7 @@ function SARNController.draw()
                 menuTop + (index - 1) * (menuHeight + gap), menuWidth, menuHeight)
             local selected = not submenuHovered and inside(cursorX, cursorY, itemBounds)
             if selected then
-                SARNController.selectedAction = keys[index] == "save"
+                ARNController.selectedAction = keys[index] == "save"
                     and { kind = "setting", key = "save-databank" }
                     or { kind = "submenu", key = keys[index] }
             end
@@ -406,7 +407,7 @@ function SARNController.draw()
         end
 
         if submenu == "locations" then
-            local values = SARNSettings.getValues()
+            local values = ARNSettings.getValues()
             local locationSettings = {
                 { label = "Planets", checked = values.showSystemPlanets,
                     key = "toggle-planets" },
@@ -424,14 +425,14 @@ function SARNController.draw()
                     locationsWidth, menuHeight)
                 local selected = inside(cursorX, cursorY, row)
                 if selected then
-                    SARNController.selectedAction = { kind = "setting", key = item.key }
+                    ARNController.selectedAction = { kind = "setting", key = item.key }
                 end
-                parts[#parts + 1] = '<div class="sarn-settings-row'
+                parts[#parts + 1] = '<div class="arn-settings-row'
                     .. (selected and ' selected' or '') .. '" style="left:'
                     .. string.format("%.1f", row.left) .. 'px;top:'
                     .. string.format("%.1f", row.top) .. 'px;width:'
                     .. tostring(locationsWidth) .. 'px;height:' .. tostring(menuHeight) .. 'px">'
-                    .. SARN.escapeHtml(item.label) .. '</div>'
+                    .. ARN.escapeHtml(item.label) .. '</div>'
                 local checkbox = bounds(row.right - ui(31), row.top + ui(3), ui(28), ui(28))
                 parts[#parts + 1] = checkboxHtml(item.checked, selected, checkbox)
             end
@@ -447,23 +448,23 @@ function SARNController.draw()
                 local rowIndex = index + #locationSettings
                 local row = bounds(subLeft,
                     subTop + (rowIndex - 1) * (menuHeight + gap), locationsWidth, menuHeight)
-                parts[#parts + 1] = '<div class="sarn-settings-row" style="left:'
+                parts[#parts + 1] = '<div class="arn-settings-row" style="left:'
                     .. string.format("%.1f", row.left) .. 'px;top:'
                     .. string.format("%.1f", row.top) .. 'px;width:'
                     .. tostring(locationsWidth) .. 'px;height:' .. tostring(menuHeight) .. 'px">'
-                    .. SARN.escapeHtml(setting.label) .. '</div>'
+                    .. ARN.escapeHtml(setting.label) .. '</div>'
                 local decrement = bounds(row.right - ui(94), row.top + ui(3), ui(28), ui(28))
                 local valueBounds = bounds(row.right - ui(64), row.top + ui(3), ui(34), ui(28))
                 local increment = bounds(row.right - ui(28), row.top + ui(3), ui(28), ui(28))
                 local decrementSelected = inside(cursorX, cursorY, decrement)
                 local incrementSelected = inside(cursorX, cursorY, increment)
                 if decrementSelected then
-                    SARNController.selectedAction = { kind = "setting", key = setting.decrement }
+                    ARNController.selectedAction = { kind = "setting", key = setting.decrement }
                 elseif incrementSelected then
-                    SARNController.selectedAction = { kind = "setting", key = setting.increment }
+                    ARNController.selectedAction = { kind = "setting", key = setting.increment }
                 end
                 parts[#parts + 1] = triangleButtonHtml("left", decrementSelected, decrement)
-                parts[#parts + 1] = '<div class="sarn-settings-value" style="left:'
+                parts[#parts + 1] = '<div class="arn-settings-value" style="left:'
                     .. string.format("%.1f", valueBounds.left) .. 'px;top:'
                     .. string.format("%.1f", valueBounds.top) .. 'px;width:'
                     .. string.format("%.1f", valueBounds.right - valueBounds.left) .. 'px;height:'
@@ -476,11 +477,11 @@ function SARNController.draw()
                 subTop + (knownIndex - 1) * (menuHeight + gap), locationsWidth, menuHeight)
             local knownSelected = inside(cursorX, cursorY, knownBounds)
             if knownSelected then
-                SARNController.selectedAction = { kind = "menu-action", key = "mock-known" }
+                ARNController.selectedAction = { kind = "menu-action", key = "mock-known" }
             end
             parts[#parts + 1] = buttonHtml("sub", "Known space", knownSelected, knownBounds)
         elseif submenu == "hud" then
-            local values = SARNSettings.getValues()
+            local values = ARNSettings.getValues()
             for index, item in ipairs(hudRows) do
                 local row = bounds(subLeft, subTop + (index - 1) * (menuHeight + gap),
                     hudWidth, menuHeight)
@@ -494,27 +495,27 @@ function SARNController.draw()
                     local incrementSelected = inside(cursorX, cursorY, increment)
                     selected = decrementSelected or incrementSelected
                     if decrementSelected then
-                        SARNController.selectedAction = { kind = "setting", key = item.decrement }
+                        ARNController.selectedAction = { kind = "setting", key = item.decrement }
                     elseif incrementSelected then
-                        SARNController.selectedAction = { kind = "setting", key = item.increment }
+                        ARNController.selectedAction = { kind = "setting", key = item.increment }
                     end
                 else
                     selected = inside(cursorX, cursorY, row)
                     if selected then
-                        SARNController.selectedAction = { kind = "setting", key = item.action }
+                        ARNController.selectedAction = { kind = "setting", key = item.action }
                     end
                 end
-                parts[#parts + 1] = '<div class="sarn-settings-row'
+                parts[#parts + 1] = '<div class="arn-settings-row'
                     .. (selected and ' selected' or '') .. '" style="left:'
                     .. string.format("%.1f", row.left) .. 'px;top:'
                     .. string.format("%.1f", row.top) .. 'px;width:'
                     .. tostring(hudWidth) .. 'px;height:' .. tostring(menuHeight) .. 'px">'
-                    .. SARN.escapeHtml(item.label) .. '</div>'
+                    .. ARN.escapeHtml(item.label) .. '</div>'
                 if item.kind == "number" then
                     local decrementSelected = inside(cursorX, cursorY, decrement)
                     local incrementSelected = inside(cursorX, cursorY, increment)
                     parts[#parts + 1] = triangleButtonHtml("left", decrementSelected, decrement)
-                    parts[#parts + 1] = '<div class="sarn-settings-value" style="left:'
+                    parts[#parts + 1] = '<div class="arn-settings-value" style="left:'
                         .. string.format("%.1f", valueBounds.left) .. 'px;top:'
                         .. string.format("%.1f", valueBounds.top) .. 'px;width:'
                         .. string.format("%.1f", valueBounds.right - valueBounds.left) .. 'px;height:'
@@ -527,17 +528,17 @@ function SARNController.draw()
                 end
             end
         elseif submenu == "settings" then
-            local values = SARNSettings.getValues()
+            local values = ARNSettings.getValues()
             for index, setting in ipairs(settingsRows) do
                 local row = bounds(subLeft, subTop + (index - 1) * (menuHeight + gap),
                     settingsWidth, menuHeight)
                 local rowSelected = setting.kind == "checkbox" and inside(cursorX, cursorY, row)
-                parts[#parts + 1] = '<div class="sarn-settings-row'
+                parts[#parts + 1] = '<div class="arn-settings-row'
                     .. (rowSelected and ' selected' or '') .. '" style="left:'
                     .. string.format("%.1f", row.left) .. 'px;top:'
                     .. string.format("%.1f", row.top) .. 'px;width:'
                     .. tostring(settingsWidth) .. 'px;height:' .. tostring(menuHeight) .. 'px">'
-                    .. SARN.escapeHtml(setting.label) .. '</div>'
+                    .. ARN.escapeHtml(setting.label) .. '</div>'
                 if setting.kind == "number" then
                     local decrement = bounds(row.right - ui(94), row.top + ui(3), ui(28), ui(28))
                     local valueBounds = bounds(row.right - ui(64), row.top + ui(3), ui(34), ui(28))
@@ -545,12 +546,12 @@ function SARNController.draw()
                     local decrementSelected = inside(cursorX, cursorY, decrement)
                     local incrementSelected = inside(cursorX, cursorY, increment)
                     if decrementSelected then
-                        SARNController.selectedAction = { kind = "setting", key = setting.decrement }
+                        ARNController.selectedAction = { kind = "setting", key = setting.decrement }
                     elseif incrementSelected then
-                        SARNController.selectedAction = { kind = "setting", key = setting.increment }
+                        ARNController.selectedAction = { kind = "setting", key = setting.increment }
                     end
                     parts[#parts + 1] = triangleButtonHtml("left", decrementSelected, decrement)
-                    parts[#parts + 1] = '<div class="sarn-settings-value" style="left:'
+                    parts[#parts + 1] = '<div class="arn-settings-value" style="left:'
                         .. string.format("%.1f", valueBounds.left) .. 'px;top:'
                         .. string.format("%.1f", valueBounds.top) .. 'px;width:'
                         .. string.format("%.1f", valueBounds.right - valueBounds.left) .. 'px;height:'
@@ -561,7 +562,7 @@ function SARNController.draw()
                     local checkbox = bounds(row.right - ui(31), row.top + ui(3), ui(28), ui(28))
                     local selected = rowSelected
                     if selected then
-                        SARNController.selectedAction = { kind = "setting", key = setting.action }
+                        ARNController.selectedAction = { kind = "setting", key = setting.action }
                     end
                     parts[#parts + 1] = checkboxHtml(values[setting.valueKey], selected, checkbox)
                 end
@@ -577,16 +578,16 @@ function SARNController.draw()
                         pinsWidth, menuHeight)
                     local selected = inside(cursorX, cursorY, row)
                     if selected then
-                        SARNController.selectedAction = { kind = "pin", targetId = entry.targetId,
+                        ARNController.selectedAction = { kind = "pin", targetId = entry.targetId,
                             mode = entry.mode }
                     end
-                    parts[#parts + 1] = '<div class="sarn-settings-row sarn-pin-row'
+                    parts[#parts + 1] = '<div class="arn-settings-row arn-pin-row'
                         .. (selected and ' selected' or '') .. '" style="left:'
                         .. string.format("%.1f", row.left) .. 'px;top:'
                         .. string.format("%.1f", row.top) .. 'px;width:'
                         .. string.format("%.1f", pinsWidth) .. 'px;height:'
                         .. string.format("%.1f", menuHeight) .. 'px">'
-                        .. SARN.escapeHtml(entry.label) .. '</div>'
+                        .. ARN.escapeHtml(entry.label) .. '</div>'
                     local checkbox = bounds(row.right - ui(31), row.top + ui(3), ui(28), ui(28))
                     parts[#parts + 1] = checkboxHtml(true, selected, checkbox)
                 end
@@ -595,157 +596,157 @@ function SARNController.draw()
                     subTop + (clearIndex - 1) * (menuHeight + gap), pinsWidth, menuHeight)
                 local clearSelected = inside(cursorX, cursorY, clearBounds)
                 if clearSelected then
-                    SARNController.selectedAction = { kind = "clear-pins" }
+                    ARNController.selectedAction = { kind = "clear-pins" }
                 end
                 parts[#parts + 1] = buttonHtml("sub", "Remove all pins", clearSelected, clearBounds)
             end
         end
-        local notification = SARNController.notification
-        local now = tonumber(SARN.call(system, "getArkTime")) or 0
+        local notification = ARNController.notification
+        local now = tonumber(ARN.call(system, "getArkTime")) or 0
         if notification ~= nil and now < (notification.untilTime or 0) then
             local messageWidth = ui(360)
             local messageLeft = menuLeft + menuWidth * 0.5 - messageWidth * 0.5
-            parts[#parts + 1] = '<div class="sarn-settings-message'
+            parts[#parts + 1] = '<div class="arn-settings-message'
                 .. (notification.error and ' error' or '') .. '" style="left:'
                 .. string.format("%.1f", messageLeft) .. 'px;top:'
                 .. string.format("%.1f", menuTop - ui(42)) .. 'px;width:'
                 .. string.format("%.1f", messageWidth) .. 'px;height:'
                 .. string.format("%.1f", ui(36)) .. 'px">'
-                .. SARN.escapeHtml(notification.text) .. '</div>'
+                .. ARN.escapeHtml(notification.text) .. '</div>'
         end
     end
     parts[#parts + 1] = "</div>"
     return table.concat(parts)
 end
 
-function SARNController.activateSelectedAction()
-    local action = SARNController.selectedAction
+function ARNController.activateSelectedAction()
+    local action = ARNController.selectedAction
     if type(action) ~= "table" then return false end
     if action.kind == "hide" then
-        SARNController.menuOpen = false
-        SARNController.hidden = true
-        SARNController.shortcutShown = false
-        SARNController.worldAnchor = nil
-        SARNController.activeMenu = "main"
+        ARNController.menuOpen = false
+        ARNController.hidden = true
+        ARNController.shortcutShown = false
+        ARNController.worldAnchor = nil
+        ARNController.activeMenu = "main"
         return true
     elseif action.kind == "toggle" then
-        SARNController.menuOpen = not SARNController.menuOpen
-        if SARNController.menuOpen then
-            SARNController.worldAnchor = SARNController.followAnchor
+        ARNController.menuOpen = not ARNController.menuOpen
+        if ARNController.menuOpen then
+            ARNController.worldAnchor = ARNController.followAnchor
         else
-            SARNController.worldAnchor = nil
-            SARNController.activeMenu = "main"
+            ARNController.worldAnchor = nil
+            ARNController.activeMenu = "main"
         end
         return true
     elseif action.kind == "submenu" then
-        SARNController.activeMenu = action.key
+        ARNController.activeMenu = action.key
         return true
     elseif action.kind == "pin" then
-        SARNArDrawing.setPinMode(action.targetId, action.mode, false)
+        ARNArDrawing.setPinMode(action.targetId, action.mode, false)
         return true
     elseif action.kind == "clear-pins" then
-        SARNArDrawing.clearPins()
+        ARNArDrawing.clearPins()
         return true
     elseif action.kind == "setting" then
-        local values = SARNSettings.getValues()
+        local values = ARNSettings.getValues()
         if action.key == "details-dec" then
-            SARNSettings.apply({ detailsViewCloseDelaySeconds =
+            ARNSettings.apply({ detailsViewCloseDelaySeconds =
                 math.max(0.1, values.detailsViewCloseDelaySeconds - 0.5) })
         elseif action.key == "details-inc" then
-            SARNSettings.apply({ detailsViewCloseDelaySeconds =
+            ARNSettings.apply({ detailsViewCloseDelaySeconds =
                 math.min(10, values.detailsViewCloseDelaySeconds + 0.5) })
         elseif action.key == "toggle-planets" then
             local enabled = not values.showSystemPlanets
-            SARNSettings.apply({ showSystemPlanets = enabled })
+            ARNSettings.apply({ showSystemPlanets = enabled })
         elseif action.key == "toggle-satellites" then
-            SARNSettings.apply({ showSatellites = not values.showSatellites })
+            ARNSettings.apply({ showSatellites = not values.showSatellites })
         elseif action.key == "toggle-current-area-places" then
-            SARNSettings.apply({ showCurrentAreaPlaces = not values.showCurrentAreaPlaces })
+            ARNSettings.apply({ showCurrentAreaPlaces = not values.showCurrentAreaPlaces })
         elseif action.key == "toggle-nearby-areas" then
-            SARNSettings.apply({ showNearbyAreas = not values.showNearbyAreas })
+            ARNSettings.apply({ showNearbyAreas = not values.showNearbyAreas })
         elseif action.key == "toggle-nearby-area-places" then
-            SARNSettings.apply({ showNearbyAreaPlaces = not values.showNearbyAreaPlaces })
+            ARNSettings.apply({ showNearbyAreaPlaces = not values.showNearbyAreaPlaces })
         elseif action.key == "toggle-hud-status" then
-            SARNSettings.apply({ showSarnHudPanel = not values.showSarnHudPanel })
+            ARNSettings.apply({ showNavigatorHudPanel = not values.showNavigatorHudPanel })
         elseif action.key == "toggle-hud-markers" then
-            SARNSettings.apply({ showVisibleMarkersHudPanel =
+            ARNSettings.apply({ showVisibleMarkersHudPanel =
                 not values.showVisibleMarkersHudPanel })
         elseif action.key == "toggle-hud-pins" then
-            SARNSettings.apply({ showPinnedLocationsHudPanel =
+            ARNSettings.apply({ showPinnedLocationsHudPanel =
                 not values.showPinnedLocationsHudPanel })
         elseif action.key == "toggle-hud-offscreen" then
-            SARNSettings.apply({ showOffscreenMarkersInHud =
+            ARNSettings.apply({ showOffscreenMarkersInHud =
                 not values.showOffscreenMarkersInHud })
         elseif action.key == "toggle-hud-area-entry" then
-            SARNSettings.apply({ showAreaEntryNotifications =
+            ARNSettings.apply({ showAreaEntryNotifications =
                 not values.showAreaEntryNotifications })
         elseif action.key == "toggle-hud-area-exit" then
-            SARNSettings.apply({ showAreaExitNotifications =
+            ARNSettings.apply({ showAreaExitNotifications =
                 not values.showAreaExitNotifications })
         elseif action.key == "hud-font-dec" then
-            SARNSettings.apply({ hudFontSize = math.max(9, values.hudFontSize - 1) })
+            ARNSettings.apply({ hudFontSize = math.max(9, values.hudFontSize - 1) })
         elseif action.key == "hud-font-inc" then
-            SARNSettings.apply({ hudFontSize = math.min(24, values.hudFontSize + 1) })
+            ARNSettings.apply({ hudFontSize = math.min(24, values.hudFontSize + 1) })
         elseif action.key == "toggle-group-current" then
-            SARNSettings.apply({ allowGroupsAsCurrentArea =
+            ARNSettings.apply({ allowGroupsAsCurrentArea =
                 not values.allowGroupsAsCurrentArea })
         elseif action.key == "toggle-adapt" then
-            SARNSettings.apply({ adaptArRedrawFrequencyToFps =
+            ARNSettings.apply({ adaptArRedrawFrequencyToFps =
                 not values.adaptArRedrawFrequencyToFps })
-            local restarted = type(SARNRestartPerformance) == "function"
-                and pcall(SARNRestartPerformance)
-            if not restarted then SARNPerformanceNeedsRestart = true end
+            local restarted = type(ARNRestartPerformance) == "function"
+                and pcall(ARNRestartPerformance)
+            if not restarted then ARNPerformanceNeedsRestart = true end
         elseif action.key == "maximum-dec" then
-            SARNSettings.apply({ maximumArRedrawPercentOfFps =
+            ARNSettings.apply({ maximumArRedrawPercentOfFps =
                 math.max(1, values.maximumArRedrawPercentOfFps - 5) })
-            local restarted = type(SARNRestartPerformance) == "function"
-                and pcall(SARNRestartPerformance)
-            if not restarted then SARNPerformanceNeedsRestart = true end
+            local restarted = type(ARNRestartPerformance) == "function"
+                and pcall(ARNRestartPerformance)
+            if not restarted then ARNPerformanceNeedsRestart = true end
         elseif action.key == "maximum-inc" then
-            SARNSettings.apply({ maximumArRedrawPercentOfFps =
+            ARNSettings.apply({ maximumArRedrawPercentOfFps =
                 math.min(100, values.maximumArRedrawPercentOfFps + 5) })
-            local restarted = type(SARNRestartPerformance) == "function"
-                and pcall(SARNRestartPerformance)
-            if not restarted then SARNPerformanceNeedsRestart = true end
+            local restarted = type(ARNRestartPerformance) == "function"
+                and pcall(ARNRestartPerformance)
+            if not restarted then ARNPerformanceNeedsRestart = true end
         elseif action.key == "nearby-atmo-dec" then
-            SARNSettings.apply({ nearbyAtmoRangeKm = math.max(1, values.nearbyAtmoRangeKm - 1) })
+            ARNSettings.apply({ nearbyAtmoRangeKm = math.max(1, values.nearbyAtmoRangeKm - 1) })
         elseif action.key == "nearby-atmo-inc" then
-            SARNSettings.apply({ nearbyAtmoRangeKm = math.min(100000,
+            ARNSettings.apply({ nearbyAtmoRangeKm = math.min(100000,
                 values.nearbyAtmoRangeKm + 1) })
         elseif action.key == "nearby-space-dec" then
-            SARNSettings.apply({ nearbySpaceRangeKm = math.max(1,
+            ARNSettings.apply({ nearbySpaceRangeKm = math.max(1,
                 values.nearbySpaceRangeKm - 10) })
         elseif action.key == "nearby-space-inc" then
-            SARNSettings.apply({ nearbySpaceRangeKm = math.min(100000,
+            ARNSettings.apply({ nearbySpaceRangeKm = math.min(100000,
                 values.nearbySpaceRangeKm + 10) })
         elseif action.key == "nearby-count-dec" then
-            SARNSettings.apply({ maximumNearbyPlaces = math.max(1,
+            ARNSettings.apply({ maximumNearbyPlaces = math.max(1,
                 values.maximumNearbyPlaces - 1) })
         elseif action.key == "nearby-count-inc" then
-            SARNSettings.apply({ maximumNearbyPlaces = math.min(100,
+            ARNSettings.apply({ maximumNearbyPlaces = math.min(100,
                 values.maximumNearbyPlaces + 1) })
         elseif action.key == "save-databank" then
-            local saved, reason = SARNSettings.save()
+            local saved, reason = ARNSettings.save()
             local text
             if saved then
                 text = "Data saved to databank."
-                system.print("[SARN] " .. text)
-                SARNController.notification = { text = text, error = false,
-                    untilTime = (tonumber(SARN.call(system, "getArkTime")) or 0) + 5 }
+                system.print(ARN.chatPrefix() .. text)
+                ARNController.notification = { text = text, error = false,
+                    untilTime = (tonumber(ARN.call(system, "getArkTime")) or 0) + 5 }
             else
                 text = reason == "missing"
                     and "Databank is not available. Link a Databank element to the Control Unit."
                     or "Could not save data to the linked Databank."
-                system.print("[SARN] " .. text)
-                SARNController.notification = { text = text, error = true,
-                    untilTime = (tonumber(SARN.call(system, "getArkTime")) or 0) + 7 }
+                system.print(ARN.chatPrefix() .. text)
+                ARNController.notification = { text = text, error = true,
+                    untilTime = (tonumber(ARN.call(system, "getArkTime")) or 0) + 7 }
             end
         end
         return true
     elseif action.kind == "menu-action" then
         if action.key == "toggle-planets" then
-            SARNLocationCatalog.setShowSystemPlanets(
-                not SARNLocationCatalog.getShowSystemPlanets())
+            ARNLocationCatalog.setShowSystemPlanets(
+                not ARNLocationCatalog.getShowSystemPlanets())
         end
         return true
     end

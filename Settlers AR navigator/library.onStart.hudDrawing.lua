@@ -1,7 +1,7 @@
--- Draws separate content-sized SARN status, visible-marker, and pinned-location HUD panels.
--- Library dependencies: SARN helpers, SARNConfiguration, SARNController, and SARNLocationCatalog.
-SARNHudDrawing = SARNHudDrawing or {}
-local hudIconsOk, hudIcons = pcall(require, "sarn/icons")
+-- Draws separate content-sized ARN status, visible-marker, and pinned-location HUD panels.
+-- Library dependencies: ARN helpers, ARNConfiguration, ARNController, and ARNLocationCatalog.
+ARNHudDrawing = ARNHudDrawing or {}
+local hudIconsOk, hudIcons = pcall(require, "arn/icons")
 if not hudIconsOk or type(hudIcons) ~= "table" then hudIcons = {} end
 
 local panelAccentColors = {
@@ -12,9 +12,9 @@ local panelAccentColors = {
 
 local function panelStyle(extra)
     local fontSize = math.max(9, math.min(24,
-        math.floor(tonumber(SARNConfiguration.hudFontSize) or 13)))
+        math.floor(tonumber(ARNConfiguration.hudFontSize) or 14)))
     return 'display:table;position:relative;padding:7px 10px;overflow:hidden;'
-        .. 'color:#dff8ff;background:rgba(3,12,18,0.50);'
+        .. 'color:#dff8ff;background:rgba(3,12,18,0.30);'
         .. 'font:' .. tostring(fontSize) .. 'px Arial,sans-serif;'
         .. 'line-height:' .. tostring(fontSize + 5) .. 'px;'
         .. 'text-shadow:-1px -1px 2px #000,1px -1px 2px #000,'
@@ -35,15 +35,17 @@ local function targetColorCss(target, onScreen, fallback)
     return onScreen == false and ("rgba(" .. color .. ",.48)") or ("rgb(" .. color .. ")")
 end
 
-local function drawPanelWatermark(scaleFromWidth)
+local function drawPanelWatermark(scaleFromWidth, verticalShiftPercent)
     local icon = hudIcons["novean-logo"]
     if type(icon) ~= "table" or icon.viewBox == nil or icon.body == nil then return "" end
     local size = scaleFromWidth and 'width:125%;height:auto;' or 'width:125%;height:125%;'
+    local shift = tonumber(verticalShiftPercent) or 0
     local placement = ' preserveAspectRatio="xMidYMin meet" style="position:absolute;left:50%;top:0;'
-        .. 'transform:translateX(-50%);' .. size .. 'pointer-events:none;'
+        .. 'transform:translate(-50%,' .. tostring(shift) .. '%);'
+        .. size .. 'pointer-events:none;'
     return '<svg viewBox="' .. tostring(icon.viewBox) .. '"' .. placement
         .. 'fill:rgb('
-        .. SARNConfiguration.markerColor
+        .. ARNConfiguration.markerColor
         .. ');opacity:.35">'
         .. icon.body .. '</svg>'
 end
@@ -56,8 +58,8 @@ local function drawPinnedLocations(entries)
         local entry = entries[index]
         local color = entry.color ~= nil and ("rgb(" .. entry.color .. ")") or "#fff"
         rows[#rows + 1] = '<span style="color:' .. color .. '">&#9670; '
-            .. SARN.escapeHtml(entry.name) .. '</span> <span style="color:#86b7c8">&#8212; '
-            .. SARN.escapeHtml(entry.mode) .. '</span>'
+            .. ARN.escapeHtml(entry.name) .. '</span> <span style="color:#86b7c8">&#8212; '
+            .. ARN.escapeHtml(entry.mode) .. '</span>'
     end
     if #entries > visibleCount then
         rows[#rows + 1] = '<span style="color:#86b7c8">+ '
@@ -66,7 +68,7 @@ local function drawPinnedLocations(entries)
         rows[1] = '<span style="color:#6f9ead">No pinned locations</span>'
     end
     return '<div style="' .. panelStyle() .. '">'
-        .. panelAccent(panelAccentColors.pins) .. drawPanelWatermark(true)
+        .. panelAccent(panelAccentColors.pins) .. drawPanelWatermark(true, -40)
         .. '<div style="position:relative;z-index:1"><b>PINNED LOCATIONS</b><br>'
         .. table.concat(rows, '<br>') .. '</div></div>'
 end
@@ -78,11 +80,11 @@ local function hierarchyHtml(target, includeAncestors, boldTarget)
     while candidate ~= nil and not seen[candidate.id] do
         seen[candidate.id] = true
         table.insert(parts, 1, candidate)
-        candidate = includeAncestors and SARNLocationCatalog.getPrimaryParent(candidate) or nil
+        candidate = includeAncestors and ARNLocationCatalog.getPrimaryParent(candidate) or nil
     end
     local html = {}
     for index, part in ipairs(parts) do
-        local name = SARN.escapeHtml(tostring(part.name or "unknown"))
+        local name = ARN.escapeHtml(tostring(part.name or "unknown"))
         if boldTarget and index == #parts then
             name = '<b style="color:' .. targetColorCss(part, true, "inherit") .. '">' .. name .. '</b>'
         end
@@ -92,9 +94,9 @@ local function hierarchyHtml(target, includeAncestors, boldTarget)
 end
 
 local function parentAndNodeHtml(target)
-    local name = SARN.escapeHtml(tostring(target and target.name or "unknown"))
-    local parent = SARNLocationCatalog.getPrimaryParent(target)
-    return parent ~= nil and (SARN.escapeHtml(tostring(parent.name or "unknown"))
+    local name = ARN.escapeHtml(tostring(target and target.name or "unknown"))
+    local parent = ARNLocationCatalog.getPrimaryParent(target)
+    return parent ~= nil and (ARN.escapeHtml(tostring(parent.name or "unknown"))
         .. " &#8250; " .. name) or name
 end
 
@@ -105,7 +107,7 @@ local function isAncestor(candidate, target)
     while current ~= nil and not seen[current.id] do
         if current.id == candidate.id then return true end
         seen[current.id] = true
-        current = SARNLocationCatalog.getPrimaryParent(current)
+        current = ARNLocationCatalog.getPrimaryParent(current)
     end
     return false
 end
@@ -113,52 +115,52 @@ end
 local function areaEntryPath(target)
     if target == nil then return "" end
     local nodeName = tostring(target.name or "unknown")
-    local parent = SARNLocationCatalog.getPrimaryParent(target)
+    local parent = ARNLocationCatalog.getPrimaryParent(target)
     if parent == nil then return nodeName end
     return tostring(parent.name or "unknown") .. " > " .. nodeName
 end
 local function queueAreaNotification(action, target)
     if target == nil then return end
-    SARNHudDrawing.areaNotificationQueue = SARNHudDrawing.areaNotificationQueue or {}
-    SARNHudDrawing.areaNotificationQueue[#SARNHudDrawing.areaNotificationQueue + 1] = {
+    ARNHudDrawing.areaNotificationQueue = ARNHudDrawing.areaNotificationQueue or {}
+    ARNHudDrawing.areaNotificationQueue[#ARNHudDrawing.areaNotificationQueue + 1] = {
         action = action,
         path = areaEntryPath(target)
     }
 end
 
 local function drawAreaNotification(currentTarget)
-    local now = tonumber(SARN.call(system, "getArkTime")) or 0
+    local now = tonumber(ARN.call(system, "getArkTime")) or 0
     local currentId = currentTarget and currentTarget.id or nil
-    if not SARNHudDrawing.areaTrackingInitialized then
-        SARNHudDrawing.areaTrackingInitialized = true
-        SARNHudDrawing.previousAreaId = currentId
-    elseif currentId ~= SARNHudDrawing.previousAreaId then
-        local previousTarget = SARNHudDrawing.previousAreaId ~= nil
-            and SARNLocationCatalog.getTargetById(SARNHudDrawing.previousAreaId) or nil
+    if not ARNHudDrawing.areaTrackingInitialized then
+        ARNHudDrawing.areaTrackingInitialized = true
+        ARNHudDrawing.previousAreaId = currentId
+    elseif currentId ~= ARNHudDrawing.previousAreaId then
+        local previousTarget = ARNHudDrawing.previousAreaId ~= nil
+            and ARNLocationCatalog.getTargetById(ARNHudDrawing.previousAreaId) or nil
         local previousContainsCurrent = isAncestor(previousTarget, currentTarget)
         local currentContainsPrevious = isAncestor(currentTarget, previousTarget)
 
         if previousTarget ~= nil and not previousContainsCurrent
-            and SARNConfiguration.showAreaExitNotifications ~= false then
+            and ARNConfiguration.showAreaExitNotifications ~= false then
             queueAreaNotification("left", previousTarget)
         end
         if currentTarget ~= nil and not currentContainsPrevious
-            and SARNConfiguration.showAreaEntryNotifications ~= false then
+            and ARNConfiguration.showAreaEntryNotifications ~= false then
             queueAreaNotification("entered", currentTarget)
         end
-        SARNHudDrawing.previousAreaId = currentId
+        ARNHudDrawing.previousAreaId = currentId
     end
 
-    local active = SARNHudDrawing.activeAreaNotification
+    local active = ARNHudDrawing.activeAreaNotification
     if active ~= nil and now - active.startedAt >= 2.5 then
-        SARNHudDrawing.activeAreaNotification = nil
+        ARNHudDrawing.activeAreaNotification = nil
         active = nil
     end
-    local queue = SARNHudDrawing.areaNotificationQueue or {}
+    local queue = ARNHudDrawing.areaNotificationQueue or {}
     if active == nil and #queue > 0 then
         active = table.remove(queue, 1)
         active.startedAt = now
-        SARNHudDrawing.activeAreaNotification = active
+        ARNHudDrawing.activeAreaNotification = active
     end
     if active == nil or active.path == "" then return "" end
 
@@ -187,11 +189,11 @@ local function drawAreaNotification(currentTarget)
         .. 'pointer-events:none;white-space:nowrap;text-align:center;font:500 30px Arial,sans-serif;'
         .. 'letter-spacing:.3px;text-shadow:-2px -2px 4px #000,2px -2px 4px #000,-2px 2px 4px #000,2px 2px 6px #000,0 0 10px #000;color:rgb(' .. color .. ');opacity:'
         .. string.format("%.3f", opacity) .. '">' .. verb .. '<br><b>'
-        .. SARN.escapeHtml(active.path) .. '</b></div>'
+        .. ARN.escapeHtml(active.path) .. '</b></div>'
 end
 local function drawVisibleMarkers(entries, nearbyInfo, currentTarget)
     entries = type(entries) == "table" and entries or {}
-    local showOffscreen = SARNConfiguration.showOffscreenMarkersInHud ~= false
+    local showOffscreen = ARNConfiguration.showOffscreenMarkersInHud ~= false
     local entryById = {}
     for _, entry in ipairs(entries) do entryById[entry.target.id] = entry end
     local hudContextIds = {}
@@ -205,7 +207,7 @@ local function drawVisibleMarkers(entries, nearbyInfo, currentTarget)
     local groupedEntries = {}
     local otherEntries = {}
     local planetoidEntries = {}
-    local currentParent = SARNLocationCatalog.getPrimaryParent(currentTarget)
+    local currentParent = ARNLocationCatalog.getPrimaryParent(currentTarget)
     local currentParentId = currentParent ~= nil and currentParent.id or nil
     for _, entry in ipairs(entries) do
         local targetType = entry.target and entry.target.type
@@ -251,7 +253,7 @@ local function drawVisibleMarkers(entries, nearbyInfo, currentTarget)
     end
     for _, entry in ipairs(planetoidEntries) do
         if entry.target.type == "satellite" then
-            local parent = SARNLocationCatalog.getPrimaryParent(entry.target)
+            local parent = ARNLocationCatalog.getPrimaryParent(entry.target)
             local group = parent ~= nil and planetoidGroupByPlanetId[parent.id] or nil
             if group == nil and parent ~= nil then
                 group = { planet = { target = parent, onScreen = false }, satellites = {} }
@@ -315,7 +317,7 @@ local function drawVisibleMarkers(entries, nearbyInfo, currentTarget)
             local contextOnScreen = contextEntry ~= nil and contextEntry.onScreen
             local contextColor = targetColorCss(contextInfo.target, contextOnScreen,
                 contextOnScreen and "#e8fbff" or "#6f9ead")
-            local contextName = SARN.escapeHtml(tostring(contextInfo.target.name or "Location"))
+            local contextName = ARN.escapeHtml(tostring(contextInfo.target.name or "Location"))
             if contextInfo.current or (currentTarget ~= nil
                 and contextInfo.target.id == currentTarget.id) then
                 contextName = '<b>' .. contextName .. '</b>'
@@ -333,7 +335,7 @@ local function drawVisibleMarkers(entries, nearbyInfo, currentTarget)
                     .. 'margin-right:6px;white-space:pre;font-family:monospace;color:#86d7ec">'
                     .. prefix .. '</span>'
                     .. '<span style="color:' .. color .. '">'
-                    .. SARN.escapeHtml(tostring(entry.target.name or "Location")) .. '</span>'
+                    .. ARN.escapeHtml(tostring(entry.target.name or "Location")) .. '</span>'
             end
         end
     end
@@ -345,7 +347,7 @@ local function drawVisibleMarkers(entries, nearbyInfo, currentTarget)
             .. 'margin-right:6px;white-space:pre;font-family:monospace;color:#86d7ec">'
             .. prefix .. '</span>'
             .. '<span style="color:' .. color .. '">'
-            .. SARN.escapeHtml(tostring(entry.target.name or "Location")) .. '</span>'
+            .. ARN.escapeHtml(tostring(entry.target.name or "Location")) .. '</span>'
     end
     if #planetoidGroups > 0 then
         rows[#rows + 1] = '<div style="height:2px;margin:5px 0 3px;'
@@ -359,14 +361,14 @@ local function drawVisibleMarkers(entries, nearbyInfo, currentTarget)
             rows[#rows + 1] = '<span style="display:inline-block;width:24px;text-align:right;'
                 .. 'margin-right:6px;color:#86d7ec">&#9675;</span>'
                 .. '<b style="color:' .. planetColor .. '">'
-                .. SARN.escapeHtml(tostring(planet.target.name or "Planet")) .. '</b>'
+                .. ARN.escapeHtml(tostring(planet.target.name or "Planet")) .. '</b>'
             for _, satellite in ipairs(group.satellites) do
                 local satelliteColor = targetColorCss(satellite.target, satellite.onScreen,
                     satellite.onScreen and "#e8fbff" or "#6f9ead")
                 rows[#rows + 1] = '<span style="display:inline-block;width:36px;text-align:right;'
                     .. 'margin-right:6px;color:#86d7ec">&#8627;</span>'
                     .. '<span style="color:' .. satelliteColor .. '">'
-                    .. SARN.escapeHtml(tostring(satellite.target.name or "Satellite")) .. '</span>'
+                    .. ARN.escapeHtml(tostring(satellite.target.name or "Satellite")) .. '</span>'
             end
         end
     end
@@ -378,26 +380,27 @@ local function drawVisibleMarkers(entries, nearbyInfo, currentTarget)
         .. '<div style="position:relative;z-index:1"><b>VISIBLE MARKERS</b><br>'
         .. table.concat(rows, '<br>') .. '</div></div>'
 end
-function SARNHudDrawing.drawCatalogStatus(rendered, currentTarget, available, pinnedEntries, markerEntries, nearbyInfo)
+function ARNHudDrawing.drawCatalogStatus(rendered, currentTarget, available, pinnedEntries, markerEntries, nearbyInfo)
     local entryNotification = drawAreaNotification(currentTarget)
     local panels = {}
-    if SARNConfiguration.showSarnHudPanel ~= false then
-        local totals = SARNController ~= nil and SARNController.menuOpen
-            and 'AR markers hidden - <b style="color:#ff4b55">SARN menu open</b>'
-            or SARN.escapeHtml("Visible markers: " .. tostring(rendered or 0)
+    if ARNConfiguration.showNavigatorHudPanel ~= false then
+        local totals = ARNController ~= nil and ARNController.menuOpen
+            and ('AR markers hidden - <b style="color:#ff4b55">'
+                .. ARN.escapeHtml(ARN.shortName()) .. ' menu open</b>')
+            or ARN.escapeHtml("Visible markers: " .. tostring(rendered or 0)
                 .. " / " .. tostring(available or 0))
         local currentSummary = "Current area: " .. hierarchyHtml(currentTarget, true, true)
         panels[#panels + 1] = '<div style="' .. panelStyle() .. '">'
-            .. panelAccent(panelAccentColors.status) .. drawPanelWatermark(true)
+            .. panelAccent(panelAccentColors.status) .. drawPanelWatermark(true, -40)
             .. '<div style="position:relative;z-index:1"><b>'
-            .. SARN.escapeHtml(SARN.startupCaption()) .. '</b><br>'
+            .. ARN.escapeHtml(ARN.startupCaption()) .. '</b><br>'
             .. '<span style="color:#86b7c8">' .. currentSummary .. '<br>'
             .. totals .. '</span></div></div>'
     end
-    if SARNConfiguration.showVisibleMarkersHudPanel ~= false then
+    if ARNConfiguration.showVisibleMarkersHudPanel ~= false then
         panels[#panels + 1] = drawVisibleMarkers(markerEntries, nearbyInfo, currentTarget)
     end
-    if SARNConfiguration.showPinnedLocationsHudPanel ~= false
+    if ARNConfiguration.showPinnedLocationsHudPanel ~= false
         and type(pinnedEntries) == "table" and #pinnedEntries > 0 then
         panels[#panels + 1] = drawPinnedLocations(pinnedEntries)
     end

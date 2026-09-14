@@ -1,4 +1,4 @@
--- SARN location data: planetoids and assigned Aphelia constructs.
+-- ARN location data: planetoids and assigned Aphelia constructs.
 -- Generated offline from the DU atlas and aphelia-construct-hierarchy.json; no runtime data inspection.
 local heliosPlanets = {{
     id = 2,
@@ -16,8 +16,6 @@ local heliosPlanets = {{
     radius = 126067.90,
     atmosphereRadius = 132460.00,
     areaRadius = 126067.90,
-    childrenModule = "sarn/locations-settlers",
-    childrenModuleKey = "alioth",
     children = {{
         id = 21,
         name = "Alioth Moon 1",
@@ -98,7 +96,6 @@ local heliosPlanets = {{
         radius = 83443.00,
         atmosphereRadius = 89870.00,
         areaRadius = 83443.00,
-        childrenModule = "sarn/locations-settlers",
         children = {{
             name = "[01-10] Market Districts",
             label = "Haven market districts",
@@ -1908,8 +1905,6 @@ local heliosPlanets = {{
         label = "",
         coordinate = "", -- ::pos{0,2,29.0509,95.1092,475.123}
         owner = "Aphelia",
-        childrenModule = "sarn/locations-settlers",
-        childrenModuleKey = "institutes",
         children = {{
             id = 100218,
             name = "Construction and Mining Institute",

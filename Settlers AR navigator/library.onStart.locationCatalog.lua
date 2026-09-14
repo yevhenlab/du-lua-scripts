@@ -1,10 +1,21 @@
--- Loads known SARN locations, resolves default kind icons and literal owner names, and assigns runtime-only IDs.
--- Library dependencies: SARN helpers, root locations injected by unit.onStart, sarn/icons.lua, and optional catalog modules.
-SARNLocationCatalog = SARNLocationCatalog or {}
+-- Loads known ARN locations, resolves default kind icons and literal owner names, and assigns runtime-only IDs.
+-- Library dependencies: ARN helpers, root locations injected by unit.onStart, arn/icons.lua, and optional catalog modules.
+ARNLocationCatalog = ARNLocationCatalog or {}
 
-function SARNLocationCatalog.setRootConfig(config, loadError)
-    SARNLocationCatalog.rootConfig = type(config) == "table" and config or nil
-    SARNLocationCatalog.rootConfigError = loadError
+function ARNLocationCatalog.setRootConfig(config, loadError)
+    ARNLocationCatalog.rootConfig = type(config) == "table" and config or nil
+    ARNLocationCatalog.rootConfigError = loadError
+end
+local function loadOptionalModule(moduleName)
+    if type(moduleName) ~= "string" or moduleName == "" then
+        return nil, "missing module name"
+    end
+    local ok, moduleOrError = pcall(function() return require(moduleName) end)
+    if not ok then return nil, tostring(moduleOrError) end
+    if type(moduleOrError) ~= "table" then
+        return nil, "module did not return a table"
+    end
+    return moduleOrError, nil
 end
 
 local function normalizeCoreSize(value)
@@ -19,10 +30,10 @@ end
 
 local function paleColor(color)
     local red, green, blue = tostring(color or ""):match("^%s*(%d+)%s*,%s*(%d+)%s*,%s*(%d+)%s*$")
-    local defaultRed, defaultGreen, defaultBlue = tostring(SARNConfiguration.markerColor)
+    local defaultRed, defaultGreen, defaultBlue = tostring(ARNConfiguration.markerColor)
         :match("^%s*(%d+)%s*,%s*(%d+)%s*,%s*(%d+)%s*$")
-    if red == nil or defaultRed == nil then return SARNConfiguration.markerColor end
-    local factor = math.max(0, math.min(1, tonumber(SARNConfiguration.childColorPaleFactor) or 0.15))
+    if red == nil or defaultRed == nil then return ARNConfiguration.markerColor end
+    local factor = math.max(0, math.min(1, tonumber(ARNConfiguration.childColorPaleFactor) or 0.15))
     local function blend(value, target)
         return math.floor(tonumber(value) * (1 - factor) + tonumber(target) * factor + 0.5)
     end
@@ -55,11 +66,11 @@ local function paletteStart(target)
 end
 
 local function assignVisibilityColors(current, areaPlaceIds, nearbyInfo)
-    for _, target in ipairs(SARNLocationCatalog.visibilityColoredTargets or {}) do
+    for _, target in ipairs(ARNLocationCatalog.visibilityColoredTargets or {}) do
         target.visibilityColor = nil
     end
     local coloredTargets = {}
-    SARNLocationCatalog.visibilityColoredTargets = coloredTargets
+    ARNLocationCatalog.visibilityColoredTargets = coloredTargets
     local function setColor(target, color)
         if target == nil then return end
         if target.visibilityColor == nil then coloredTargets[#coloredTargets + 1] = target end
@@ -68,7 +79,7 @@ local function assignVisibilityColors(current, areaPlaceIds, nearbyInfo)
     if current == nil then return end
     setColor(current, currentAreaColor)
     for targetId in pairs(areaPlaceIds or {}) do
-        setColor(SARNLocationCatalog.getTargetById(targetId), tintColor(currentAreaColor, 0.32))
+        setColor(ARNLocationCatalog.getTargetById(targetId), tintColor(currentAreaColor, 0.32))
     end
     if type(nearbyInfo) ~= "table" then return end
     local colorsByAreaId = { [current.id] = currentAreaColor }
@@ -93,33 +104,40 @@ local function assignVisibilityColors(current, areaPlaceIds, nearbyInfo)
     for targetId, areaId in pairs(nearbyInfo.selectedContextByTargetId or {}) do
         local areaColor = colorsByAreaId[areaId]
         if areaColor ~= nil then
-            setColor(SARNLocationCatalog.getTargetById(targetId), tintColor(areaColor, 0.32))
+            setColor(ARNLocationCatalog.getTargetById(targetId), tintColor(areaColor, 0.32))
         end
     end
 end
-function SARNLocationCatalog.initialize()
-    SARNLocationCatalog.targets = {}
-    SARNLocationCatalog.allTargets = {}
-    SARNLocationCatalog.runtimeIds = {}
-    SARNLocationCatalog.nextRuntimeId = 1
-    SARNLocationCatalog.statistics = { total = 0, byDepth = {} }
-    SARNLocationCatalog.showSystemPlanets = SARNConfiguration.showSystemPlanets == true
-    SARNLocationCatalog.showSatellites = SARNConfiguration.showSatellites == true
-    SARNLocationCatalog.showCurrentAreaPlaces =
-        SARNConfiguration.showCurrentAreaPlaces == true
-    SARNLocationCatalog.showNearbyAreas = SARNConfiguration.showNearbyAreas == true
-    SARNLocationCatalog.showNearbyAreaPlaces =
-        SARNConfiguration.showNearbyAreaPlaces == true
+function ARNLocationCatalog.initialize()
+    ARNLocationCatalog.targets = {}
+    ARNLocationCatalog.allTargets = {}
+    ARNLocationCatalog.runtimeIds = {}
+    ARNLocationCatalog.nextRuntimeId = 1
+    ARNLocationCatalog.statistics = { total = 0, byDepth = {} }
+    local defaultSource = {
+        sourceId = 0,
+        label = "Dual Universe",
+        module = "arn/locations"
+    }
+    ARNLocationCatalog.sources = { defaultSource }
+    ARNLocationCatalog.sourcesById = { [0] = defaultSource }
+    ARNLocationCatalog.showSystemPlanets = ARNConfiguration.showSystemPlanets == true
+    ARNLocationCatalog.showSatellites = ARNConfiguration.showSatellites == true
+    ARNLocationCatalog.showCurrentAreaPlaces =
+        ARNConfiguration.showCurrentAreaPlaces == true
+    ARNLocationCatalog.showNearbyAreas = ARNConfiguration.showNearbyAreas == true
+    ARNLocationCatalog.showNearbyAreaPlaces =
+        ARNConfiguration.showNearbyAreaPlaces == true
 
-    local config = SARNLocationCatalog.rootConfig
+    local config = ARNLocationCatalog.rootConfig
     if type(config) ~= "table" then
-        SARN.reportWarning("catalog-unavailable", "Could not load required Lua file 'sarn/locations.lua': "
-            .. tostring(SARNLocationCatalog.rootConfigError or "invalid module result"))
+        ARN.reportWarning("catalog-unavailable", "Could not load required Lua file 'arn/locations.lua': "
+            .. tostring(ARNLocationCatalog.rootConfigError or "invalid module result"))
         return false
     end
     local primaryLocations = config.locations or config
     if type(primaryLocations) ~= "table" then
-        SARN.reportWarning("catalog-invalid", "sarn/locations.lua did not return a location list.")
+        ARN.reportWarning("catalog-invalid", "arn/locations.lua did not return a location list.")
         return false
     end
     local locations = {}
@@ -130,8 +148,8 @@ function SARNLocationCatalog.initialize()
     end
     if type(config.catalogModules) == "table" then
         for _, moduleName in ipairs(config.catalogModules) do
-            local moduleOk, moduleConfig = pcall(require, tostring(moduleName))
-            if moduleOk and type(moduleConfig) == "table" then
+            local moduleConfig, moduleError = loadOptionalModule(moduleName)
+            if moduleConfig ~= nil then
                 local moduleLocations = moduleConfig.locations or moduleConfig
                 if type(moduleLocations) == "table" then
                     for _, entry in ipairs(moduleLocations) do locations[#locations + 1] = entry end
@@ -142,16 +160,75 @@ function SARNLocationCatalog.initialize()
                     end
                 end
             else
-                SARN.reportWarning("catalog-module-unavailable",
-                    "Could not load optional Lua catalog '" .. tostring(moduleName) .. "'.")
+                ARN.reportWarning("catalog-module-unavailable",
+                    "Could not load optional Lua catalog '" .. tostring(moduleName)
+                    .. "': " .. tostring(moduleError))
             end
         end
     end
 
-    local iconsOk, icons = pcall(require, "sarn/icons")
-    if not iconsOk or type(icons) ~= "table" then
+    local registeredChildrenByParentCatalogId = {}
+    local registryConfig, registryError = loadOptionalModule("arn/locations-registry")
+    if registryConfig ~= nil then
+        local registrations = registryConfig.modules or registryConfig
+        for registrationIndex, registration in ipairs(registrations) do
+            local moduleName = type(registration) == "table" and registration.module or registration
+            local moduleConfig, moduleError = loadOptionalModule(moduleName)
+            if moduleConfig ~= nil then
+                local sourceId = registrationIndex
+                local sourceDefinition = {
+                    sourceId = sourceId,
+                    label = type(registration) == "table" and registration.label or nil,
+                    module = tostring(moduleName)
+                }
+                if sourceDefinition.label == nil or sourceDefinition.label == "" then
+                    sourceDefinition.label = sourceDefinition.module
+                end
+                ARNLocationCatalog.sources[#ARNLocationCatalog.sources + 1] = sourceDefinition
+                ARNLocationCatalog.sourcesById[sourceId] = sourceDefinition
+                if type(moduleConfig.kinds) == "table" then
+                    for kind, definition in pairs(moduleConfig.kinds) do
+                        if kinds[kind] == nil then kinds[kind] = definition end
+                    end
+                end
+                local attachments = type(registration) == "table" and registration.attachments or nil
+                for _, attachment in ipairs(attachments or {}) do
+                    local parentId = attachment.parentId
+                    local sourceKey = attachment.sourceKey
+                    local moduleChildren = sourceKey ~= nil and moduleConfig[sourceKey]
+                        or attachment.children
+                    if parentId ~= nil and type(moduleChildren) == "table" then
+                        local parentKey = tostring(parentId)
+                        local registered = registeredChildrenByParentCatalogId[parentKey]
+                        if registered == nil then
+                            registered = {}
+                            registeredChildrenByParentCatalogId[parentKey] = registered
+                        end
+                        for _, child in ipairs(moduleChildren) do
+                            registered[#registered + 1] = { entry = child, sourceId = sourceId }
+                        end
+                    else
+                        ARN.reportWarning("catalog-attachment-invalid",
+                            "Invalid custom-location attachment in '" .. tostring(moduleName) .. "'.")
+                    end
+                end
+            else
+                ARN.reportWarning("catalog-module-unavailable",
+                    "Could not load registered location catalog '" .. tostring(moduleName)
+                    .. "': " .. tostring(moduleError))
+            end
+        end
+    else
+        ARN.reportWarning("catalog-registry-unavailable",
+            "Could not load optional Lua catalog registry 'arn/locations-registry.lua': "
+            .. tostring(registryError))
+    end
+
+    local icons, iconsError = loadOptionalModule("arn/icons")
+    if icons == nil then
         icons = {}
-        SARN.reportWarning("icons-unavailable", "Could not load required Lua file 'sarn/icons.lua'; using dot markers.")
+        ARN.reportWarning("icons-unavailable", "Could not load Lua file 'arn/icons.lua'; "
+            .. "continuing without location icons: " .. tostring(iconsError))
     end
     local resolvedIcons = {}
     local function resolveIcon(iconName)
@@ -178,46 +255,22 @@ function SARNLocationCatalog.initialize()
     end
 
     local targetsByRuntimeId = {}
-    local function visitChildren(entry, visitor)
+    local function visitChildren(entry, inheritedSourceId, visitor)
         if type(entry.children) == "table" then
-            for _, child in ipairs(entry.children) do visitor(child) end
+            for _, child in ipairs(entry.children) do visitor(child, inheritedSourceId) end
         end
-        local moduleNames = {}
-        if type(entry.childrenModule) == "string" then
-            moduleNames[#moduleNames + 1] = entry.childrenModule
-        end
-        if type(entry.childrenModules) == "table" then
-            for _, moduleName in ipairs(entry.childrenModules) do moduleNames[#moduleNames + 1] = moduleName end
-        end
-        for _, moduleName in ipairs(moduleNames) do
-            local moduleOk, moduleConfig = pcall(require, moduleName)
-            if moduleOk and type(moduleConfig) == "table" then
-                if type(moduleConfig.kinds) == "table" then
-                    for kind, definition in pairs(moduleConfig.kinds) do
-                        if kinds[kind] == nil then kinds[kind] = definition end
-                    end
-                end
-                local moduleKey = type(entry.childrenModuleKey) == "string"
-                    and entry.childrenModuleKey or nil
-                local moduleChildren
-                if moduleKey ~= nil then
-                    moduleChildren = moduleConfig[moduleKey]
-                else
-                    moduleChildren = moduleConfig.locations or moduleConfig.children or moduleConfig
-                end
-                if type(moduleChildren) == "table" then
-                    for _, child in ipairs(moduleChildren) do visitor(child) end
-                end
-            else
-                SARN.reportWarning("children-module-unavailable",
-                    "Could not load child catalog '" .. tostring(moduleName) .. "'.")
+        local registered = entry.id ~= nil
+            and registeredChildrenByParentCatalogId[tostring(entry.id)] or nil
+        if type(registered) == "table" then
+            for _, childSource in ipairs(registered) do
+                visitor(childSource.entry, childSource.sourceId)
             end
         end
     end
 
-    local function loadEntry(entry, parentId, depth, parentColor)
-        if type(entry) ~= "table" then return nil end
-        local existingId = SARNLocationCatalog.runtimeIds[entry]
+    local function loadEntry(entry, parentId, depth, parentColor, sourceId)
+        if type(entry) ~= "table" or entry.excluded == true then return nil end
+        local existingId = ARNLocationCatalog.runtimeIds[entry]
         if existingId ~= nil then
             local existingTarget = targetsByRuntimeId[existingId]
             if existingTarget ~= nil and parentId ~= nil then
@@ -226,22 +279,22 @@ function SARNLocationCatalog.initialize()
             local becameShallower = existingTarget ~= nil and depth < existingTarget.depth
             if becameShallower then
                 existingTarget.depth = depth
-                visitChildren(entry, function(child)
-                    loadEntry(child, existingId, depth + 1, existingTarget.color)
+                visitChildren(entry, existingTarget.sourceId, function(child, childSourceId)
+                    loadEntry(child, existingId, depth + 1, existingTarget.color, childSourceId)
                 end)
             end
             return existingId
         end
 
-        local runtimeId = SARNLocationCatalog.nextRuntimeId
-        SARNLocationCatalog.nextRuntimeId = runtimeId + 1
-        SARNLocationCatalog.runtimeIds[entry] = runtimeId
+        local runtimeId = ARNLocationCatalog.nextRuntimeId
+        ARNLocationCatalog.nextRuntimeId = runtimeId + 1
+        ARNLocationCatalog.runtimeIds[entry] = runtimeId
         local resolvedColor = entry.color ~= nil and tostring(entry.color)
-            or (parentColor ~= nil and paleColor(parentColor) or SARNConfiguration.markerColor)
+            or (parentColor ~= nil and paleColor(parentColor) or ARNConfiguration.markerColor)
         local coordinate = entry.coordinate or entry.coordinates or entry.worldPosition or entry.pos
-        local wx, wy, wz = SARN.components(coordinate)
-        local upX, upY, upZ = SARN.components(entry.worldUp)
-        local sx, sy, sz = SARN.components(entry.size or entry.boundingBoxSize)
+        local wx, wy, wz = ARN.components(coordinate)
+        local upX, upY, upZ = ARN.components(entry.worldUp)
+        local sx, sy, sz = ARN.components(entry.size or entry.boundingBoxSize)
         local owner = entry.owner ~= nil and tostring(entry.owner) or nil
         if owner == "" then owner = nil end
         local kind = normalizeKind(entry.kind)
@@ -258,7 +311,8 @@ function SARNLocationCatalog.initialize()
             depth = depth,
             parentIds = parentId ~= nil and { parentId } or {},
             name = entry.name or ("Location " .. tostring(runtimeId)),
-            sourceId = entry.id,
+            catalogId = entry.id,
+            sourceId = tonumber(sourceId) or 0,
             type = entry.type,
             kind = kind,
             icon = icon,
@@ -280,32 +334,32 @@ function SARNLocationCatalog.initialize()
         }
         if sx ~= nil and sy ~= nil and sz ~= nil then target.size = { x = sx, y = sy, z = sz } end
         targetsByRuntimeId[runtimeId] = target
-        SARNLocationCatalog.allTargets[#SARNLocationCatalog.allTargets + 1] = target
+        ARNLocationCatalog.allTargets[#ARNLocationCatalog.allTargets + 1] = target
         if not target.excluded then
-            SARNLocationCatalog.statistics.total = SARNLocationCatalog.statistics.total + 1
+            ARNLocationCatalog.statistics.total = ARNLocationCatalog.statistics.total + 1
             if target.worldPosition ~= nil then
-                SARNLocationCatalog.targets[#SARNLocationCatalog.targets + 1] = target
+                ARNLocationCatalog.targets[#ARNLocationCatalog.targets + 1] = target
             end
         end
 
-        visitChildren(entry, function(child)
-            loadEntry(child, runtimeId, depth + 1, resolvedColor)
+        visitChildren(entry, target.sourceId, function(child, childSourceId)
+            loadEntry(child, runtimeId, depth + 1, resolvedColor, childSourceId)
         end)
         return runtimeId
     end
 
-    for _, entry in ipairs(locations) do loadEntry(entry, nil, 1, nil) end
+    for _, entry in ipairs(locations) do loadEntry(entry, nil, 1, nil, 0) end
 
     local childrenByParentId = {}
     local function rebuildChildrenIndex()
         childrenByParentId = {}
-        for _, target in ipairs(SARNLocationCatalog.allTargets or {}) do
+        for _, target in ipairs(ARNLocationCatalog.allTargets or {}) do
             for _, parentId in ipairs(target.parentIds or {}) do
                 childrenByParentId[parentId] = childrenByParentId[parentId] or {}
                 childrenByParentId[parentId][#childrenByParentId[parentId] + 1] = target
             end
         end
-        SARNLocationCatalog.childrenByParentId = childrenByParentId
+        ARNLocationCatalog.childrenByParentId = childrenByParentId
     end
     rebuildChildrenIndex()
     local function calculateEnclosingEllipsoid(sources)
@@ -419,107 +473,107 @@ function SARNLocationCatalog.initialize()
             target.boundsRadiusZ, target.boundsSourceCount
     end
     local function refreshDisplayPositions()
-        for _, target in ipairs(SARNLocationCatalog.allTargets or {}) do
+        for _, target in ipairs(ARNLocationCatalog.allTargets or {}) do
             target.displayPosition = target.worldPosition or target.boundsCenter
         end
     end
 
-    function SARNLocationCatalog.recalculateBounds()
+    function ARNLocationCatalog.recalculateBounds()
         rebuildChildrenIndex()
         local visiting, complete = {}, {}
-        for _, target in ipairs(SARNLocationCatalog.allTargets or {}) do
+        for _, target in ipairs(ARNLocationCatalog.allTargets or {}) do
             calculateBounds(target, visiting, complete)
         end
         refreshDisplayPositions()
     end
-    SARNLocationCatalog.recalculateBounds()
-    for _, target in ipairs(SARNLocationCatalog.allTargets) do
+    ARNLocationCatalog.recalculateBounds()
+    for _, target in ipairs(ARNLocationCatalog.allTargets) do
         if not target.excluded and target.worldPosition == nil and target.displayPosition ~= nil then
-            SARNLocationCatalog.targets[#SARNLocationCatalog.targets + 1] = target
+            ARNLocationCatalog.targets[#ARNLocationCatalog.targets + 1] = target
         end
     end
-    for _, target in ipairs(SARNLocationCatalog.allTargets) do
+    for _, target in ipairs(ARNLocationCatalog.allTargets) do
         if not target.excluded then
         local targetDepth = target.depth or 1
-        SARNLocationCatalog.statistics.byDepth[targetDepth] =
-            (SARNLocationCatalog.statistics.byDepth[targetDepth] or 0) + 1
+        ARNLocationCatalog.statistics.byDepth[targetDepth] =
+            (ARNLocationCatalog.statistics.byDepth[targetDepth] or 0) + 1
         end
     end
-    table.sort(SARNLocationCatalog.targets, function(first, second)
+    table.sort(ARNLocationCatalog.targets, function(first, second)
         return string.lower(tostring(first.name)) < string.lower(tostring(second.name))
     end)
     return true
 end
 
-function SARNLocationCatalog.getConfiguredTargets()
-    return SARNLocationCatalog.targets or {}
+function ARNLocationCatalog.getConfiguredTargets()
+    return ARNLocationCatalog.targets or {}
 end
 
-function SARNLocationCatalog.setShowSystemPlanets(enabled)
-    SARNLocationCatalog.showSystemPlanets = enabled == true
-    return SARNLocationCatalog.showSystemPlanets
+function ARNLocationCatalog.setShowSystemPlanets(enabled)
+    ARNLocationCatalog.showSystemPlanets = enabled == true
+    return ARNLocationCatalog.showSystemPlanets
 end
 
-function SARNLocationCatalog.getShowSystemPlanets()
-    return SARNLocationCatalog.showSystemPlanets == true
+function ARNLocationCatalog.getShowSystemPlanets()
+    return ARNLocationCatalog.showSystemPlanets == true
 end
 
-function SARNLocationCatalog.setShowSatellites(enabled)
-    SARNLocationCatalog.showSatellites = enabled == true
-    return SARNLocationCatalog.showSatellites
+function ARNLocationCatalog.setShowSatellites(enabled)
+    ARNLocationCatalog.showSatellites = enabled == true
+    return ARNLocationCatalog.showSatellites
 end
 
-function SARNLocationCatalog.getShowSatellites()
-    return SARNLocationCatalog.showSatellites == true
+function ARNLocationCatalog.getShowSatellites()
+    return ARNLocationCatalog.showSatellites == true
 end
 
-function SARNLocationCatalog.setShowCurrentAreaPlaces(enabled)
-    SARNLocationCatalog.showCurrentAreaPlaces = enabled == true
-    return SARNLocationCatalog.showCurrentAreaPlaces
+function ARNLocationCatalog.setShowCurrentAreaPlaces(enabled)
+    ARNLocationCatalog.showCurrentAreaPlaces = enabled == true
+    return ARNLocationCatalog.showCurrentAreaPlaces
 end
 
-function SARNLocationCatalog.getShowCurrentAreaPlaces()
-    return SARNLocationCatalog.showCurrentAreaPlaces == true
+function ARNLocationCatalog.getShowCurrentAreaPlaces()
+    return ARNLocationCatalog.showCurrentAreaPlaces == true
 end
 
-function SARNLocationCatalog.setShowNearbyAreas(enabled)
-    SARNLocationCatalog.showNearbyAreas = enabled == true
-    return SARNLocationCatalog.showNearbyAreas
+function ARNLocationCatalog.setShowNearbyAreas(enabled)
+    ARNLocationCatalog.showNearbyAreas = enabled == true
+    return ARNLocationCatalog.showNearbyAreas
 end
 
-function SARNLocationCatalog.getShowNearbyAreas()
-    return SARNLocationCatalog.showNearbyAreas == true
+function ARNLocationCatalog.getShowNearbyAreas()
+    return ARNLocationCatalog.showNearbyAreas == true
 end
 
-function SARNLocationCatalog.setShowNearbyAreaPlaces(enabled)
-    SARNLocationCatalog.showNearbyAreaPlaces = enabled == true
-    return SARNLocationCatalog.showNearbyAreaPlaces
+function ARNLocationCatalog.setShowNearbyAreaPlaces(enabled)
+    ARNLocationCatalog.showNearbyAreaPlaces = enabled == true
+    return ARNLocationCatalog.showNearbyAreaPlaces
 end
 
-function SARNLocationCatalog.getShowNearbyAreaPlaces()
-    return SARNLocationCatalog.showNearbyAreaPlaces == true
+function ARNLocationCatalog.getShowNearbyAreaPlaces()
+    return ARNLocationCatalog.showNearbyAreaPlaces == true
 end
 
-function SARNLocationCatalog.getTargetById(targetId)
-    for _, target in ipairs(SARNLocationCatalog.allTargets or {}) do
+function ARNLocationCatalog.getTargetById(targetId)
+    for _, target in ipairs(ARNLocationCatalog.allTargets or {}) do
         if target.id == targetId then return target end
     end
     return nil
 end
 
-function SARNLocationCatalog.getTargetByPersistenceKey(persistenceKey)
-    for _, target in ipairs(SARNLocationCatalog.allTargets or {}) do
+function ARNLocationCatalog.getTargetByPersistenceKey(persistenceKey)
+    for _, target in ipairs(ARNLocationCatalog.allTargets or {}) do
         if target.persistenceKey == persistenceKey then return target end
     end
     return nil
 end
 
-function SARNLocationCatalog.getPrimaryParent(target)
+function ARNLocationCatalog.getPrimaryParent(target)
     local parentId = target and target.parentIds and target.parentIds[1]
-    return parentId ~= nil and SARNLocationCatalog.getTargetById(parentId) or nil
+    return parentId ~= nil and ARNLocationCatalog.getTargetById(parentId) or nil
 end
 
-function SARNLocationCatalog.getNearestCoordinateBody(target)
+function ARNLocationCatalog.getNearestCoordinateBody(target)
     if target == nil then return nil end
     local queue = { target }
     local seen = {}
@@ -537,7 +591,7 @@ function SARNLocationCatalog.getNearestCoordinateBody(target)
                 return candidate
             end
             for _, parentId in ipairs(candidate.parentIds or {}) do
-                local parent = SARNLocationCatalog.getTargetById(parentId)
+                local parent = ARNLocationCatalog.getTargetById(parentId)
                 if parent ~= nil then queue[#queue + 1] = parent end
             end
         end
@@ -545,7 +599,7 @@ function SARNLocationCatalog.getNearestCoordinateBody(target)
     return nil
 end
 
-function SARNLocationCatalog.getNearestSystem(target)
+function ARNLocationCatalog.getNearestSystem(target)
     if target == nil then return nil end
     local queue = { target }
     local seen = {}
@@ -558,7 +612,7 @@ function SARNLocationCatalog.getNearestSystem(target)
             seen[candidateId] = true
             if candidate.kind == "system" then return candidate end
             for _, parentId in ipairs(candidate.parentIds or {}) do
-                local parent = SARNLocationCatalog.getTargetById(parentId)
+                local parent = ARNLocationCatalog.getTargetById(parentId)
                 if parent ~= nil then queue[#queue + 1] = parent end
             end
         end
@@ -566,10 +620,10 @@ function SARNLocationCatalog.getNearestSystem(target)
     return nil
 end
 
-function SARNLocationCatalog.getChildren(target)
+function ARNLocationCatalog.getChildren(target)
     local children = {}
     if target == nil then return children end
-    for _, candidate in ipairs((SARNLocationCatalog.childrenByParentId or {})[target.id] or {}) do
+    for _, candidate in ipairs((ARNLocationCatalog.childrenByParentId or {})[target.id] or {}) do
         children[#children + 1] = candidate
     end
     table.sort(children, function(first, second)
@@ -577,16 +631,23 @@ function SARNLocationCatalog.getChildren(target)
     end)
     return children
 end
+function ARNLocationCatalog.getSources()
+    return ARNLocationCatalog.sources or {}
+end
+
+function ARNLocationCatalog.getSource(sourceId)
+    return (ARNLocationCatalog.sourcesById or {})[tonumber(sourceId) or 0]
+end
 
 local function boundsContainmentDistance(target, playerPosition)
     local center = target and target.boundsCenter
     local radiusX = tonumber(target and target.boundsRadiusX)
     local radiusY = tonumber(target and target.boundsRadiusY)
     local radiusZ = tonumber(target and target.boundsRadiusZ)
-    local px, py, pz = SARN.components(playerPosition)
+    local px, py, pz = ARN.components(playerPosition)
     if center == nil or radiusX == nil or radiusY == nil or radiusZ == nil
         or radiusX <= 0 or radiusY <= 0 or radiusZ <= 0 or px == nil then return nil end
-    local centerDistance = SARN.distance(playerPosition, center)
+    local centerDistance = ARN.distance(playerPosition, center)
     if centerDistance == nil then return nil end
     -- Derived bounds use one consistent 75% outer entry margin.
     local entryScale = 1.75
@@ -601,17 +662,17 @@ local function currentContainmentDistance(target, playerPosition)
     return boundsContainmentDistance(target, playerPosition)
 end
 
-function SARNLocationCatalog.getCurrentTarget(playerPosition)
-    local now = tonumber(SARN.call(system, "getArkTime")) or 0
-    local cached = SARNLocationCatalog.currentTargetCache
+function ARNLocationCatalog.getCurrentTarget(playerPosition)
+    local now = tonumber(ARN.call(system, "getArkTime")) or 0
+    local cached = ARNLocationCatalog.currentTargetCache
     -- Current-area containment checks every catalog node. The short cache avoids
     -- repeating that full scan on every renderer frame while keeping transitions responsive.
     if cached ~= nil and now - cached.time < 0.15 then return cached.target end
     local current = nil
     local currentDistance = nil
-    for _, target in ipairs(SARNLocationCatalog.allTargets or {}) do
+    for _, target in ipairs(ARNLocationCatalog.allTargets or {}) do
         local isGroup = target.type == "group" or target.kind == "location-group"
-        local distance = (not isGroup or SARNConfiguration.allowGroupsAsCurrentArea)
+        local distance = (not isGroup or ARNConfiguration.allowGroupsAsCurrentArea)
             and currentContainmentDistance(target, playerPosition) or nil
         if distance ~= nil then
             local deeper = current == nil or (target.depth or 1) > (current.depth or 1)
@@ -623,7 +684,7 @@ function SARNLocationCatalog.getCurrentTarget(playerPosition)
             end
         end
     end
-    SARNLocationCatalog.currentTargetCache = { time = now, target = current }
+    ARNLocationCatalog.currentTargetCache = { time = now, target = current }
     return current
 end
 
@@ -654,7 +715,7 @@ local function limitedNearestIds(candidates)
     local ranks = {}
     local selected = {}
     local maximum = math.max(1,
-        math.floor(tonumber(SARNConfiguration.maximumNearbyPlaces) or 10))
+        math.floor(tonumber(ARNConfiguration.maximumNearbyPlaces) or 10))
     for index = 1, math.min(maximum, #candidates) do
         local candidate = candidates[index]
         local id = candidate.target.id
@@ -666,26 +727,26 @@ local function limitedNearestIds(candidates)
 end
 
 local function getAreaPlaceIds(current, playerPosition)
-    if current == nil or not SARNLocationCatalog.getShowCurrentAreaPlaces() then
+    if current == nil or not ARNLocationCatalog.getShowCurrentAreaPlaces() then
         return {}, {}, {}, 0, 0
     end
     local inAtmosphere = (tonumber(unit.getAtmosphereDensity()) or 0) > 0
-    local rangeKm = inAtmosphere and SARNConfiguration.nearbyAtmoRangeKm
-        or SARNConfiguration.nearbySpaceRangeKm
+    local rangeKm = inAtmosphere and ARNConfiguration.nearbyAtmoRangeKm
+        or ARNConfiguration.nearbySpaceRangeKm
     local rangeMeters = math.max(0, tonumber(rangeKm) or 0) * 1000
     local rangeSquared = rangeMeters * rangeMeters
-    local px, py, pz = SARN.components(playerPosition)
+    local px, py, pz = ARN.components(playerPosition)
     local candidates = {}
     local total = 0
     local visited = {}
     local function visitChildren(parent)
         if parent == nil or visited[parent.id] then return end
         visited[parent.id] = true
-        for _, child in ipairs(SARNLocationCatalog.getChildren(parent)) do
+        for _, child in ipairs(ARNLocationCatalog.getChildren(parent)) do
             local position = child.displayPosition
             if not child.excluded and position ~= nil and not isCelestial(child) then
                 total = total + 1
-                local x, y, z = SARN.components(position)
+                local x, y, z = ARN.components(position)
                 if px ~= nil and x ~= nil then
                     local dx, dy, dz = x - px, y - py, z - pz
                     local squared = dx * dx + dy * dy + dz * dz
@@ -705,13 +766,13 @@ end
 local function getNearbyTargetIds(current, playerPosition)
     local nearbyIds = {}
     local nearbyRanks = {}
-    if current == nil or (not SARNLocationCatalog.getShowNearbyAreas()
-        and not SARNLocationCatalog.getShowNearbyAreaPlaces()) then
+    if current == nil or (not ARNLocationCatalog.getShowNearbyAreas()
+        and not ARNLocationCatalog.getShowNearbyAreaPlaces()) then
         return nearbyIds, nearbyRanks, nil, {}
     end
     local inAtmosphere = (tonumber(unit.getAtmosphereDensity()) or 0) > 0
-    local rangeKm = inAtmosphere and SARNConfiguration.nearbyAtmoRangeKm
-        or SARNConfiguration.nearbySpaceRangeKm
+    local rangeKm = inAtmosphere and ARNConfiguration.nearbyAtmoRangeKm
+        or ARNConfiguration.nearbySpaceRangeKm
     local rangeMeters = math.max(0, tonumber(rangeKm) or 0) * 1000
     local rangeSquared = rangeMeters * rangeMeters
     local candidates = {}
@@ -725,11 +786,11 @@ local function getNearbyTargetIds(current, playerPosition)
         candidateCount = 0,
         selectedCount = 0,
         maximum = math.max(1,
-            math.floor(tonumber(SARNConfiguration.maximumNearbyPlaces) or 10))
+            math.floor(tonumber(ARNConfiguration.maximumNearbyPlaces) or 10))
     }
-    local px, py, pz = SARN.components(playerPosition)
+    local px, py, pz = ARN.components(playerPosition)
     local function distanceSquared(position)
-        local x, y, z = SARN.components(position)
+        local x, y, z = ARN.components(position)
         if px == nil or x == nil then return nil end
         local dx, dy, dz = x - px, y - py, z - pz
         return dx * dx + dy * dy + dz * dz
@@ -737,7 +798,7 @@ local function getNearbyTargetIds(current, playerPosition)
     local function inspectChildren(parent, contextId, collectPlaces)
         local total = 0
         local inRange = 0
-        for _, child in ipairs(SARNLocationCatalog.getChildren(parent)) do
+        for _, child in ipairs(ARNLocationCatalog.getChildren(parent)) do
             if not child.excluded and not isCelestial(child) then
                 total = total + 1
                 local squared = distanceSquared(child.displayPosition)
@@ -759,13 +820,13 @@ local function getNearbyTargetIds(current, playerPosition)
     -- Nearby areas are non-celestial siblings of the current area. Their markers
     -- and their direct places are controlled independently, although both use
     -- the same inexpensive centre-distance preselection.
-    local parent = not isCelestial(current) and SARNLocationCatalog.getPrimaryParent(current) or nil
+    local parent = not isCelestial(current) and ARNLocationCatalog.getPrimaryParent(current) or nil
     if parent ~= nil then
         nearbyInfo.root = parent
         local contextRange = rangeMeters * 2 * 1.2
         local contextRangeSquared = contextRange * contextRange
         local contextCandidates = {}
-        for _, sibling in ipairs(SARNLocationCatalog.getChildren(parent)) do
+        for _, sibling in ipairs(ARNLocationCatalog.getChildren(parent)) do
             if not sibling.excluded and not isCelestial(sibling) then
                 nearbyInfo.contextTotal = nearbyInfo.contextTotal + 1
                 local squared = distanceSquared(sibling.displayPosition)
@@ -793,10 +854,10 @@ local function getNearbyTargetIds(current, playerPosition)
             local total, inRange = 0, 0
             if not isCurrent then
                 total, inRange = inspectChildren(context, context.id,
-                    SARNLocationCatalog.getShowNearbyAreaPlaces())
+                    ARNLocationCatalog.getShowNearbyAreaPlaces())
             end
             local markerEligible = not isCurrent and inRange > 0
-            if markerEligible and SARNLocationCatalog.getShowNearbyAreas() then
+            if markerEligible and ARNLocationCatalog.getShowNearbyAreas() then
                 contextIds[context.id] = true
             end
             nearbyInfo.contexts[#nearbyInfo.contexts + 1] = {
@@ -829,10 +890,10 @@ local function getClosestPlanet(systemTarget, playerPosition)
     if systemTarget == nil then return nil end
     local closest = nil
     local closestDistance = nil
-    for _, target in ipairs(SARNLocationCatalog.allTargets or {}) do
+    for _, target in ipairs(ARNLocationCatalog.allTargets or {}) do
         if target.type == "planet" and target.worldPosition ~= nil
             and isDirectChildOf(target, systemTarget) then
-            local centerDistance = SARN.distance(playerPosition, target.worldPosition)
+            local centerDistance = ARN.distance(playerPosition, target.worldPosition)
             local surfaceDistance = centerDistance ~= nil
                 and math.abs(centerDistance - (tonumber(target.areaRadius) or 0)) or nil
             if surfaceDistance ~= nil
@@ -846,23 +907,23 @@ local function getClosestPlanet(systemTarget, playerPosition)
 end
 
 local function getSatelliteIds(systemTarget, playerPosition)
-    if not SARNLocationCatalog.getShowSatellites() then return {} end
+    if not ARNLocationCatalog.getShowSatellites() then return {} end
     local planet = getClosestPlanet(systemTarget, playerPosition)
     local ids = {}
-    for _, child in ipairs(SARNLocationCatalog.getChildren(planet)) do
+    for _, child in ipairs(ARNLocationCatalog.getChildren(planet)) do
         if not child.excluded and child.type == "satellite" then ids[child.id] = true end
     end
     return ids
 end
 
-function SARNLocationCatalog.getVisibleTargets(playerPosition)
-    local current = SARNLocationCatalog.getCurrentTarget(playerPosition)
-    local activeSystem = SARNLocationCatalog.getNearestSystem(current)
+function ARNLocationCatalog.getVisibleTargets(playerPosition)
+    local current = ARNLocationCatalog.getCurrentTarget(playerPosition)
+    local activeSystem = ARNLocationCatalog.getNearestSystem(current)
     local areaPlaceIds, areaPlaceRanks, areaPlaceSelected, areaPlaceInRange, areaPlaceTotal =
         getAreaPlaceIds(current, playerPosition)
     local nearbyIds, nearbyRanks, nearbyInfo, contextIds =
         getNearbyTargetIds(current, playerPosition)
-    if current ~= nil and SARNLocationCatalog.getShowCurrentAreaPlaces() then
+    if current ~= nil and ARNLocationCatalog.getShowCurrentAreaPlaces() then
         if type(nearbyInfo) ~= "table" then
             nearbyInfo = {
                 root = current,
@@ -873,7 +934,7 @@ function SARNLocationCatalog.getVisibleTargets(playerPosition)
                 candidateCount = 0,
                 selectedCount = 0,
                 maximum = math.max(1,
-                    math.floor(tonumber(SARNConfiguration.maximumNearbyPlaces) or 10)),
+                    math.floor(tonumber(ARNConfiguration.maximumNearbyPlaces) or 10)),
                 suppressContextSummary = true
             }
         end
@@ -904,11 +965,11 @@ function SARNLocationCatalog.getVisibleTargets(playerPosition)
     if current ~= nil then
         for _, parentId in ipairs(current.parentIds or {}) do parentIds[parentId] = true end
     end
-    for _, target in ipairs(SARNLocationCatalog.targets or {}) do
+    for _, target in ipairs(ARNLocationCatalog.targets or {}) do
         local isTopLevel = (target.depth or 1) == 1
         local isSystemPlanet = false
         for _, parentId in ipairs(target.parentIds or {}) do
-            local parent = SARNLocationCatalog.getTargetById(parentId)
+            local parent = ARNLocationCatalog.getTargetById(parentId)
             if target.kind == "planet" and parent ~= nil and activeSystem ~= nil
                 and parent.id == activeSystem.id then
                 isSystemPlanet = true
@@ -923,7 +984,7 @@ function SARNLocationCatalog.getVisibleTargets(playerPosition)
             or target.kind == "system"
         local isBaselineVisible = false
         if isSystemPlanet then
-            isBaselineVisible = SARNLocationCatalog.getShowSystemPlanets()
+            isBaselineVisible = ARNLocationCatalog.getShowSystemPlanets()
         elseif not isHighLevelHiddenByDefault then
             isBaselineVisible = isTopLevel
         end
@@ -937,6 +998,6 @@ function SARNLocationCatalog.getVisibleTargets(playerPosition)
     return visible, current, visibleRanks, nearbyInfo
 end
 
-function SARNLocationCatalog.getStatistics()
-    return SARNLocationCatalog.statistics or { total = 0, byDepth = {} }
+function ARNLocationCatalog.getStatistics()
+    return ARNLocationCatalog.statistics or { total = 0, byDepth = {} }
 end

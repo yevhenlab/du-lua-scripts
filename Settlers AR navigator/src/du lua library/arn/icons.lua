@@ -1,4 +1,4 @@
--- Defines the small embedded DU SVG icon set used by SARN AR markers.
+-- Defines the small embedded DU SVG icon set used by ARN AR markers.
 -- Source assets: 200-novean-logo.svg, 237-icon-planet.svg, 125-icon-sanctuary-moon.svg,
 -- 090-icon-market.svg, and picker_district_a.dds reconstructed as vector artwork.
 -- icon-moon derives from icon-planet with its two decorative star polygons removed.

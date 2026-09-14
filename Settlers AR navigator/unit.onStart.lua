@@ -1,58 +1,72 @@
--- Loads the known-location catalog and starts the adaptive SARN renderer.
--- Library dependencies: SARN helpers, SARNSettings, SARNLocationCatalog, and SARNRenderer.
+-- Loads the known-location catalog and starts the adaptive ARN renderer.
+-- Library dependencies: ARN helpers, ARNSettings, ARNLocationCatalog, and ARNRenderer.
 
 local slotsOk, initializeSlotsOrError = pcall(require, "liby.liby4slots")
 local initializeSlots = slotsOk and type(initializeSlotsOrError) == "function" and initializeSlotsOrError or nil
-SARNSettings.setSlotsInitializer(initializeSlots)
+ARNSettings.setSlotsInitializer(initializeSlots)
 if initializeSlots == nil then
-    SARN.reportWarning("slots-unavailable", "Could not load liby.liby4slots: " .. tostring(slotsOk and "invalid module result" or initializeSlotsOrError))
+    ARN.reportWarning("slots-unavailable", "Could not load liby.liby4slots: " .. tostring(slotsOk and "invalid module result" or initializeSlotsOrError))
 end
 
 local atlasOk, atlasOrError = pcall(require, "atlas")
 local atlas = atlasOk and type(atlasOrError) == "table" and atlasOrError or nil
 
-local locationsOk, locationsOrError = pcall(require, "sarn/locations")
+local locationsOk, locationsOrError = pcall(require, "arn/locations")
 local rootLocations = locationsOk and type(locationsOrError) == "table" and locationsOrError or nil
 local fallbackAtlas = rootLocations and type(rootLocations.fallbackAtlas) == "table"
     and rootLocations.fallbackAtlas or nil
-SARN.setAtlas(atlas or fallbackAtlas, atlasOk and "invalid module result" or atlasOrError)
-SARNLocationCatalog.setRootConfig(rootLocations, locationsOk and "invalid module result" or locationsOrError)
+ARN.setAtlas(atlas or fallbackAtlas, atlasOk and "invalid module result" or atlasOrError)
+ARNLocationCatalog.setRootConfig(rootLocations, locationsOk and "invalid module result" or locationsOrError)
 
-SARNSettings.load()
-local loaded = SARNLocationCatalog.initialize()
-SARNSettings.restorePins()
-local initializeLiby4performance = require("liby.liby4performance")
+ARNSettings.load()
+local loaded = ARNLocationCatalog.initialize()
+ARNSettings.restorePins()
+local performanceOk, performanceOrError = pcall(require, "liby.liby4performance")
+local initializeLiby4performance = performanceOk
+    and type(performanceOrError) == "function" and performanceOrError or nil
+if initializeLiby4performance == nil then
+    ARN.reportWarning("performance-unavailable",
+        "Could not load liby.liby4performance; rendering disabled: "
+        .. tostring(performanceOk and "invalid module result" or performanceOrError))
+end
 local function createPerformance()
+    if initializeLiby4performance == nil then
+        return {
+            start = function() end,
+            onUpdate = function() end,
+            onTimer = function() end
+        }
+    end
     local performance = initializeLiby4performance(unit, system, {
-        adaptArRedrawFrequencyToFps = SARNConfiguration.adaptArRedrawFrequencyToFps,
-        maximumArRedrawPercentOfFps = SARNConfiguration.maximumArRedrawPercentOfFps,
+        adaptArRedrawFrequencyToFps = ARNConfiguration.adaptArRedrawFrequencyToFps,
+        maximumArRedrawPercentOfFps = ARNConfiguration.maximumArRedrawPercentOfFps,
         minimumArRedrawFrequency = 5,
         minimumWorkStepsPerUpdate = 1,
         maximumWorkStepsPerUpdate = 4,
         maximumWorkSecondsPerUpdate = 0.002,
         onError = function(kind, message)
-            system.print("[SARN] Performance " .. tostring(kind) .. " error: " .. tostring(message))
+            system.print(ARN.chatPrefix() .. "Performance " .. tostring(kind) .. " error: " .. tostring(message))
         end
     })
-    performance.setContentRenderer(SARNRenderer.getHtml)
+    performance.setContentRenderer(ARNRenderer.getHtml)
     return performance
 end
-SARNPerformance = createPerformance()
-function SARNRestartPerformance()
-    SARNPerformance = createPerformance()
-    SARNPerformance.start()
+ARNPerformance = createPerformance()
+function ARNRestartPerformance()
+    ARNPerformance = createPerformance()
+    ARNPerformance.start()
 end
 
 system.print("")
-system.print("[SARN] " .. SARN.startupCaption())
+system.print(ARN.chatPrefix() .. ARN.startupCaption())
 if loaded then
-    system.print("[SARN] Known-place catalog loaded: " .. tostring(SARNLocationCatalog.getStatistics().total) .. " locations.")
+    system.print(ARN.chatPrefix() .. "Known-place catalog loaded: " .. tostring(ARNLocationCatalog.getStatistics().total) .. " locations.")
 else
-    system.print("[SARN] Could not load required Lua file 'sarn/locations.lua'.")
+    system.print(ARN.chatPrefix() .. "Could not load required Lua file 'arn/locations.lua'.")
 end
-local started, startError = pcall(SARNPerformance.start)
+local started, startError = pcall(ARNPerformance.start)
 if not started then
-    system.print("[SARN] Renderer did not start: " .. tostring(startError))
-    SARNPerformance.onUpdate = function() end
-    SARNPerformance.onTimer = function() end
+    system.print(ARN.chatPrefix() .. "Renderer did not start: " .. tostring(startError))
+    ARNPerformance.onUpdate = function() end
+    ARNPerformance.onTimer = function() end
 end

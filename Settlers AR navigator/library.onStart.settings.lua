@@ -1,11 +1,15 @@
--- Loads, applies, and saves optional SARN runtime settings and pins in a linked Databank.
--- Library dependencies: SARN helpers, SARNConfiguration, SARNArDrawing, and the slots initializer injected by unit.onStart.
-SARNSettings = SARNSettings or {}
-SARNSettings.databankKey = "sarn:settings:v1"
-SARNSettings.pinsDatabankKey = "sarn:pins:v1"
+-- Loads, applies, and saves optional ARN runtime settings and pins in a linked Databank.
+-- Library dependencies: ARN helpers, ARNConfiguration, ARNArDrawing, and the slots initializer injected by unit.onStart.
+ARNSettings = ARNSettings or {}
+local settingsBrand = ARN.shortName()
+local settingsNamespace = string.lower(settingsBrand)
+ARNSettings.databankKey = settingsNamespace .. ":settings:v1"
+ARNSettings.pinsDatabankKey = settingsNamespace .. ":pins:v1"
+ARNSettings.settingsHeader = settingsBrand .. "-SETTINGS-1"
+ARNSettings.pinsHeader = settingsBrand .. "-PINS-1"
 
-function SARNSettings.setSlotsInitializer(initializer)
-    SARNSettings.initializeSlots = type(initializer) == "function" and initializer or nil
+function ARNSettings.setSlotsInitializer(initializer)
+    ARNSettings.initializeSlots = type(initializer) == "function" and initializer or nil
 end
 
 local function clampSetting(value, minimum, maximum)
@@ -24,7 +28,7 @@ local function decode(value)
     end))
 end
 
-function SARNSettings.findDatabank()
+function ARNSettings.findDatabank()
     local candidates = {}
     local seen = {}
     local function addCandidate(element, source)
@@ -34,8 +38,8 @@ function SARNSettings.findDatabank()
         end
     end
 
-    if type(SARNSettings.initializeSlots) == "function" then
-        local initialized, slots = pcall(SARNSettings.initializeSlots, _G, unit, system)
+    if type(ARNSettings.initializeSlots) == "function" then
+        local initialized, slots = pcall(ARNSettings.initializeSlots, _G, unit, system)
         if initialized and type(slots) == "table"
             and type(slots.getLinkedElements) == "function" then
             local listed, elements = pcall(slots.getLinkedElements)
@@ -50,157 +54,157 @@ function SARNSettings.findDatabank()
         local element = candidate.element
         if type(element.getStringValue) == "function"
             and type(element.setStringValue) == "function" then
-            SARNSettings.databank = element
-            SARNSettings.databankSlot = candidate.source
+            ARNSettings.databank = element
+            ARNSettings.databankSlot = candidate.source
             return element
         end
     end
-    SARNSettings.databank = nil
-    SARNSettings.databankSlot = nil
+    ARNSettings.databank = nil
+    ARNSettings.databankSlot = nil
     return nil
 end
 
-function SARNSettings.apply(values)
+function ARNSettings.apply(values)
     if type(values) ~= "table" then return false end
     if values.detailsViewCloseDelaySeconds ~= nil then
-        SARNConfiguration.detailsViewCloseDelaySeconds =
+        ARNConfiguration.detailsViewCloseDelaySeconds =
             clampSetting(values.detailsViewCloseDelaySeconds, 0.1, 10)
     end
     if values.showSystemPlanets ~= nil then
-        SARNConfiguration.showSystemPlanets = values.showSystemPlanets == true
-        if SARNLocationCatalog ~= nil
-            and type(SARNLocationCatalog.setShowSystemPlanets) == "function" then
-            SARNLocationCatalog.setShowSystemPlanets(SARNConfiguration.showSystemPlanets)
+        ARNConfiguration.showSystemPlanets = values.showSystemPlanets == true
+        if ARNLocationCatalog ~= nil
+            and type(ARNLocationCatalog.setShowSystemPlanets) == "function" then
+            ARNLocationCatalog.setShowSystemPlanets(ARNConfiguration.showSystemPlanets)
         end
     end
     if values.showSatellites ~= nil then
-        SARNConfiguration.showSatellites = values.showSatellites == true
-        if SARNLocationCatalog ~= nil
-            and type(SARNLocationCatalog.setShowSatellites) == "function" then
-            SARNLocationCatalog.setShowSatellites(SARNConfiguration.showSatellites)
+        ARNConfiguration.showSatellites = values.showSatellites == true
+        if ARNLocationCatalog ~= nil
+            and type(ARNLocationCatalog.setShowSatellites) == "function" then
+            ARNLocationCatalog.setShowSatellites(ARNConfiguration.showSatellites)
         end
     end
     if values.showCurrentAreaPlaces ~= nil then
-        SARNConfiguration.showCurrentAreaPlaces = values.showCurrentAreaPlaces == true
-        if SARNLocationCatalog ~= nil
-            and type(SARNLocationCatalog.setShowCurrentAreaPlaces) == "function" then
-            SARNLocationCatalog.setShowCurrentAreaPlaces(
-                SARNConfiguration.showCurrentAreaPlaces)
+        ARNConfiguration.showCurrentAreaPlaces = values.showCurrentAreaPlaces == true
+        if ARNLocationCatalog ~= nil
+            and type(ARNLocationCatalog.setShowCurrentAreaPlaces) == "function" then
+            ARNLocationCatalog.setShowCurrentAreaPlaces(
+                ARNConfiguration.showCurrentAreaPlaces)
         end
     end
     if values.showNearbyAreas ~= nil then
-        SARNConfiguration.showNearbyAreas = values.showNearbyAreas == true
-        if SARNLocationCatalog ~= nil
-            and type(SARNLocationCatalog.setShowNearbyAreas) == "function" then
-            SARNLocationCatalog.setShowNearbyAreas(SARNConfiguration.showNearbyAreas)
+        ARNConfiguration.showNearbyAreas = values.showNearbyAreas == true
+        if ARNLocationCatalog ~= nil
+            and type(ARNLocationCatalog.setShowNearbyAreas) == "function" then
+            ARNLocationCatalog.setShowNearbyAreas(ARNConfiguration.showNearbyAreas)
         end
     end
     if values.showNearbyAreaPlaces ~= nil then
-        SARNConfiguration.showNearbyAreaPlaces = values.showNearbyAreaPlaces == true
-        if SARNLocationCatalog ~= nil
-            and type(SARNLocationCatalog.setShowNearbyAreaPlaces) == "function" then
-            SARNLocationCatalog.setShowNearbyAreaPlaces(
-                SARNConfiguration.showNearbyAreaPlaces)
+        ARNConfiguration.showNearbyAreaPlaces = values.showNearbyAreaPlaces == true
+        if ARNLocationCatalog ~= nil
+            and type(ARNLocationCatalog.setShowNearbyAreaPlaces) == "function" then
+            ARNLocationCatalog.setShowNearbyAreaPlaces(
+                ARNConfiguration.showNearbyAreaPlaces)
         end
     end
     if values.nearbyAtmoRangeKm ~= nil then
         nearbyAtmoRangeKm = math.floor(clampSetting(values.nearbyAtmoRangeKm, 1, 100000) + 0.5)
-        SARNConfiguration.nearbyAtmoRangeKm = nearbyAtmoRangeKm
+        ARNConfiguration.nearbyAtmoRangeKm = nearbyAtmoRangeKm
     end
     if values.nearbySpaceRangeKm ~= nil then
         nearbySpaceRangeKm = math.floor(clampSetting(values.nearbySpaceRangeKm, 1, 100000) + 0.5)
-        SARNConfiguration.nearbySpaceRangeKm = nearbySpaceRangeKm
+        ARNConfiguration.nearbySpaceRangeKm = nearbySpaceRangeKm
     end
     if values.maximumNearbyPlaces ~= nil then
         maximumNearbyPlaces = math.floor(clampSetting(values.maximumNearbyPlaces, 1, 100) + 0.5)
-        SARNConfiguration.maximumNearbyPlaces = maximumNearbyPlaces
+        ARNConfiguration.maximumNearbyPlaces = maximumNearbyPlaces
     end
-    if values.showSarnHudPanel ~= nil then
-        SARNConfiguration.showSarnHudPanel = values.showSarnHudPanel == true
+    if values.showNavigatorHudPanel ~= nil then
+        ARNConfiguration.showNavigatorHudPanel = values.showNavigatorHudPanel == true
     end
     if values.showVisibleMarkersHudPanel ~= nil then
-        SARNConfiguration.showVisibleMarkersHudPanel =
+        ARNConfiguration.showVisibleMarkersHudPanel =
             values.showVisibleMarkersHudPanel == true
     end
     if values.showPinnedLocationsHudPanel ~= nil then
-        SARNConfiguration.showPinnedLocationsHudPanel =
+        ARNConfiguration.showPinnedLocationsHudPanel =
             values.showPinnedLocationsHudPanel == true
     end
     if values.showOffscreenMarkersInHud ~= nil then
-        SARNConfiguration.showOffscreenMarkersInHud =
+        ARNConfiguration.showOffscreenMarkersInHud =
             values.showOffscreenMarkersInHud == true
     end
     if values.hudFontSize ~= nil then
         hudFontSize = math.floor(clampSetting(values.hudFontSize, 9, 24) + 0.5)
-        SARNConfiguration.hudFontSize = hudFontSize
+        ARNConfiguration.hudFontSize = hudFontSize
     end
     if values.showAreaEntryNotifications ~= nil then
-        SARNConfiguration.showAreaEntryNotifications =
+        ARNConfiguration.showAreaEntryNotifications =
             values.showAreaEntryNotifications == true
     end
     if values.showAreaExitNotifications ~= nil then
-        SARNConfiguration.showAreaExitNotifications =
+        ARNConfiguration.showAreaExitNotifications =
             values.showAreaExitNotifications == true
     end
     if values.allowGroupsAsCurrentArea ~= nil then
-        SARNConfiguration.allowGroupsAsCurrentArea =
+        ARNConfiguration.allowGroupsAsCurrentArea =
             values.allowGroupsAsCurrentArea == true
-        if SARNLocationCatalog ~= nil then SARNLocationCatalog.currentTargetCache = nil end
+        if ARNLocationCatalog ~= nil then ARNLocationCatalog.currentTargetCache = nil end
     end
     if values.adaptArRedrawFrequencyToFps ~= nil then
         adaptArRedrawFrequencyToFps = values.adaptArRedrawFrequencyToFps == true
-        SARNConfiguration.adaptArRedrawFrequencyToFps = adaptArRedrawFrequencyToFps
+        ARNConfiguration.adaptArRedrawFrequencyToFps = adaptArRedrawFrequencyToFps
     end
     if values.maximumArRedrawPercentOfFps ~= nil then
         maximumArRedrawPercentOfFps = math.floor(
             clampSetting(values.maximumArRedrawPercentOfFps, 1, 100) + 0.5)
-        SARNConfiguration.maximumArRedrawPercentOfFps = maximumArRedrawPercentOfFps
+        ARNConfiguration.maximumArRedrawPercentOfFps = maximumArRedrawPercentOfFps
     end
     return true
 end
 
-function SARNSettings.getValues()
-    local showPlanets = SARNConfiguration.showSystemPlanets
-    if SARNLocationCatalog ~= nil then
-        showPlanets = SARNLocationCatalog.getShowSystemPlanets()
+function ARNSettings.getValues()
+    local showPlanets = ARNConfiguration.showSystemPlanets
+    if ARNLocationCatalog ~= nil then
+        showPlanets = ARNLocationCatalog.getShowSystemPlanets()
     end
-    local showCurrentAreaPlaces = SARNConfiguration.showCurrentAreaPlaces
-    local showNearbyAreas = SARNConfiguration.showNearbyAreas
-    local showNearbyAreaPlaces = SARNConfiguration.showNearbyAreaPlaces
-    if SARNLocationCatalog ~= nil then
-        showCurrentAreaPlaces = SARNLocationCatalog.getShowCurrentAreaPlaces()
-        showNearbyAreas = SARNLocationCatalog.getShowNearbyAreas()
-        showNearbyAreaPlaces = SARNLocationCatalog.getShowNearbyAreaPlaces()
+    local showCurrentAreaPlaces = ARNConfiguration.showCurrentAreaPlaces
+    local showNearbyAreas = ARNConfiguration.showNearbyAreas
+    local showNearbyAreaPlaces = ARNConfiguration.showNearbyAreaPlaces
+    if ARNLocationCatalog ~= nil then
+        showCurrentAreaPlaces = ARNLocationCatalog.getShowCurrentAreaPlaces()
+        showNearbyAreas = ARNLocationCatalog.getShowNearbyAreas()
+        showNearbyAreaPlaces = ARNLocationCatalog.getShowNearbyAreaPlaces()
     end
-    local showMoons = SARNConfiguration.showSatellites
-    if SARNLocationCatalog ~= nil then showMoons = SARNLocationCatalog.getShowSatellites() end
+    local showMoons = ARNConfiguration.showSatellites
+    if ARNLocationCatalog ~= nil then showMoons = ARNLocationCatalog.getShowSatellites() end
     return {
-        detailsViewCloseDelaySeconds = SARNConfiguration.detailsViewCloseDelaySeconds,
+        detailsViewCloseDelaySeconds = ARNConfiguration.detailsViewCloseDelaySeconds,
         showSystemPlanets = showPlanets,
         showSatellites = showMoons,
         showCurrentAreaPlaces = showCurrentAreaPlaces,
         showNearbyAreas = showNearbyAreas,
         showNearbyAreaPlaces = showNearbyAreaPlaces,
-        nearbyAtmoRangeKm = tonumber(SARNConfiguration.nearbyAtmoRangeKm) or 5,
-        nearbySpaceRangeKm = tonumber(SARNConfiguration.nearbySpaceRangeKm) or 50,
-        maximumNearbyPlaces = tonumber(SARNConfiguration.maximumNearbyPlaces) or 10,
-        showSarnHudPanel = SARNConfiguration.showSarnHudPanel ~= false,
-        showVisibleMarkersHudPanel = SARNConfiguration.showVisibleMarkersHudPanel ~= false,
-        showPinnedLocationsHudPanel = SARNConfiguration.showPinnedLocationsHudPanel ~= false,
-        showOffscreenMarkersInHud = SARNConfiguration.showOffscreenMarkersInHud ~= false,
-        hudFontSize = tonumber(SARNConfiguration.hudFontSize) or 13,
-        showAreaEntryNotifications = SARNConfiguration.showAreaEntryNotifications ~= false,
-        showAreaExitNotifications = SARNConfiguration.showAreaExitNotifications ~= false,
-        allowGroupsAsCurrentArea = SARNConfiguration.allowGroupsAsCurrentArea == true,
-        adaptArRedrawFrequencyToFps = SARNConfiguration.adaptArRedrawFrequencyToFps ~= false,
+        nearbyAtmoRangeKm = tonumber(ARNConfiguration.nearbyAtmoRangeKm) or 5,
+        nearbySpaceRangeKm = tonumber(ARNConfiguration.nearbySpaceRangeKm) or 50,
+        maximumNearbyPlaces = tonumber(ARNConfiguration.maximumNearbyPlaces) or 10,
+        showNavigatorHudPanel = ARNConfiguration.showNavigatorHudPanel ~= false,
+        showVisibleMarkersHudPanel = ARNConfiguration.showVisibleMarkersHudPanel ~= false,
+        showPinnedLocationsHudPanel = ARNConfiguration.showPinnedLocationsHudPanel ~= false,
+        showOffscreenMarkersInHud = ARNConfiguration.showOffscreenMarkersInHud ~= false,
+        hudFontSize = tonumber(ARNConfiguration.hudFontSize) or 14,
+        showAreaEntryNotifications = ARNConfiguration.showAreaEntryNotifications ~= false,
+        showAreaExitNotifications = ARNConfiguration.showAreaExitNotifications ~= false,
+        allowGroupsAsCurrentArea = ARNConfiguration.allowGroupsAsCurrentArea == true,
+        adaptArRedrawFrequencyToFps = ARNConfiguration.adaptArRedrawFrequencyToFps ~= false,
         maximumArRedrawPercentOfFps =
-            tonumber(SARNConfiguration.maximumArRedrawPercentOfFps) or 100
+            tonumber(ARNConfiguration.maximumArRedrawPercentOfFps) or 80
     }
 end
 
-function SARNSettings.serialize()
-    local values = SARNSettings.getValues()
-    return "SARN-SETTINGS-1"
+function ARNSettings.serialize()
+    local values = ARNSettings.getValues()
+    return ARNSettings.settingsHeader
         .. ";details=" .. string.format("%.1f", values.detailsViewCloseDelaySeconds)
         .. ";planets=" .. (values.showSystemPlanets and "1" or "0")
         .. ";satellites=" .. (values.showSatellites and "1" or "0")
@@ -212,7 +216,7 @@ function SARNSettings.serialize()
         .. ";nearbyAtmo=" .. tostring(math.floor(values.nearbyAtmoRangeKm + 0.5))
         .. ";nearbySpace=" .. tostring(math.floor(values.nearbySpaceRangeKm + 0.5))
         .. ";nearbyCount=" .. tostring(math.floor(values.maximumNearbyPlaces + 0.5))
-        .. ";hudStatus=" .. (values.showSarnHudPanel and "1" or "0")
+        .. ";hudStatus=" .. (values.showNavigatorHudPanel and "1" or "0")
         .. ";hudMarkers=" .. (values.showVisibleMarkersHudPanel and "1" or "0")
         .. ";hudPins=" .. (values.showPinnedLocationsHudPanel and "1" or "0")
         .. ";hudOffscreen=" .. (values.showOffscreenMarkersInHud and "1" or "0")
@@ -222,21 +226,23 @@ function SARNSettings.serialize()
         .. ";groupCurrent=" .. (values.allowGroupsAsCurrentArea and "1" or "0")
 end
 
-function SARNSettings.serializePins()
-    local parts = { "SARN-PINS-1" }
-    local entries = SARNArDrawing ~= nil and SARNArDrawing.getPersistedPins() or {}
+function ARNSettings.serializePins()
+    local parts = { ARNSettings.pinsHeader }
+    local entries = ARNArDrawing ~= nil and ARNArDrawing.getPersistedPins() or {}
     for _, entry in ipairs(entries) do
         parts[#parts + 1] = ";" .. entry.mode .. "=" .. encode(entry.key)
     end
     return table.concat(parts)
 end
 
-function SARNSettings.load()
-    local databank = SARNSettings.findDatabank()
+function ARNSettings.load()
+    local databank = ARNSettings.findDatabank()
     if databank == nil then return false end
-    local payload = SARN.call(databank, "getStringValue", SARNSettings.databankKey)
+    local payload = ARN.call(databank, "getStringValue", ARNSettings.databankKey)
+    local validSettingsPayload = type(payload) == "string"
+        and payload:sub(1, #ARNSettings.settingsHeader) == ARNSettings.settingsHeader
     local loaded = false
-    if type(payload) == "string" and payload:sub(1, 15) == "SARN-SETTINGS-1" then
+    if validSettingsPayload then
         local fields = {}
         for key, value in payload:gmatch(";([%a]+)=([^;]+)") do fields[key] = value end
         local values = {}
@@ -263,7 +269,7 @@ function SARNSettings.load()
         if fields.nearbyAtmo ~= nil then values.nearbyAtmoRangeKm = tonumber(fields.nearbyAtmo) end
         if fields.nearbySpace ~= nil then values.nearbySpaceRangeKm = tonumber(fields.nearbySpace) end
         if fields.nearbyCount ~= nil then values.maximumNearbyPlaces = tonumber(fields.nearbyCount) end
-        if fields.hudStatus ~= nil then values.showSarnHudPanel = fields.hudStatus == "1" end
+        if fields.hudStatus ~= nil then values.showNavigatorHudPanel = fields.hudStatus == "1" end
         if fields.hudMarkers ~= nil then
             values.showVisibleMarkersHudPanel = fields.hudMarkers == "1"
         end
@@ -283,35 +289,37 @@ function SARNSettings.load()
         if fields.groupCurrent ~= nil then
             values.allowGroupsAsCurrentArea = fields.groupCurrent == "1"
         end
-        loaded = SARNSettings.apply(values)
+        loaded = ARNSettings.apply(values)
     end
-    local pinsPayload = SARN.call(databank, "getStringValue", SARNSettings.pinsDatabankKey)
-    if type(pinsPayload) == "string" and pinsPayload:sub(1, 11) == "SARN-PINS-1" then
+    local pinsPayload = ARN.call(databank, "getStringValue", ARNSettings.pinsDatabankKey)
+    local validPinsPayload = type(pinsPayload) == "string"
+        and pinsPayload:sub(1, #ARNSettings.pinsHeader) == ARNSettings.pinsHeader
+    if validPinsPayload then
         local entries = {}
         for mode, key in pinsPayload:gmatch(";([%a]+)=([^;]+)") do
             entries[#entries + 1] = { mode = mode, key = decode(key) }
         end
-        SARNSettings.pendingPins = entries
+        ARNSettings.pendingPins = entries
         loaded = true
     end
     return loaded
 end
 
-function SARNSettings.restorePins()
-    if SARNSettings.pendingPins == nil or SARNArDrawing == nil then return false end
-    SARNArDrawing.restorePins(SARNSettings.pendingPins)
-    SARNSettings.pendingPins = nil
+function ARNSettings.restorePins()
+    if ARNSettings.pendingPins == nil or ARNArDrawing == nil then return false end
+    ARNArDrawing.restorePins(ARNSettings.pendingPins)
+    ARNSettings.pendingPins = nil
     return true
 end
 
-function SARNSettings.save()
-    local databank = SARNSettings.findDatabank()
+function ARNSettings.save()
+    local databank = ARNSettings.findDatabank()
     if databank == nil then return false, "missing" end
     local ok, result = pcall(databank.setStringValue,
-        SARNSettings.databankKey, SARNSettings.serialize())
+        ARNSettings.databankKey, ARNSettings.serialize())
     if not ok or result == false then return false, tostring(result) end
     local pinsOk, pinsResult = pcall(databank.setStringValue,
-        SARNSettings.pinsDatabankKey, SARNSettings.serializePins())
+        ARNSettings.pinsDatabankKey, ARNSettings.serializePins())
     if not pinsOk or pinsResult == false then return false, tostring(pinsResult) end
     return true
 end
