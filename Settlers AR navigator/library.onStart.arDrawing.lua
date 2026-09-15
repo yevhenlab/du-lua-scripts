@@ -103,11 +103,19 @@ function ARNArDrawing.getPinnedEntries()
     local entries = {}
     for _, state in pairs(ARNArDrawing.pins) do
         if state.target ~= nil and (state.place or state.children) then
+            local targetIds = {}
+            if state.place then targetIds[#targetIds + 1] = state.target.id end
+            if state.children then
+                for _, child in ipairs(ARNLocationCatalog.getChildren(state.target)) do
+                    targetIds[#targetIds + 1] = child.id
+                end
+            end
             entries[#entries + 1] = {
                 name = state.target.name or "Location",
                 mode = state.place and state.children and "place + children"
                     or (state.place and "place" or "children"),
-                color = state.target.visibilityColor or state.target.color
+                color = state.target.visibilityColor or state.target.color,
+                targetIds = targetIds
             }
         end
     end

@@ -46,20 +46,34 @@ local function drawPanelWatermark(scaleFromWidth, verticalShiftPercent)
     return '<svg viewBox="' .. tostring(icon.viewBox) .. '"' .. placement
         .. 'fill:rgb('
         .. ARNConfiguration.markerColor
-        .. ');opacity:.35">'
+        .. ');opacity:.25">'
         .. icon.body .. '</svg>'
 end
 
-local function drawPinnedLocations(entries)
+local function drawPinnedLocations(entries, markerEntries)
     entries = type(entries) == "table" and entries or {}
+    local onScreenByTargetId = {}
+    for _, markerEntry in ipairs(type(markerEntries) == "table" and markerEntries or {}) do
+        if markerEntry.onScreen and markerEntry.target ~= nil then
+            onScreenByTargetId[markerEntry.target.id] = true
+        end
+    end
     local rows = {}
     local visibleCount = math.min(5, #entries)
     for index = 1, visibleCount do
         local entry = entries[index]
-        local color = entry.color ~= nil and ("rgb(" .. entry.color .. ")") or "#fff"
+        local onScreen = false
+        for _, targetId in ipairs(entry.targetIds or {}) do
+            if onScreenByTargetId[targetId] then onScreen = true break end
+        end
+        local color = entry.color ~= nil
+            and (onScreen and ("rgb(" .. entry.color .. ")")
+                or ("rgba(" .. entry.color .. ",.48)"))
+            or (onScreen and "#fff" or "#6f7f84")
+        local detailColor = onScreen and "#86b7c8" or "#5f737a"
         rows[#rows + 1] = '<span style="color:' .. color .. '">&#9670; '
-            .. ARN.escapeHtml(entry.name) .. '</span> <span style="color:#86b7c8">&#8212; '
-            .. ARN.escapeHtml(entry.mode) .. '</span>'
+            .. ARN.escapeHtml(entry.name) .. '</span> <span style="color:' .. detailColor
+            .. '">&#8212; ' .. ARN.escapeHtml(entry.mode) .. '</span>'
     end
     if #entries > visibleCount then
         rows[#rows + 1] = '<span style="color:#86b7c8">+ '
@@ -402,7 +416,7 @@ function ARNHudDrawing.drawCatalogStatus(rendered, currentTarget, available, pin
     end
     if ARNConfiguration.showPinnedLocationsHudPanel ~= false
         and type(pinnedEntries) == "table" and #pinnedEntries > 0 then
-        panels[#panels + 1] = drawPinnedLocations(pinnedEntries)
+        panels[#panels + 1] = drawPinnedLocations(pinnedEntries, markerEntries)
     end
     local panelHtml = ""
     if #panels > 0 then
