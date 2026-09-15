@@ -16,6 +16,48 @@ local function clampSetting(value, minimum, maximum)
     return math.max(minimum, math.min(maximum, tonumber(value) or minimum))
 end
 
+ARNSettings.pinnedDistanceSteps = {
+    0,
+    1000, 2000, 3000, 4000, 5000,
+    10000, 15000, 20000, 30000, 50000, 100000, 150000,
+    200000, 400000, 600000, 800000, 1000000,
+    2000000, 3000000, 4000000, 6000000, 10000000,
+    20000000, 30000000, 40000000, 60000000, 100000000
+}
+
+function ARNSettings.normalizePinnedDistance(value)
+    local requested = math.max(0, tonumber(value) or 0)
+    if requested <= 0 then return 0 end
+    local best = ARNSettings.pinnedDistanceSteps[2]
+    local bestDifference = math.abs(requested - best)
+    for index = 3, #ARNSettings.pinnedDistanceSteps do
+        local candidate = ARNSettings.pinnedDistanceSteps[index]
+        local difference = math.abs(requested - candidate)
+        if difference < bestDifference then
+            best, bestDifference = candidate, difference
+        end
+    end
+    return best
+end
+
+function ARNSettings.stepPinnedDistance(value, direction)
+    local normalized = ARNSettings.normalizePinnedDistance(value)
+    local currentIndex = 1
+    for index, candidate in ipairs(ARNSettings.pinnedDistanceSteps) do
+        if candidate == normalized then currentIndex = index break end
+    end
+    local count = #ARNSettings.pinnedDistanceSteps
+    local nextIndex = ((currentIndex - 1 + (direction < 0 and -1 or 1)) % count) + 1
+    return ARNSettings.pinnedDistanceSteps[nextIndex]
+end
+
+function ARNSettings.pinnedDistanceLabelHtml(value)
+    local meters = ARNSettings.normalizePinnedDistance(value)
+    if meters <= 0 then return "&#8734;" end
+    if meters < 200000 then return tostring(math.floor(meters / 1000)) .. " km" end
+    return tostring(math.floor(meters / 200000)) .. " su"
+end
+
 local function encode(value)
     return (tostring(value):gsub("([^%w%-%._~])", function(character)
         return string.format("%%%02X", string.byte(character))
@@ -119,6 +161,11 @@ function ARNSettings.apply(values)
         maximumNearbyPlaces = math.floor(clampSetting(values.maximumNearbyPlaces, 1, 100) + 0.5)
         ARNConfiguration.maximumNearbyPlaces = maximumNearbyPlaces
     end
+    if values.pinnedDistanceLimitMeters ~= nil then
+        pinnedDistanceLimitMeters = ARNSettings.normalizePinnedDistance(
+            values.pinnedDistanceLimitMeters)
+        ARNConfiguration.pinnedDistanceLimitMeters = pinnedDistanceLimitMeters
+    end
     if values.showNavigatorHudPanel ~= nil then
         ARNConfiguration.showNavigatorHudPanel = values.showNavigatorHudPanel == true
     end
@@ -188,6 +235,8 @@ function ARNSettings.getValues()
         nearbyAtmoRangeKm = tonumber(ARNConfiguration.nearbyAtmoRangeKm) or 5,
         nearbySpaceRangeKm = tonumber(ARNConfiguration.nearbySpaceRangeKm) or 50,
         maximumNearbyPlaces = tonumber(ARNConfiguration.maximumNearbyPlaces) or 10,
+        pinnedDistanceLimitMeters = ARNSettings.normalizePinnedDistance(
+            ARNConfiguration.pinnedDistanceLimitMeters),
         showNavigatorHudPanel = ARNConfiguration.showNavigatorHudPanel ~= false,
         showVisibleMarkersHudPanel = ARNConfiguration.showVisibleMarkersHudPanel ~= false,
         showPinnedLocationsHudPanel = ARNConfiguration.showPinnedLocationsHudPanel ~= false,
@@ -216,6 +265,7 @@ function ARNSettings.serialize()
         .. ";nearbyAtmo=" .. tostring(math.floor(values.nearbyAtmoRangeKm + 0.5))
         .. ";nearbySpace=" .. tostring(math.floor(values.nearbySpaceRangeKm + 0.5))
         .. ";nearbyCount=" .. tostring(math.floor(values.maximumNearbyPlaces + 0.5))
+        .. ";pinRange=" .. tostring(math.floor(values.pinnedDistanceLimitMeters + 0.5))
         .. ";hudStatus=" .. (values.showNavigatorHudPanel and "1" or "0")
         .. ";hudMarkers=" .. (values.showVisibleMarkersHudPanel and "1" or "0")
         .. ";hudPins=" .. (values.showPinnedLocationsHudPanel and "1" or "0")
@@ -269,6 +319,9 @@ function ARNSettings.load()
         if fields.nearbyAtmo ~= nil then values.nearbyAtmoRangeKm = tonumber(fields.nearbyAtmo) end
         if fields.nearbySpace ~= nil then values.nearbySpaceRangeKm = tonumber(fields.nearbySpace) end
         if fields.nearbyCount ~= nil then values.maximumNearbyPlaces = tonumber(fields.nearbyCount) end
+        if fields.pinRange ~= nil then
+            values.pinnedDistanceLimitMeters = tonumber(fields.pinRange)
+        end
         if fields.hudStatus ~= nil then values.showNavigatorHudPanel = fields.hudStatus == "1" end
         if fields.hudMarkers ~= nil then
             values.showVisibleMarkersHudPanel = fields.hudMarkers == "1"

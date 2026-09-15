@@ -1,5 +1,5 @@
 -- Renders only known locations loaded from the ARN Lua catalog.
--- Library dependencies: ARNLocationCatalog, ARNArDrawing, ARNController, and ARNHudDrawing.
+-- Library dependencies: ARNSettings, ARNLocationCatalog, ARNArDrawing, ARNController, and ARNHudDrawing.
 ARNRenderer = ARNRenderer or {}
 
 function ARNRenderer.getHtml()
@@ -21,10 +21,19 @@ function ARNRenderer.getHtml()
         renderTargets[#renderTargets + 1] = target
         seen[target.id] = true
     end
+    local pinDistanceOrigin = ARN.call(player, "getWorldPosition") or cameraPosition
+    local pinnedDistanceLimit = ARNSettings.normalizePinnedDistance(
+        ARNConfiguration.pinnedDistanceLimitMeters)
     for _, target in ipairs(ARNLocationCatalog.getConfiguredTargets()) do
         if not seen[target.id] and ARNArDrawing.isTargetPinned(target) then
-            renderTargets[#renderTargets + 1] = target
-            seen[target.id] = true
+            local pinnedDistance = ARN.distance(pinDistanceOrigin,
+                target.displayPosition or target.worldPosition)
+            local withinPinnedDistance = pinnedDistanceLimit <= 0
+                or (pinnedDistance ~= nil and pinnedDistance <= pinnedDistanceLimit)
+            if withinPinnedDistance then
+                renderTargets[#renderTargets + 1] = target
+                seen[target.id] = true
+            end
         end
     end
     table.sort(renderTargets, function(first, second)

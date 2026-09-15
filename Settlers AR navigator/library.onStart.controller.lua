@@ -368,7 +368,7 @@ function ARNController.draw()
         local locationsHeight = 9 * menuHeight + 8 * gap
         local hudHeight = #hudRows * menuHeight + (#hudRows - 1) * gap
         local settingsHeight = #settingsRows * menuHeight + (#settingsRows - 1) * gap
-        local pinsRowCount = #pinEntries > 0 and (#pinEntries + 1) or 1
+        local pinsRowCount = #pinEntries > 0 and (#pinEntries + 2) or 2
         local pinsHeight = pinsRowCount * menuHeight + (pinsRowCount - 1) * gap
         if submenu == "locations" then
             subTop = math.min(subTop, hide.bottom - locationsHeight)
@@ -568,13 +568,41 @@ function ARNController.draw()
                 end
             end
         elseif submenu == "pins" then
+            local values = ARNSettings.getValues()
+            local rangeRow = bounds(subLeft, subTop, pinsWidth, menuHeight)
+            local decrement = bounds(rangeRow.right - ui(124), rangeRow.top + ui(3), ui(28), ui(28))
+            local valueBounds = bounds(rangeRow.right - ui(94), rangeRow.top + ui(3), ui(64), ui(28))
+            local increment = bounds(rangeRow.right - ui(28), rangeRow.top + ui(3), ui(28), ui(28))
+            local decrementSelected = inside(cursorX, cursorY, decrement)
+            local incrementSelected = inside(cursorX, cursorY, increment)
+            if decrementSelected then
+                ARNController.selectedAction = { kind = "setting", key = "pin-range-dec" }
+            elseif incrementSelected then
+                ARNController.selectedAction = { kind = "setting", key = "pin-range-inc" }
+            end
+            parts[#parts + 1] = '<div class="arn-settings-row" style="left:'
+                .. string.format("%.1f", rangeRow.left) .. 'px;top:'
+                .. string.format("%.1f", rangeRow.top) .. 'px;width:'
+                .. string.format("%.1f", pinsWidth) .. 'px;height:'
+                .. string.format("%.1f", menuHeight) .. 'px">Pinned distance</div>'
+            parts[#parts + 1] = triangleButtonHtml("left", decrementSelected, decrement)
+            parts[#parts + 1] = '<div class="arn-settings-value" style="left:'
+                .. string.format("%.1f", valueBounds.left) .. 'px;top:'
+                .. string.format("%.1f", valueBounds.top) .. 'px;width:'
+                .. string.format("%.1f", valueBounds.right - valueBounds.left) .. 'px;height:'
+                .. string.format("%.1f", valueBounds.bottom - valueBounds.top) .. 'px">'
+                .. ARNSettings.pinnedDistanceLabelHtml(values.pinnedDistanceLimitMeters) .. '</div>'
+            parts[#parts + 1] = triangleButtonHtml("right", incrementSelected, increment)
+
             if #pinEntries == 0 then
-                local emptyBounds = bounds(subLeft, subTop, pinsWidth, menuHeight)
+                local emptyBounds = bounds(subLeft, subTop + menuHeight + gap,
+                    pinsWidth, menuHeight)
                 parts[#parts + 1] = buttonHtml("sub disabled", "No pinned locations",
                     false, emptyBounds)
             else
                 for index, entry in ipairs(pinEntries) do
-                    local row = bounds(subLeft, subTop + (index - 1) * (menuHeight + gap),
+                    local rowIndex = index + 1
+                    local row = bounds(subLeft, subTop + (rowIndex - 1) * (menuHeight + gap),
                         pinsWidth, menuHeight)
                     local selected = inside(cursorX, cursorY, row)
                     if selected then
@@ -591,7 +619,7 @@ function ARNController.draw()
                     local checkbox = bounds(row.right - ui(31), row.top + ui(3), ui(28), ui(28))
                     parts[#parts + 1] = checkboxHtml(true, selected, checkbox)
                 end
-                local clearIndex = #pinEntries + 1
+                local clearIndex = #pinEntries + 2
                 local clearBounds = bounds(subLeft,
                     subTop + (clearIndex - 1) * (menuHeight + gap), pinsWidth, menuHeight)
                 local clearSelected = inside(cursorX, cursorY, clearBounds)
@@ -708,6 +736,12 @@ function ARNController.activateSelectedAction()
             local restarted = type(ARNRestartPerformance) == "function"
                 and pcall(ARNRestartPerformance)
             if not restarted then ARNPerformanceNeedsRestart = true end
+        elseif action.key == "pin-range-dec" then
+            ARNSettings.apply({ pinnedDistanceLimitMeters = ARNSettings.stepPinnedDistance(
+                values.pinnedDistanceLimitMeters, -1) })
+        elseif action.key == "pin-range-inc" then
+            ARNSettings.apply({ pinnedDistanceLimitMeters = ARNSettings.stepPinnedDistance(
+                values.pinnedDistanceLimitMeters, 1) })
         elseif action.key == "nearby-atmo-dec" then
             ARNSettings.apply({ nearbyAtmoRangeKm = math.max(1, values.nearbyAtmoRangeKm - 1) })
         elseif action.key == "nearby-atmo-inc" then

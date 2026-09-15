@@ -13,6 +13,7 @@ showNearbyAreaPlaces = false --export
 nearbyAtmoRangeKm = 5 --export -- nearby-place range while the PB is in atmosphere
 nearbySpaceRangeKm = 50 --export -- nearby-place range while the PB is in space
 maximumNearbyPlaces = 10 --export
+pinnedDistanceLimitMeters = 0 --export -- 0 means unlimited
 showNavigatorHudPanel = true --export
 showVisibleMarkersHudPanel = true --export
 showPinnedLocationsHudPanel = true --export
@@ -38,6 +39,7 @@ ARNConfiguration = {
     nearbyAtmoRangeKm = math.max(1, tonumber(nearbyAtmoRangeKm) or 5),
     nearbySpaceRangeKm = math.max(1, tonumber(nearbySpaceRangeKm) or 50),
     maximumNearbyPlaces = math.max(1, math.floor(tonumber(maximumNearbyPlaces) or 10)),
+    pinnedDistanceLimitMeters = math.max(0, tonumber(pinnedDistanceLimitMeters) or 0),
     showNavigatorHudPanel = showNavigatorHudPanel ~= false,
     showVisibleMarkersHudPanel = showVisibleMarkersHudPanel ~= false,
     showPinnedLocationsHudPanel = showPinnedLocationsHudPanel ~= false,
