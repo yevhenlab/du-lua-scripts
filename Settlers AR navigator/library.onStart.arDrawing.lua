@@ -898,9 +898,9 @@ function ARNArDrawing.drawConfiguredLocation(target, pinned)
         end
     end
     table.sort(children, function(first, second)
-        local firstMoon = first.child.type == "moon"
-        local secondMoon = second.child.type == "moon"
-        if firstMoon ~= secondMoon then return firstMoon end
+        local firstSatellite = first.child.type == "satellite"
+        local secondSatellite = second.child.type == "satellite"
+        if firstSatellite ~= secondSatellite then return firstSatellite end
         if childSortState.name ~= 0 then
             local firstName = string.lower(tostring(first.child.name or ""))
             local secondName = string.lower(tostring(second.child.name or ""))

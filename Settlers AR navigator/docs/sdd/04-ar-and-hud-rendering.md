@@ -38,9 +38,9 @@ The scale curve and its minimum/maximum readable sizes require in-game visual tu
 
 ## Hierarchical colour
 
-The default AR-object colour is very light gray (`232,238,240`). An explicit location `color` always wins. Without an explicit colour, a root uses the default and a child inherits its parent colour blended 15% toward the default. Repeating this at each depth makes descendants progressively paler. The initial catalog assigns a distinct editable colour to every planet and leaves moon colours unset so they inherit automatically.
+The default AR-object colour is very light gray (`232,238,240`). An explicit location `color` always wins. Without an explicit colour, a root uses the default and a child inherits its parent colour blended 15% toward the default. Repeating this at each depth makes descendants progressively paler. The initial catalog assigns a distinct editable colour to every planet and leaves satellite colours unset so they inherit automatically.
 
-For example, cyan planet markers use cyan, their moons use a slightly paler cyan, and deeper locations use progressively paler versions. The amount of blending per depth and its maximum limit require in-game tuning. Selection and hover highlighting override this inherited display colour.
+For example, cyan planet markers use cyan, their satellites use a slightly paler cyan, and deeper locations use progressively paler versions. The amount of blending per depth and its maximum limit require in-game tuning. Selection and hover highlighting override this inherited display colour.
 
 When a location is shared by geographical and virtual collections, its geographical branch supplies its canonical inherited colour; virtual collections do not recolour it.
 

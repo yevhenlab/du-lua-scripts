@@ -20,7 +20,7 @@
 -- name              Required player-facing name.
 -- id                Optional DU body, construct, or place ID. Groups may omit it.
 -- type              Required node classification used for behavior and its default
---                   icon, such as system, planet, moon, asteroid, location-group,
+--                   icon, such as system, planet, satellite, asteroid, location-group,
 --                   construct, zone, market, base, parking, outpost, or station.
 -- icon              Optional explicit icon key from arn/icons.lua.
 -- owner             Optional literal owner name. nil or "" hides the owner line.
@@ -101,7 +101,7 @@ return {
         {
             name = "Example hidden satellite",
             id = 900000003,
-            type = "moon",
+            type = "satellite",
             coordinate = "::pos{0,0,200000,-8,-126303}",
             atlasBody = {
                 systemId = 0,

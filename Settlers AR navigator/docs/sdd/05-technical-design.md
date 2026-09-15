@@ -20,7 +20,7 @@ The root catalog is loaded at startup. The location tree then uses hybrid loadin
 
 ## Current implementation status
 
-The present code loads explicit high-level planet and moon data, recursively reads inline `children`, and resolves configured default icons, but does not yet render icons. Deferred child modules, interaction, per-player additions, and hierarchy-aware visibility selection are design requirements that must be implemented in later steps.
+The present code loads explicit high-level planet and satellite data, recursively reads inline `children`, and resolves configured default icons, but does not yet render icons. Deferred child modules, interaction, per-player additions, and hierarchy-aware visibility selection are design requirements that must be implemented in later steps.
 
 ## Diagnostics
 

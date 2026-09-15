@@ -176,12 +176,12 @@ function ARNSettings.getValues()
         showNearbyAreas = ARNLocationCatalog.getShowNearbyAreas()
         showNearbyAreaPlaces = ARNLocationCatalog.getShowNearbyAreaPlaces()
     end
-    local showMoons = ARNConfiguration.showSatellites
-    if ARNLocationCatalog ~= nil then showMoons = ARNLocationCatalog.getShowSatellites() end
+    local showSatellites = ARNConfiguration.showSatellites
+    if ARNLocationCatalog ~= nil then showSatellites = ARNLocationCatalog.getShowSatellites() end
     return {
         detailsViewCloseDelaySeconds = ARNConfiguration.detailsViewCloseDelaySeconds,
         showSystemPlanets = showPlanets,
-        showSatellites = showMoons,
+        showSatellites = showSatellites,
         showCurrentAreaPlaces = showCurrentAreaPlaces,
         showNearbyAreas = showNearbyAreas,
         showNearbyAreaPlaces = showNearbyAreaPlaces,

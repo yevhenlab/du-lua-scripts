@@ -700,7 +700,7 @@ end
 local function isCelestial(target)
     local locationType = target and target.type
     return locationType == "space" or locationType == "system"
-        or locationType == "planet" or locationType == "moon"
+        or locationType == "planet" or locationType == "satellite"
         or locationType == "asteroid"
 end
 
@@ -912,7 +912,7 @@ local function getSatelliteIds(systemTarget, playerPosition)
     local planet = getClosestPlanet(systemTarget, playerPosition)
     local ids = {}
     for _, child in ipairs(ARNLocationCatalog.getChildren(planet)) do
-        if not child.excluded and child.type == "moon" then ids[child.id] = true end
+        if not child.excluded and child.type == "satellite" then ids[child.id] = true end
     end
     return ids
 end
