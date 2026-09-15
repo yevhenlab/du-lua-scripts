@@ -23,9 +23,9 @@ local function normalizeCoreSize(value)
     return size ~= "" and size or "?"
 end
 
-local function normalizeKind(value)
-    local kind = string.lower(tostring(value or "location")):gsub("%s+", "-")
-    return kind ~= "" and kind or "location"
+local function normalizeNodeType(value)
+    local nodeType = string.lower(tostring(value or "location")):gsub("%s+", "-")
+    return nodeType ~= "" and nodeType or "location"
 end
 
 local function paleColor(color)
@@ -142,9 +142,9 @@ function ARNLocationCatalog.initialize()
     end
     local locations = {}
     for _, entry in ipairs(primaryLocations) do locations[#locations + 1] = entry end
-    local kinds = {}
-    if type(config.kinds) == "table" then
-        for kind, definition in pairs(config.kinds) do kinds[kind] = definition end
+    local typeDefinitions = {}
+    if type(config.types) == "table" then
+        for nodeType, definition in pairs(config.types) do typeDefinitions[nodeType] = definition end
     end
     if type(config.catalogModules) == "table" then
         for _, moduleName in ipairs(config.catalogModules) do
@@ -154,9 +154,9 @@ function ARNLocationCatalog.initialize()
                 if type(moduleLocations) == "table" then
                     for _, entry in ipairs(moduleLocations) do locations[#locations + 1] = entry end
                 end
-                if type(moduleConfig.kinds) == "table" then
-                    for kind, definition in pairs(moduleConfig.kinds) do
-                        if kinds[kind] == nil then kinds[kind] = definition end
+                if type(moduleConfig.types) == "table" then
+                    for nodeType, definition in pairs(moduleConfig.types) do
+                        if typeDefinitions[nodeType] == nil then typeDefinitions[nodeType] = definition end
                     end
                 end
             else
@@ -186,9 +186,9 @@ function ARNLocationCatalog.initialize()
                 end
                 ARNLocationCatalog.sources[#ARNLocationCatalog.sources + 1] = sourceDefinition
                 ARNLocationCatalog.sourcesById[sourceId] = sourceDefinition
-                if type(moduleConfig.kinds) == "table" then
-                    for kind, definition in pairs(moduleConfig.kinds) do
-                        if kinds[kind] == nil then kinds[kind] = definition end
+                if type(moduleConfig.types) == "table" then
+                    for nodeType, definition in pairs(moduleConfig.types) do
+                        if typeDefinitions[nodeType] == nil then typeDefinitions[nodeType] = definition end
                     end
                 end
                 local attachments = type(registration) == "table" and registration.attachments or nil
@@ -297,12 +297,14 @@ function ARNLocationCatalog.initialize()
         local sx, sy, sz = ARN.components(entry.size or entry.boundingBoxSize)
         local owner = entry.owner ~= nil and tostring(entry.owner) or nil
         if owner == "" then owner = nil end
-        local kind = normalizeKind(entry.kind)
-        local kindConfiguration = type(kinds[kind]) == "table" and kinds[kind] or {}
+        local nodeType = normalizeNodeType(entry.type)
+        local typeConfiguration = type(typeDefinitions[nodeType]) == "table"
+            and typeDefinitions[nodeType] or {}
         local coreSize = normalizeCoreSize(entry.coreSize)
-        local icon = entry.icon or kindConfiguration.icon
+        local icon = entry.icon or typeConfiguration.icon
         local parentTarget = parentId ~= nil and targetsByRuntimeId[parentId] or nil
-        local persistenceSegment = kind .. ":" .. tostring(entry.name or ("Location " .. runtimeId))
+        local persistenceSegment = nodeType .. ":"
+            .. tostring(entry.name or ("Location " .. runtimeId))
         local persistenceKey = parentTarget ~= nil
             and (parentTarget.persistenceKey .. "/" .. persistenceSegment) or persistenceSegment
         local target = {
@@ -313,8 +315,7 @@ function ARNLocationCatalog.initialize()
             name = entry.name or ("Location " .. tostring(runtimeId)),
             catalogId = entry.id,
             sourceId = tonumber(sourceId) or 0,
-            type = entry.type,
-            kind = kind,
+            type = nodeType,
             icon = icon,
             iconDefinition = resolveIcon(icon),
             coreSize = coreSize,
@@ -610,7 +611,7 @@ function ARNLocationCatalog.getNearestSystem(target)
         local candidateId = candidate and (candidate.id or candidate)
         if candidate ~= nil and not seen[candidateId] then
             seen[candidateId] = true
-            if candidate.kind == "system" then return candidate end
+            if candidate.type == "system" then return candidate end
             for _, parentId in ipairs(candidate.parentIds or {}) do
                 local parent = ARNLocationCatalog.getTargetById(parentId)
                 if parent ~= nil then queue[#queue + 1] = parent end
@@ -671,7 +672,7 @@ function ARNLocationCatalog.getCurrentTarget(playerPosition)
     local current = nil
     local currentDistance = nil
     for _, target in ipairs(ARNLocationCatalog.allTargets or {}) do
-        local isGroup = target.type == "group" or target.kind == "location-group"
+        local isGroup = target.type == "location-group"
         local distance = (not isGroup or ARNConfiguration.allowGroupsAsCurrentArea)
             and currentContainmentDistance(target, playerPosition) or nil
         if distance ~= nil then
@@ -699,7 +700,7 @@ end
 local function isCelestial(target)
     local locationType = target and target.type
     return locationType == "space" or locationType == "system"
-        or locationType == "planet" or locationType == "satellite"
+        or locationType == "planet" or locationType == "moon"
         or locationType == "asteroid"
 end
 
@@ -911,7 +912,7 @@ local function getSatelliteIds(systemTarget, playerPosition)
     local planet = getClosestPlanet(systemTarget, playerPosition)
     local ids = {}
     for _, child in ipairs(ARNLocationCatalog.getChildren(planet)) do
-        if not child.excluded and child.type == "satellite" then ids[child.id] = true end
+        if not child.excluded and child.type == "moon" then ids[child.id] = true end
     end
     return ids
 end
@@ -970,18 +971,18 @@ function ARNLocationCatalog.getVisibleTargets(playerPosition)
         local isSystemPlanet = false
         for _, parentId in ipairs(target.parentIds or {}) do
             local parent = ARNLocationCatalog.getTargetById(parentId)
-            if target.kind == "planet" and parent ~= nil and activeSystem ~= nil
+            if target.type == "planet" and parent ~= nil and activeSystem ~= nil
                 and parent.id == activeSystem.id then
                 isSystemPlanet = true
             end
         end
         local currentAllowsParent = current ~= nil
-            and current.kind ~= "planet" and current.kind ~= "system"
+            and current.type ~= "planet" and current.type ~= "system"
         local isParent = currentAllowsParent and parentIds[target.id] == true
         local isAreaPlace = areaPlaceIds[target.id] == true
         local isSatellite = satelliteIds[target.id] == true
-        local isHighLevelHiddenByDefault = target.kind == "known-space"
-            or target.kind == "system"
+        local isHighLevelHiddenByDefault = target.type == "known-space"
+            or target.type == "system"
         local isBaselineVisible = false
         if isSystemPlanet then
             isBaselineVisible = ARNLocationCatalog.getShowSystemPlanets()

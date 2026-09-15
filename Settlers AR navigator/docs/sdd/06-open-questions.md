@@ -5,7 +5,7 @@
 - When a location is reachable through multiple collections, which parent path controls its parent/child visibility at a given moment?
 - Which practical distance and boundary rules switch AR visibility from a parent area to its children?
 - How does the player temporarily request more AR objects, and how does ARN return to its normal 5–20-object budget?
-- Which additional icons and `kind` mappings are needed beyond the initial planet and moon set?
+- Which additional icons and `type` mappings are needed beyond the initial planet and moon set?
 - Should ARN provide a player command or UI for adding a custom saved location to the catalog?
 - Should world-to-planet conversion be exposed as a public ARN helper now, or only used when a future feature requires it?
 - When persistent diagnostics are introduced, should warnings be written to a Databank, a downloadable catalog file, or both?

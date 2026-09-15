@@ -22,7 +22,7 @@ function ARN.chatPrefix()
 end
 
 function ARN.startupCaption()
-    return ARN.applicationCaption() .. string.char(32, 118, 48, 46, 49, 48, 46, 49, 54, 51)
+    return ARN.applicationCaption() .. string.char(32, 118, 48, 46, 49, 48, 46, 49, 54, 52)
 end
 
 function ARN.reportWarning(code, message)

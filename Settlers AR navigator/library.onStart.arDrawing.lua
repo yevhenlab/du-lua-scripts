@@ -858,7 +858,7 @@ function ARNArDrawing.drawConfiguredLocation(target, pinned)
         longestLine = math.max(longestLine, #line)
     end
     local details = {}
-    details[#details + 1] = "Type: " .. ARN.escapeHtml(displayTarget.kind or "location")
+    details[#details + 1] = "Type: " .. ARN.escapeHtml(displayTarget.type or "location")
     if displayTarget.areaRadius ~= nil and displayTarget.areaRadius > 0 then
         details[#details + 1] = "Radius: " .. ARN.escapeHtml(ARN.formatDistance(displayTarget.areaRadius))
     end
@@ -898,8 +898,8 @@ function ARNArDrawing.drawConfiguredLocation(target, pinned)
         end
     end
     table.sort(children, function(first, second)
-        local firstMoon = first.child.type == "satellite" or first.child.kind == "moon"
-        local secondMoon = second.child.type == "satellite" or second.child.kind == "moon"
+        local firstMoon = first.child.type == "moon"
+        local secondMoon = second.child.type == "moon"
         if firstMoon ~= secondMoon then return firstMoon end
         if childSortState.name ~= 0 then
             local firstName = string.lower(tostring(first.child.name or ""))

@@ -252,7 +252,7 @@ local function drawVisibleMarkers(entries, nearbyInfo, currentTarget)
         end
     end
     for _, entry in ipairs(planetoidEntries) do
-        if entry.target.type == "satellite" then
+        if entry.target.type == "moon" then
             local parent = ARNLocationCatalog.getPrimaryParent(entry.target)
             local group = parent ~= nil and planetoidGroupByPlanetId[parent.id] or nil
             if group == nil and parent ~= nil then

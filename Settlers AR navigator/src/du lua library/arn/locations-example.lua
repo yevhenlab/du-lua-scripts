@@ -19,10 +19,9 @@
 --
 -- name              Required player-facing name.
 -- id                Optional DU body, construct, or place ID. Groups may omit it.
--- type              Structural type: space, system, planet, satellite, asteroid,
---                   constructStatic, constructSpace, zone, or group.
--- kind              Semantic category used for default icons and styling, such as
---                   market, base, parking, outpost, station, mission, or location.
+-- type              Required node classification used for behavior and its default
+--                   icon, such as system, planet, moon, asteroid, location-group,
+--                   construct, zone, market, base, parking, outpost, or station.
 -- icon              Optional explicit icon key from arn/icons.lua.
 -- owner             Optional literal owner name. nil or "" hides the owner line.
 -- coordinate        Optional ::pos string or { x, y, z } world-position table.
@@ -45,8 +44,8 @@
 -- boundingBoxSize is accepted as an alias for size. Prefer the canonical names above.
 
 return {
-    -- A custom module may introduce semantic kinds. Existing definitions are not replaced.
-    kinds = {
+    -- A custom module may introduce location types. Existing definitions are not replaced.
+    types = {
         ["example-place"] = {
             icon = "icon-market"
         }
@@ -57,8 +56,7 @@ return {
         {
             name = "Example visible location",
             id = 900000001,
-            type = "zone",
-            kind = "example-place",
+            type = "example-place",
             icon = "icon-market",
             owner = "Example owner",
             coordinate = "::pos{0,2,29.0380,95.1534,374.0935}",
@@ -86,8 +84,7 @@ return {
                 {
                     name = "Example hidden child",
                     id = 900000002,
-                    type = "constructStatic",
-                    kind = "parking",
+                    type = "parking",
                     coordinate = "::pos{0,2,29.0380,95.1534,374.0935}",
                     owner = nil,
                     excluded = false
@@ -104,8 +101,7 @@ return {
         {
             name = "Example hidden satellite",
             id = 900000003,
-            type = "satellite",
-            kind = "moon",
+            type = "moon",
             coordinate = "::pos{0,0,200000,-8,-126303}",
             atlasBody = {
                 systemId = 0,

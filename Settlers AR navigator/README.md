@@ -16,7 +16,7 @@ Each visible place is shown as a dot with:
 .\install-local.ps1
 ```
 
-2. Edit `<DU Root>/Game/data/lua/arn/locations.lua` for standard locations or `locations-settlers.lua` for Settlers destinations; register custom attachment mappings in `locations-registry.lua`. See `locations-example.lua` for a commented custom-catalog template and every supported node field. Each real place may retain its DU `id` and uses structural `type`, semantic `kind`, `name`, `label`, `coordinate`, literal `owner`, `atlasBody`, and `areaRadius`; planet and satellite nodes also define `radius` and `atmosphereRadius` for the limited fallback atlas. Optional `icon` overrides the kind icon; `excluded = true` skips that node and its complete descendant branch during catalog loading.
+2. Edit `<DU Root>/Game/data/lua/arn/locations.lua` for standard locations or `locations-settlers.lua` for Settlers destinations; register custom attachment mappings in `locations-registry.lua`. See `locations-example.lua` for a commented custom-catalog template and every supported node field. Each real place may retain its DU `id` and uses a single semantic `type`, `name`, `label`, `coordinate`, literal `owner`, `atlasBody`, and `areaRadius`; planet and satellite nodes also define `radius` and `atmosphereRadius` for the limited fallback atlas. Optional `icon` overrides the type icon; `excluded = true` skips that node and its complete descendant branch during catalog loading.
 3. Build and paste the generated Programming Board configuration:
 
 ```powershell

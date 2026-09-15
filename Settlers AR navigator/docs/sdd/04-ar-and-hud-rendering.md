@@ -32,7 +32,7 @@ Three thick marker-coloured rings continuously pulse around the guide endpoint. 
 
 ## Distance scaling
 
-When multiple visible objects share the same location kind and hierarchy level, their AR markers and text scale with player distance: farther objects are smaller and closer objects are larger. This reinforces depth and reduces label overlap without making a distant high-level area appear less important than a nearby lower-level area.
+When multiple visible objects share the same location type and hierarchy level, their AR markers and text scale with player distance: farther objects are smaller and closer objects are larger. This reinforces depth and reduces label overlap without making a distant high-level area appear less important than a nearby lower-level area.
 
 The scale curve and its minimum/maximum readable sizes require in-game visual tuning.
 
