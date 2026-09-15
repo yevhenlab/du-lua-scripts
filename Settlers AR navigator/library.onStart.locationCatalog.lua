@@ -168,6 +168,35 @@ function ARNLocationCatalog.initialize()
     end
 
     local registeredChildrenByParentCatalogId = {}
+    local disabledCatalogIds = {}
+    local disabledCatalogPaths = {}
+
+    local function normalizeDisabledPath(value)
+        if value == nil then return nil end
+        local normalized = tostring(value):match("^%s*(.-)%s*$")
+        if normalized == "" then return nil end
+        return string.lower(normalized:gsub("%s*>%s*", ">"))
+    end
+
+    local function collectDisabledValues(values, destination, normalizer)
+        if type(values) ~= "table" then return end
+        for key, value in pairs(values) do
+            local candidate = value == true and key or value
+            local normalized = normalizer(candidate)
+            if normalized ~= nil then destination[normalized] = true end
+        end
+    end
+
+    local function collectDisabledRules(moduleConfig)
+        local disabled = type(moduleConfig) == "table" and moduleConfig.disabled or nil
+        if type(disabled) ~= "table" then return end
+        collectDisabledValues(disabled.ids, disabledCatalogIds, function(value)
+            local numericId = tonumber(value)
+            return numericId ~= nil and tostring(numericId) or nil
+        end)
+        collectDisabledValues(disabled.paths, disabledCatalogPaths, normalizeDisabledPath)
+    end
+
     local registryConfig, registryError = loadOptionalModule("arn/locations-registry")
     if registryConfig ~= nil then
         local registrations = registryConfig.modules or registryConfig
@@ -191,6 +220,7 @@ function ARNLocationCatalog.initialize()
                         if typeDefinitions[nodeType] == nil then typeDefinitions[nodeType] = definition end
                     end
                 end
+                collectDisabledRules(moduleConfig)
                 local attachments = type(registration) == "table" and registration.attachments or nil
                 for _, attachment in ipairs(attachments or {}) do
                     local parentId = attachment.parentId
@@ -268,8 +298,18 @@ function ARNLocationCatalog.initialize()
         end
     end
 
-    local function loadEntry(entry, parentId, depth, parentColor, sourceId)
+    local function loadEntry(entry, parentId, depth, parentColor, sourceId, parentCatalogPath)
         if type(entry) ~= "table" or entry.excluded == true then return nil end
+        local entryName = tostring(entry.name or "")
+        local catalogPath = parentCatalogPath ~= nil and parentCatalogPath .. ">" .. entryName
+            or entryName
+        local catalogId = entry.id ~= nil and tostring(tonumber(entry.id) or entry.id) or nil
+        local normalizedCatalogPath = normalizeDisabledPath(catalogPath)
+        if (catalogId ~= nil and disabledCatalogIds[catalogId] == true)
+            or (normalizedCatalogPath ~= nil
+                and disabledCatalogPaths[normalizedCatalogPath] == true) then
+            return nil
+        end
         local existingId = ARNLocationCatalog.runtimeIds[entry]
         if existingId ~= nil then
             local existingTarget = targetsByRuntimeId[existingId]
@@ -280,7 +320,8 @@ function ARNLocationCatalog.initialize()
             if becameShallower then
                 existingTarget.depth = depth
                 visitChildren(entry, existingTarget.sourceId, function(child, childSourceId)
-                    loadEntry(child, existingId, depth + 1, existingTarget.color, childSourceId)
+                    loadEntry(child, existingId, depth + 1, existingTarget.color, childSourceId,
+                        existingTarget.catalogPath)
                 end)
             end
             return existingId
@@ -309,6 +350,7 @@ function ARNLocationCatalog.initialize()
             and (parentTarget.persistenceKey .. "/" .. persistenceSegment) or persistenceSegment
         local target = {
             id = runtimeId,
+            catalogPath = catalogPath,
             persistenceKey = persistenceKey,
             depth = depth,
             parentIds = parentId ~= nil and { parentId } or {},
@@ -344,12 +386,12 @@ function ARNLocationCatalog.initialize()
         end
 
         visitChildren(entry, target.sourceId, function(child, childSourceId)
-            loadEntry(child, runtimeId, depth + 1, resolvedColor, childSourceId)
+            loadEntry(child, runtimeId, depth + 1, resolvedColor, childSourceId, catalogPath)
         end)
         return runtimeId
     end
 
-    for _, entry in ipairs(locations) do loadEntry(entry, nil, 1, nil, 0) end
+    for _, entry in ipairs(locations) do loadEntry(entry, nil, 1, nil, 0, nil) end
 
     local childrenByParentId = {}
     local function rebuildChildrenIndex()

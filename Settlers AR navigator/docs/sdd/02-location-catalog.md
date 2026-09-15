@@ -71,6 +71,8 @@ An entry may contain:
 
 A `locations-registry.lua` registration contains `module`, plus an `attachments` list. Each attachment contains the standard node's `parentId` and the custom module's `sourceKey`.
 
+A registered custom module may declare `disabled = { ids = {...}, paths = {...} }`. ARN combines these rules additively across every successfully loaded module before building the runtime catalog. IDs are preferred; normalized, case-insensitive full paths support ID-less nodes. A match skips the node and its complete descendant branch before indexing, bounds calculation, rendering, or detailed-view construction. Duplicate rules are harmless, registry order does not affect the result, and one module cannot re-enable a node disabled by another.
+
 The catalog's optional `id` preserves the source DU identifier but is not currently used for rendering or persistence. While loading, ARN separately assigns every distinct Lua location table a unique internal runtime ID for maps, AR selection, hover state, diagnostics, and deduplication. Group nodes normally omit `id`; duplicate source IDs do not invalidate entries.
 
 Imported Aphelia hierarchy records use `type = "construct"` unless a more specific place type is assigned; the source `constructKind` distinction is not retained in runtime location nodes. Their numeric construct identifier is stored as `id`, their resolved coordinate is stored as `coordinate`, and their literal owner is `owner = "Aphelia"`. A construct assigned beneath a planet or satellite uses its `planetCoordinate`. The JSON `relationship` value is not copied, but the nesting of each `children` array is preserved recursively.

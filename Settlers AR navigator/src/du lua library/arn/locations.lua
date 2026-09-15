@@ -2159,6 +2159,149 @@ local heliosPlanets = {{
         }}
     }}
 }, {
+    id = 5,
+    name = "Feli",
+    label = "Planet",
+    type = "planet",
+    coordinate = "::pos{0,0,-43468928,22631072,-48868928}",
+    owner = nil,
+    atlasBody = {
+        systemId = 0,
+        bodyId = 5
+    },
+    radius = 41800.00,
+    atmosphereRadius = 103740.00,
+    areaRadius = 41800.00,
+    children = {{
+        id = 50,
+        name = "Feli Moon 1",
+        label = "Moon of Feli",
+        type = "satellite",
+        coordinate = "::pos{0,0,-43886457.78,22277418.70,-48846002}",
+        owner = nil,
+        atlasBody = {
+            systemId = 0,
+            bodyId = 50
+        },
+        radius = 14000.00,
+        atmosphereRadius = 14000.00,
+        areaRadius = 14000.00
+    }}
+}, {
+    id = 120,
+    name = "Ion",
+    label = "Planet",
+    type = "planet",
+    coordinate = "::pos{0,0,2931072.7,-98968928,-868926.02}",
+    owner = nil,
+    atlasBody = {
+        systemId = 0,
+        bodyId = 120
+    },
+    radius = 44950.00,
+    atmosphereRadius = 50450.00,
+    areaRadius = 44950.00,
+    children = {{
+        id = 121,
+        name = "Ion Moon 1",
+        label = "Moon of Ion",
+        type = "satellite",
+        coordinate = "::pos{0,0,2489300.8,-99117363,-1117198.8}",
+        owner = nil,
+        atlasBody = {
+            systemId = 0,
+            bodyId = 121
+        },
+        radius = 11000.00,
+        atmosphereRadius = 11000.00,
+        areaRadius = 11000.00
+    }, {
+        id = 122,
+        name = "Ion Moon 2",
+        label = "Moon of Ion",
+        type = "satellite",
+        coordinate = "::pos{0,0,3011808.5,-99258626,-1362096.7}",
+        owner = nil,
+        atlasBody = {
+            systemId = 0,
+            bodyId = 122
+        },
+        radius = 15000.00,
+        atmosphereRadius = 15000.00,
+        areaRadius = 15000.00
+    }}
+}, {
+    id = 100,
+    name = "Lacobus",
+    label = "Planet",
+    type = "planet",
+    coordinate = "::pos{0,0,98931072,-13468928,-868925.99}",
+    owner = nil,
+    atlasBody = {
+        systemId = 0,
+        bodyId = 100
+    },
+    radius = 55650.00,
+    atmosphereRadius = 70580.00,
+    areaRadius = 55650.00,
+    children = {{
+        id = 101,
+        name = "Lacobus Moon 3",
+        label = "Moon of Lacobus",
+        type = "satellite",
+        coordinate = "::pos{0,0,98921672.17,-13934537.1,-631205.53}",
+        owner = nil,
+        atlasBody = {
+            systemId = 0,
+            bodyId = 101
+        },
+        radius = 15000.00,
+        atmosphereRadius = 15000.00,
+        areaRadius = 15000.00
+    }, {
+        id = 102,
+        name = "Lacobus Moon 1",
+        label = "Moon of Lacobus",
+        type = "satellite",
+        coordinate = "::pos{0,0,99213736,-13751094,-893388.4}",
+        owner = nil,
+        atlasBody = {
+            systemId = 0,
+            bodyId = 102
+        },
+        radius = 18000.00,
+        atmosphereRadius = 18000.00,
+        areaRadius = 18000.00
+    }, {
+        id = 103,
+        name = "Lacobus Moon 2",
+        label = "Moon of Lacobus",
+        type = "satellite",
+        coordinate = "::pos{0,0,99266436,-13612831,-1042957.4}",
+        owner = nil,
+        atlasBody = {
+            systemId = 0,
+            bodyId = 103
+        },
+        radius = 14000.00,
+        atmosphereRadius = 14000.00,
+        areaRadius = 14000.00
+    }}
+}, {
+    id = 110,
+    name = "Symeon",
+    label = "Planet",
+    type = "planet",
+    coordinate = "::pos{0,0,14231072,-85568929,-868928.3}",
+    owner = nil,
+    atlasBody = {
+        systemId = 0,
+        bodyId = 110
+    },
+    radius = 49050.00,
+    atmosphereRadius = 55200.00,
+    areaRadius = 49050.00
+}, {
     id = 9,
     name = "Jago",
     label = "Planet",

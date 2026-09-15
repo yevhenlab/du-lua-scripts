@@ -1,7 +1,7 @@
 -- Example custom ARN location catalog.
 --
 -- This module is registered by locations-registry.lua. Its Alioth example branch is
--- loaded beneath Institutes. Its parent example is visible; its excluded child is skipped.
+-- loaded beneath Institutes. It demonstrates direct exclusion and module-level disabling.
 -- A named list is attached with a registration like this:
 --
 -- {
@@ -40,6 +40,11 @@
 --                   counted, rendered, or listed in detailed views.
 -- children          Optional inline list of child nodes.
 --
+-- A registered module may also return `disabled = { ids = {...}, paths = {...} }`.
+-- Rules from every successfully loaded module are combined. Prefer IDs; use a full
+-- `Parent > Child > Node` path for an ID-less node. Disabling a node skips its entire
+-- descendant branch, so descendants do not need their own entries.
+--
 -- Coordinate aliases accepted by the loader are coordinates, worldPosition, and pos.
 -- boundingBoxSize is accepted as an alias for size. Prefer the canonical names above.
 
@@ -48,6 +53,17 @@ return {
     types = {
         ["example-place"] = {
             icon = "icon-market"
+        }
+    },
+
+    -- Only the parent ID is listed. Its child below is disabled transitively.
+    -- Additional registered modules may contribute more IDs or full paths.
+    disabled = {
+        ids = {
+            900000004
+        },
+        paths = {
+            -- "Known Space > Helios System > Alioth > An ID-less group"
         }
     },
 
@@ -88,6 +104,20 @@ return {
                     coordinate = "::pos{0,2,29.0380,95.1534,374.0935}",
                     owner = nil,
                     excluded = false
+                }
+            }
+        },
+        {
+            name = "Example disabled location",
+            id = 900000004,
+            type = "example-place",
+            coordinate = "::pos{0,2,29.0400,95.1550,374}",
+            children = {
+                {
+                    name = "Example transitively disabled child",
+                    id = 900000005,
+                    type = "parking",
+                    coordinate = "::pos{0,2,29.0401,95.1551,374}"
                 }
             }
         }

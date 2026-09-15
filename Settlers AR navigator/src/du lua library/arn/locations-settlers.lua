@@ -1,6 +1,21 @@
 -- ARN location data maintained specifically for Settlers server destinations.
 -- Named lists in this module are attached to standard parents by locations-registry.lua.
 return {
+    helios = {{
+        id = 500,
+        name = "Aresion",
+        label = "Planet",
+        type = "planet",
+        coordinate = "::pos{0,0,-39760027.2679,-30291219.2937,-2213579.9143}",
+        owner = nil,
+        atlasBody = {
+            systemId = 0,
+            bodyId = 500
+        },
+        radius = 41800.00,
+        atmosphereRadius = 103740.00,
+        areaRadius = 41800.00
+    }},
     havenOutposts = {{
         name = "Outposts",
         label = "Settlers outposts",

@@ -5,6 +5,7 @@ return {
             label = "Settlers",
             module = "arn/locations-settlers",
             attachments = {
+                { parentId = 0, sourceKey = "helios" },
                 { parentId = 2, sourceKey = "alioth" },
                 { parentId = 27, sourceKey = "havenOutposts" },
                 { parentId = 100210, sourceKey = "institutes" }
