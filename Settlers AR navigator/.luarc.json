@@ -1,7 +1,0 @@
-{
-    "Lua.format.defaultConfig": {
-        "keep_one_line_table": false,
-        "break_all_list_items": "lines",
-        "table_separator_style": "comma"
-    }
-}

@@ -1,6 +1,35 @@
 -- ARN location data maintained specifically for Settlers server destinations.
 -- Named lists in this module are attached to standard parents by locations-registry.lua.
 return {
+    disabled = {
+        ids = {
+            180200 --[[Alioth Exchange]],
+            100140 --[[District 4]],
+        },
+        paths = {
+            -- "Known Space > Helios System > Alioth > Alioth Exchange"
+            "Known Space > Helios System > Alioth > District 01",
+            "Known Space > Helios System > Alioth > District 02",
+            "Known Space > Helios System > Alioth > District 03",
+            --"Known Space > Helios System > Alioth > District 04",
+            "Known Space > Helios System > Alioth > District 05",
+            "Known Space > Helios System > Alioth > District 06",
+            "Known Space > Helios System > Alioth > District 07",
+            "Known Space > Helios System > Alioth > District 08",
+            "Known Space > Helios System > Alioth > District 09",
+            "Known Space > Helios System > Alioth > District 10",
+            "Known Space > Helios System > Alioth > Market Alioth District 01",
+            "Known Space > Helios System > Alioth > Market Alioth District 02",
+            "Known Space > Helios System > Alioth > Market Alioth District 03",
+            "Known Space > Helios System > Alioth > Market Alioth District 04",
+            "Known Space > Helios System > Alioth > Market Alioth District 05",
+            "Known Space > Helios System > Alioth > Market Alioth District 06",
+            "Known Space > Helios System > Alioth > Market Alioth District 07",
+            "Known Space > Helios System > Alioth > Market Alioth District 08",
+            "Known Space > Helios System > Alioth > Market Alioth District 09",
+            "Known Space > Helios System > Alioth > Market Alioth District 10"
+        }
+    },
     helios = {{
         id = 500,
         name = "Aresion",
