@@ -1,5 +1,5 @@
 -- ARN location data maintained specifically for Settlers server destinations.
--- Named lists in this module are attached to standard parents by locations-registry.lua.
+-- Each root in nodes declares the ID of its parent in the combined catalog.
 return {
     disabled = {
         ids = {
@@ -30,206 +30,218 @@ return {
             "Known Space > Helios System > Alioth > Market Alioth District 10"
         }
     },
-    helios = {{
-        id = 500,
-        name = "Aresion",
-        label = "Planet",
-        type = "planet",
-        coordinate = "::pos{0,0,-39760027.2679,-30291219.2937,-2213579.9143}",
-        owner = nil,
-        atlasBody = {
-            systemId = 0,
-            bodyId = 500
+    nodes = {
+        aresion = {
+            parentId = 0,
+            id = 500,
+            name = "Aresion",
+            label = "Planet",
+            type = "planet",
+            coordinate = "::pos{0,0,-39760027.2679,-30291219.2937,-2213579.9143}",
+            owner = nil,
+            atlasBody = {
+                systemId = 0,
+                bodyId = 500
+            },
+            radius = 41800.00,
+            atmosphereRadius = 103740.00,
+            areaRadius = 41800.00
         },
-        radius = 41800.00,
-        atmosphereRadius = 103740.00,
-        areaRadius = 41800.00
-    }},
-    havenOutposts = {{
-        name = "Outposts",
-        label = "Settlers outposts",
-        type = "location-group",
-        children = {{
-            name = "Loaded Outpost",
-            label = "Settlers outpost",
-            type = "outpost",
-            coordinate = "::pos{0,27,37.1186,127.1793,84.0775}",
-            owner = nil
-        }, {
-            name = "Outpost Pilot",
-            label = "Settlers outpost",
-            type = "outpost",
-            coordinate = "::pos{0,27,-38.7040,104.0518,14.5254}",
-            owner = nil
-        }, {
-            name = "Outpost Platform",
-            label = "Settlers outpost",
-            type = "outpost",
-            coordinate = "::pos{0,27,-35.9356,179.2421,33.3149}",
-            owner = nil
-        }, {
-            name = "Outpost Station",
-            label = "Settlers outpost",
-            type = "outpost",
-            coordinate = "::pos{0,27,-38.0879,-89.9850,18.9140}",
-            owner = nil
-        }, {
-            name = "Outpost Train",
-            label = "Settlers outpost",
-            type = "outpost",
-            coordinate = "::pos{0,27,38.5003,36.6209,53.2553}",
-            owner = nil
-        }, {
-            name = "Outpost Tri",
-            label = "Settlers outpost",
-            type = "outpost",
-            coordinate = "::pos{0,27,-41.9946,-24.8714,33.3484}",
-            owner = nil
-        }, {
-            name = "Outpost Valiant",
-            label = "Settlers outpost",
-            type = "outpost",
-            coordinate = "::pos{0,27,32.9666,-47.1015,4.2835}",
-            owner = nil
-        }, {
-            name = "Outpost Villa",
-            label = "Settlers outpost",
-            type = "outpost",
-            coordinate = "::pos{0,27,-42.8144,45.6020,20.2540}",
-            owner = nil
-        }, {
-            name = "Outpost Wave",
-            label = "Settlers outpost",
-            type = "outpost",
-            coordinate = "::pos{0,27,24.8495,75.8674,6.3104}",
-            owner = nil
-        }, {
-            name = "YOS Legacy Outpost",
-            label = "Settlers outpost",
-            type = "outpost",
-            coordinate = "::pos{0,27,34.8766,-142.4270,26.6025}",
-            owner = nil
-        }}
-    }},
-    alioth = {{
-        name = "1K - Design",
-        label = "Settlers player base",
-        type = "base",
-        coordinate = "::pos{0,2,28.1481,92.9856,127.2590}",
-        id = 1040035,
-        coreSize = "L",
-        owner = "1K"
-    }, {
-        name = "Alioth Market 0",
-        label = "Market",
-        type = "market",
-        coordinate = "::pos{0,2,30.3401,95.8262,224.1425}",
-        id = 1001108,
-        coreSize = "XL",
-        owner = "Aphelia",
-        children = {{
-            name = "Alioth 0 Planet Shuttles",
-            label = "Market 0 planet shuttles",
-            type = "shuttle",
-            coordinate = "::pos{0,2,30.2538,95.8300,240.2862}",
-            id = 1008131,
-            coreSize = "L",
-            owner = "Aphelia"
-        }, {
-            name = "Alioth Market 0 Park 1",
-            label = "Market 0 parking",
-            type = "parking",
-            coordinate = "::pos{0,2,30.3361,95.7051,213.3531}",
-            id = 1001159,
-            coreSize = "XL",
-            owner = "Aphelia"
-        }, {
-            name = "Alioth Market 0 Park 2",
-            label = "Market 0 parking",
-            type = "parking",
-            coordinate = "::pos{0,2,30.4460,95.8215,214.3583}",
-            id = 1001160,
-            coreSize = "XL",
-            owner = "Aphelia"
-        }, {
-            name = "Alioth Market 0 Park 3",
-            label = "Market 0 parking",
-            type = "parking",
-            coordinate = "::pos{0,2,30.3442,95.9474,213.3531}",
-            id = 1001363,
-            coreSize = "XL",
-            owner = "Aphelia"
-        }}
-    }, {
-        name = "Neon Abyss Parking",
-        label = "Settlers parking",
-        type = "parking",
-        coordinate = "::pos{0,2,29.8821,94.5593,446.0808}",
-        id = 1028126,
-        coreSize = "XL",
-        owner = "Aphelia"
-    }, {
-        name = "Settlers Honeycomb",
-        label = "Settlers Institute location",
-        type = "location",
-        coordinate = "::pos{0,2,29.4206,94.7910,265.5872}",
-        id = 1052866,
-        coreSize = "L",
-        owner = nil,
-        children = {{
-            name = "Parking spots",
-            label = "Settlers Honeycomb parking",
+        havenOutposts = {
+            parentId = 27,
+            name = "Outposts",
+            label = "Settlers outposts",
             type = "location-group",
             children = {{
-                name = "Parking Spot 1",
-                label = "Landing Pad Honeycomb Library",
-                type = "parking",
-                coordinate = "::pos{0,2,29.3815,94.8736,301.6822}",
-                id = 1052874,
+                name = "Loaded Outpost",
+                label = "Settlers outpost",
+                type = "outpost",
+                coordinate = "::pos{0,27,37.1186,127.1793,84.0775}",
+                owner = nil
+            }, {
+                name = "Outpost Pilot",
+                label = "Settlers outpost",
+                type = "outpost",
+                coordinate = "::pos{0,27,-38.7040,104.0518,14.5254}",
+                owner = nil
+            }, {
+                name = "Outpost Platform",
+                label = "Settlers outpost",
+                type = "outpost",
+                coordinate = "::pos{0,27,-35.9356,179.2421,33.3149}",
+                owner = nil
+            }, {
+                name = "Outpost Station",
+                label = "Settlers outpost",
+                type = "outpost",
+                coordinate = "::pos{0,27,-38.0879,-89.9850,18.9140}",
+                owner = nil
+            }, {
+                name = "Outpost Train",
+                label = "Settlers outpost",
+                type = "outpost",
+                coordinate = "::pos{0,27,38.5003,36.6209,53.2553}",
+                owner = nil
+            }, {
+                name = "Outpost Tri",
+                label = "Settlers outpost",
+                type = "outpost",
+                coordinate = "::pos{0,27,-41.9946,-24.8714,33.3484}",
+                owner = nil
+            }, {
+                name = "Outpost Valiant",
+                label = "Settlers outpost",
+                type = "outpost",
+                coordinate = "::pos{0,27,32.9666,-47.1015,4.2835}",
+                owner = nil
+            }, {
+                name = "Outpost Villa",
+                label = "Settlers outpost",
+                type = "outpost",
+                coordinate = "::pos{0,27,-42.8144,45.6020,20.2540}",
+                owner = nil
+            }, {
+                name = "Outpost Wave",
+                label = "Settlers outpost",
+                type = "outpost",
+                coordinate = "::pos{0,27,24.8495,75.8674,6.3104}",
+                owner = nil
+            }, {
+                name = "YOS Legacy Outpost",
+                label = "Settlers outpost",
+                type = "outpost",
+                coordinate = "::pos{0,27,34.8766,-142.4270,26.6025}",
+                owner = nil
+            }}
+        },
+        oneKDesign = {
+            parentId = 2,
+            name = "1K - Design",
+            label = "Settlers player base",
+            type = "base",
+            coordinate = "::pos{0,2,28.1481,92.9856,127.2590}",
+            id = 1040035,
+            coreSize = "L",
+            owner = "1K"
+        },
+        aliothMarket0 = {
+            parentId = 2,
+            name = "Alioth Market 0",
+            label = "Market",
+            type = "market",
+            coordinate = "::pos{0,2,30.3401,95.8262,224.1425}",
+            id = 1001108,
+            coreSize = "XL",
+            owner = "Aphelia",
+            children = {{
+                name = "Alioth 0 Planet Shuttles",
+                label = "Market 0 planet shuttles",
+                type = "shuttle",
+                coordinate = "::pos{0,2,30.2538,95.8300,240.2862}",
+                id = 1008131,
                 coreSize = "L",
                 owner = "Aphelia"
             }, {
-                name = "Parking Spot 2",
-                label = "Landing Pad Honeycomb Library",
+                name = "Alioth Market 0 Park 1",
+                label = "Market 0 parking",
                 type = "parking",
-                coordinate = "::pos{0,2,29.3260,94.8924,302.0701}",
-                id = 1052873,
-                coreSize = "L",
+                coordinate = "::pos{0,2,30.3361,95.7051,213.3531}",
+                id = 1001159,
+                coreSize = "XL",
                 owner = "Aphelia"
             }, {
-                name = "Parking Spot 3",
-                label = "Landing Pad Honeycomb Library",
+                name = "Alioth Market 0 Park 2",
+                label = "Market 0 parking",
                 type = "parking",
-                coordinate = "::pos{0,2,29.3095,94.8287,301.9837}",
-                id = 1052871,
-                coreSize = "L",
+                coordinate = "::pos{0,2,30.4460,95.8215,214.3583}",
+                id = 1001160,
+                coreSize = "XL",
                 owner = "Aphelia"
             }, {
-                name = "Parking Spot 4",
-                label = "Landing Pad Honeycomb Library",
+                name = "Alioth Market 0 Park 3",
+                label = "Market 0 parking",
                 type = "parking",
-                coordinate = "::pos{0,2,29.2931,94.7651,302.0265}",
-                id = 1052872,
-                coreSize = "L",
-                owner = "Aphelia"
-            }, {
-                name = "Parking Spot 5",
-                label = "Landing Pad Honeycomb Library",
-                type = "parking",
-                coordinate = "::pos{0,2,29.3486,94.7461,301.6387}",
-                id = 1052876,
-                coreSize = "L",
+                coordinate = "::pos{0,2,30.3442,95.9474,213.3531}",
+                id = 1001363,
+                coreSize = "XL",
                 owner = "Aphelia"
             }}
-        }}
-    }},
-    institutes = {{
-        name = "Hadron Quantum Teleporter",
-        label = "Settlers Institute location",
-        type = "teleporter",
-        coordinate = "::pos{0,2,29.0677,95.2200,295.6887}",
-        id = 1038443,
-        coreSize = "S",
-        owner = nil
-    }}
+        },
+        neonAbyssParking = {
+            parentId = 2,
+            name = "Neon Abyss Parking",
+            label = "Settlers parking",
+            type = "parking",
+            coordinate = "::pos{0,2,29.8821,94.5593,446.0808}",
+            id = 1028126,
+            coreSize = "XL",
+            owner = "Aphelia"
+        },
+        settlersHoneycomb = {
+            parentId = 2,
+            name = "Settlers Honeycomb",
+            label = "Settlers Institute location",
+            type = "location",
+            coordinate = "::pos{0,2,29.4206,94.7910,265.5872}",
+            id = 1052866,
+            coreSize = "L",
+            owner = nil,
+            children = {{
+                name = "Parking spots",
+                label = "Settlers Honeycomb parking",
+                type = "location-group",
+                children = {{
+                    name = "Parking Spot 1",
+                    label = "Landing Pad Honeycomb Library",
+                    type = "parking",
+                    coordinate = "::pos{0,2,29.3815,94.8736,301.6822}",
+                    id = 1052874,
+                    coreSize = "L",
+                    owner = "Aphelia"
+                }, {
+                    name = "Parking Spot 2",
+                    label = "Landing Pad Honeycomb Library",
+                    type = "parking",
+                    coordinate = "::pos{0,2,29.3260,94.8924,302.0701}",
+                    id = 1052873,
+                    coreSize = "L",
+                    owner = "Aphelia"
+                }, {
+                    name = "Parking Spot 3",
+                    label = "Landing Pad Honeycomb Library",
+                    type = "parking",
+                    coordinate = "::pos{0,2,29.3095,94.8287,301.9837}",
+                    id = 1052871,
+                    coreSize = "L",
+                    owner = "Aphelia"
+                }, {
+                    name = "Parking Spot 4",
+                    label = "Landing Pad Honeycomb Library",
+                    type = "parking",
+                    coordinate = "::pos{0,2,29.2931,94.7651,302.0265}",
+                    id = 1052872,
+                    coreSize = "L",
+                    owner = "Aphelia"
+                }, {
+                    name = "Parking Spot 5",
+                    label = "Landing Pad Honeycomb Library",
+                    type = "parking",
+                    coordinate = "::pos{0,2,29.3486,94.7461,301.6387}",
+                    id = 1052876,
+                    coreSize = "L",
+                    owner = "Aphelia"
+                }}
+            }}
+        },
+        hadronQuantumTeleporter = {
+            parentId = 100210,
+            name = "Hadron Quantum Teleporter",
+            label = "Settlers Institute location",
+            type = "teleporter",
+            coordinate = "::pos{0,2,29.0677,95.2200,295.6887}",
+            id = 1038443,
+            coreSize = "S",
+            owner = nil
+        }
+    }
 }

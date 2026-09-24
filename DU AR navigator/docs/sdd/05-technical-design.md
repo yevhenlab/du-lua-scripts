@@ -16,11 +16,15 @@ The internal ID is assigned once to each distinct Lua table encountered during l
 
 ## Catalog module loading
 
-The root catalog is loaded at startup. The location tree then uses hybrid loading: smaller branches are inline tables, while large branches are represented by a module path and loaded with `require(...)` only when needed. This prevents a large universe-wide catalog from being parsed and allocated at board startup.
+The root catalog is loaded at startup. Standard branches use inline child tables; registered custom catalogs are safe-loaded through `require(...)` by `locations-registry.lua`. A missing, invalid, or non-table custom module is reported once and skipped without preventing ARN from starting. Custom module roots declare `parentId` and combine with standard inline children; their source IDs follow registry order.
+
+Custom modules may add branch-disable rules by source ID or normalized full path. The rules are collected before runtime nodes are created, so a disabled node and every descendant consume no runtime indexes, bounds processing, detailed-view rows, or rendering time.
 
 ## Current implementation status
 
-The present code loads explicit high-level planet and satellite data, recursively reads inline `children`, and resolves configured default icons, but does not yet render icons. Deferred child modules, interaction, per-player additions, and hierarchy-aware visibility selection are design requirements that must be implemented in later steps.
+The present implementation loads standard and registered catalog data, derives recursive three-axis bounds, renders type icons and marker labels, selects context-aware nearby places, and draws animated projected bounds ellipses. It provides an Alt+5 controller, detailed marker view, persisted Databank settings and pins, configurable HUD panels, and a safe fallback when optional linked components or custom catalog files are absent.
+
+The renderer has separate selection, AR drawing, controller, and HUD stages. It uses squared-distance preselection for sibling context areas and only tests direct children of those candidates, avoiding a catalog-wide recursive nearby scan on every redraw.
 
 ## Diagnostics
 

@@ -1,19 +1,9 @@
 -- Example custom ARN location catalog.
 --
--- This module is registered by locations-registry.lua. Its Alioth example branch is
--- loaded beneath Institutes. It demonstrates direct exclusion and module-level disabling.
--- A named list is attached with a registration like this:
---
--- {
---     module = "arn/locations-example",
---     attachments = {
---         { parentId = 100210, sourceKey = "institutesExamples" },
---         { parentId = 2, sourceKey = "planetoidExamples" }
---     }
--- }
---
--- parentId is the `id` of an existing standard or registered custom node.
--- sourceKey selects one named list returned below. Registry order does not matter.
+-- The registry lists this module. Each root under nodes supplies the ID of
+-- its parent in the standard or another registered catalog.
+-- The Institutes examples attach beneath Institutes; the satellite attaches beneath Alioth.
+-- Nodes can be excluded directly, and modules can disable catalog branches by ID or path.
 --
 -- Supported node fields:
 --
@@ -39,6 +29,7 @@
 --                   building the runtime catalog. The skipped branch is not indexed,
 --                   counted, rendered, or listed in detailed views.
 -- children          Optional inline list of child nodes.
+-- parentId          Required on module roots; the ID of an existing catalog node.
 --
 -- A registered module may also return `disabled = { ids = {...}, paths = {...} }`.
 -- Rules from every successfully loaded module are combined. Prefer IDs; use a full
@@ -67,9 +58,10 @@ return {
         }
     },
 
-    -- This example list is attached beneath Institutes (standard ID 100210).
-    institutesExamples = {
-        {
+    -- These roots attach beneath Institutes (standard ID 100210).
+    nodes = {
+        exampleVisible = {
+            parentId = 100210,
             name = "Example visible location",
             id = 900000001,
             type = "example-place",
@@ -107,7 +99,8 @@ return {
                 }
             }
         },
-        {
+        exampleDisabled = {
+            parentId = 100210,
             name = "Example disabled location",
             id = 900000004,
             type = "example-place",
@@ -120,15 +113,11 @@ return {
                     coordinate = "::pos{0,2,29.0401,95.1551,374}"
                 }
             }
-        }
-    },
-
-    -- This list is attached beneath Alioth. Change excluded to false to load the
-    -- example as one of Alioth's satellites. Celestial-only fields are separated
-    -- because they should not be
-    -- added to an ordinary construct or zone node.
-    planetoidExamples = {
-        {
+        },
+        -- This root attaches beneath Alioth. Change excluded to false to load it.
+        -- Celestial-only fields do not belong on an ordinary construct or zone.
+        exampleSatellite = {
+            parentId = 2,
             name = "Example hidden satellite",
             id = 900000003,
             type = "satellite",

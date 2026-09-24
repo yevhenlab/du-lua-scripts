@@ -197,6 +197,45 @@ function ARNLocationCatalog.initialize()
         collectDisabledValues(disabled.paths, disabledCatalogPaths, normalizeDisabledPath)
     end
 
+    local catalogEntriesById = {}
+    local indexedEntries = {}
+    local function indexEntry(entry)
+        if type(entry) ~= "table" or indexedEntries[entry] then return end
+        indexedEntries[entry] = true
+        if entry.id ~= nil then
+            local key = tostring(tonumber(entry.id) or entry.id)
+            local existing = catalogEntriesById[key]
+            if existing == nil then catalogEntriesById[key] = entry
+            elseif existing ~= entry then catalogEntriesById[key] = false end
+        end
+        for _, child in ipairs(type(entry.children) == "table" and entry.children or {}) do indexEntry(child) end
+    end
+    for _, entry in ipairs(locations) do indexEntry(entry) end
+
+    local registeredRoots = {}
+    local function collectModuleRoots(moduleConfig, sourceId, moduleName)
+        if type(moduleConfig.nodes) ~= "table" then
+            ARN.reportWarning("catalog-nodes-invalid-" .. sourceId,
+                "Location catalog '" .. moduleName .. "' has no nodes table.")
+            return
+        end
+        local keys = {}
+        for key in pairs(moduleConfig.nodes) do keys[#keys + 1] = key end
+        table.sort(keys, function(first, second) return tostring(first) < tostring(second) end)
+        for _, key in ipairs(keys) do
+            local entry = moduleConfig.nodes[key]
+            if type(entry) == "table" and entry.name ~= nil and entry.type ~= nil then
+                registeredRoots[#registeredRoots + 1] = {
+                    entry = entry, sourceId = sourceId, module = moduleName, key = tostring(key)
+                }
+                indexEntry(entry)
+            else
+                ARN.reportWarning("catalog-node-invalid-" .. sourceId .. "-" .. tostring(key),
+                    "Invalid location root '" .. tostring(key) .. "' in '" .. moduleName .. "'.")
+            end
+        end
+    end
+
     local registryConfig, registryError = loadOptionalModule("arn/locations-registry")
     if registryConfig ~= nil then
         local registrations = registryConfig.modules or registryConfig
@@ -221,27 +260,7 @@ function ARNLocationCatalog.initialize()
                     end
                 end
                 collectDisabledRules(moduleConfig)
-                local attachments = type(registration) == "table" and registration.attachments or nil
-                for _, attachment in ipairs(attachments or {}) do
-                    local parentId = attachment.parentId
-                    local sourceKey = attachment.sourceKey
-                    local moduleChildren = sourceKey ~= nil and moduleConfig[sourceKey]
-                        or attachment.children
-                    if parentId ~= nil and type(moduleChildren) == "table" then
-                        local parentKey = tostring(parentId)
-                        local registered = registeredChildrenByParentCatalogId[parentKey]
-                        if registered == nil then
-                            registered = {}
-                            registeredChildrenByParentCatalogId[parentKey] = registered
-                        end
-                        for _, child in ipairs(moduleChildren) do
-                            registered[#registered + 1] = { entry = child, sourceId = sourceId }
-                        end
-                    else
-                        ARN.reportWarning("catalog-attachment-invalid",
-                            "Invalid custom-location attachment in '" .. tostring(moduleName) .. "'.")
-                    end
-                end
+                collectModuleRoots(moduleConfig, sourceId, tostring(moduleName))
             else
                 ARN.reportWarning("catalog-module-unavailable",
                     "Could not load registered location catalog '" .. tostring(moduleName)
@@ -252,6 +271,27 @@ function ARNLocationCatalog.initialize()
         ARN.reportWarning("catalog-registry-unavailable",
             "Could not load optional Lua catalog registry 'arn/locations-registry.lua': "
             .. tostring(registryError))
+    end
+
+    for _, root in ipairs(registeredRoots) do
+        local parentId = root.entry.parentId
+        local parentKey = parentId ~= nil and tostring(tonumber(parentId) or parentId) or nil
+        local parent = parentKey ~= nil and catalogEntriesById[parentKey] or nil
+        if parent == nil or parent == false or parent == root.entry then
+            local reason = parentKey == nil and "missing parentId"
+                or parent == nil and ("unknown parentId " .. parentKey)
+                or parent == false and ("ambiguous parentId " .. parentKey) or "self-parenting"
+            ARN.reportWarning("catalog-parent-invalid-" .. root.sourceId .. "-" .. root.key,
+                "Location root '" .. root.key .. "' in '" .. root.module .. "' has " .. reason .. ".")
+        else
+            local registered = registeredChildrenByParentCatalogId[parentKey]
+            if registered == nil then
+                registered = {}
+                registeredChildrenByParentCatalogId[parentKey] = registered
+            end
+            registered[#registered + 1] = { entry = root.entry, sourceId = root.sourceId }
+            root.attached = true
+        end
     end
 
     local icons, iconsError = loadOptionalModule("arn/icons")
@@ -285,6 +325,7 @@ function ARNLocationCatalog.initialize()
     end
 
     local targetsByRuntimeId = {}
+    local loadingEntries = {}
     local function visitChildren(entry, inheritedSourceId, visitor)
         if type(entry.children) == "table" then
             for _, child in ipairs(entry.children) do visitor(child, inheritedSourceId) end
@@ -310,6 +351,12 @@ function ARNLocationCatalog.initialize()
                 and disabledCatalogPaths[normalizedCatalogPath] == true) then
             return nil
         end
+        if loadingEntries[entry] then
+            ARN.reportWarning("catalog-parent-cycle-" .. tostring(catalogId or entryName),
+                "Location parent cycle at '" .. catalogPath .. "'.")
+            return nil
+        end
+        loadingEntries[entry] = true
         local existingId = ARNLocationCatalog.runtimeIds[entry]
         if existingId ~= nil then
             local existingTarget = targetsByRuntimeId[existingId]
@@ -324,6 +371,7 @@ function ARNLocationCatalog.initialize()
                         existingTarget.catalogPath)
                 end)
             end
+            loadingEntries[entry] = nil
             return existingId
         end
 
@@ -388,10 +436,20 @@ function ARNLocationCatalog.initialize()
         visitChildren(entry, target.sourceId, function(child, childSourceId)
             loadEntry(child, runtimeId, depth + 1, resolvedColor, childSourceId, catalogPath)
         end)
+        loadingEntries[entry] = nil
         return runtimeId
     end
 
     for _, entry in ipairs(locations) do loadEntry(entry, nil, 1, nil, 0, nil) end
+    for _, root in ipairs(registeredRoots) do
+        local catalogId = root.entry.id ~= nil and tostring(tonumber(root.entry.id) or root.entry.id) or nil
+        if root.attached and ARNLocationCatalog.runtimeIds[root.entry] == nil
+            and root.entry.excluded ~= true
+            and (catalogId == nil or disabledCatalogIds[catalogId] ~= true) then
+            ARN.reportWarning("catalog-root-unreachable-" .. root.sourceId .. "-" .. root.key,
+                "Location root '" .. root.key .. "' in '" .. root.module .. "' is not reachable.")
+        end
+    end
 
     local childrenByParentId = {}
     local function rebuildChildrenIndex()

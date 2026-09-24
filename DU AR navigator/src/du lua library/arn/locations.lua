@@ -3799,8 +3799,12 @@ local fallbackAtlas = {
 
 return {
     types = {
-        ["known-space"] = {},
-        system = {},
+        ["known-space"] = {
+			icon = "icon-system-map"
+		},
+        system = {
+			icon = "icon-system-map"
+		},
         planet = {
             icon = "icon-planet"
         },
@@ -3810,7 +3814,21 @@ return {
         market = {
             icon = "icon-market"
         },
-        construct = {}
+		outpost = {
+			icon = "icon-outpost"
+		},
+        construct = {
+			icon = "icon-static-construct"
+		},
+		spaceconstruct = {
+			icon = "icon-space-construct"
+		},
+		beacon = {
+			icon = "icon-pve-beacon"
+		},
+		mining = {
+			icon = "icon-ore-simplified"
+		}
     },
     locations = {knownSpace},
     fallbackAtlas = fallbackAtlas

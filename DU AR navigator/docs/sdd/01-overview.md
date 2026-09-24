@@ -32,7 +32,10 @@ The current mini-project establishes the reusable foundation for known-location 
 - AR and HUD presentation separated from catalog and helper code;
 - ownership display read directly from a saved owner name;
 - support for both world-space and planet-relative coordinates;
-- reliable diagnostics for invalid catalog data, including unknown atlas bodies.
+- reliable diagnostics for invalid catalog data, including unknown atlas bodies;
+- registered custom catalog modules that attach destinations without editing the standard catalog;
+- persisted visibility, HUD, performance, pin, and pin-range settings;
+- context-aware nearby selection that limits AR output to useful direct places.
 
 ## Scope boundary
 
@@ -42,6 +45,8 @@ ARN is a location navigator rather than a piloting assistant. It does not requir
 
 ## Player-facing marker
 
+
+The current location model separates three ideas: a node can be the player's current area, be context for nearby selection, or be an AR-visible marker. Entering an area's calculated bounds does not by itself make its marker visible.
 For a known place, ARN draws an AR object. Its smallest form includes a name and icon, and may include owner information or other details when useful. It can be highlighted and eventually interacted with.
 
 The current simple label form is:

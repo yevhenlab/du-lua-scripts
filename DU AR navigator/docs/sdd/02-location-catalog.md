@@ -2,7 +2,7 @@
 
 ## Source
 
-Known places are explicitly defined in ARN Lua data catalogs installed under `<DU Root>/Game/data/lua/arn/`. The primary `locations.lua` catalog contains only DU-provided, standard, and default locations. `locations-registry.lua` registers optional custom catalogs and maps their named lists to standard parent IDs. Settlers-specific destinations belong in `locations-settlers.lua`. The high-level planet and satellite entries originate from the client atlas. Assigned Aphelia constructs are imported offline from `aphelia-construct-hierarchy.json`, which ARN does not read at runtime; the runtime atlas remains available for coordinate-conversion fallbacks. Every registered custom catalog is loaded defensively: a missing, invalid, or non-table module is skipped with one warning while the default catalog and other valid modules continue loading.
+Known places are explicitly defined in ARN Lua data catalogs installed under `<DU Root>/Game/data/lua/arn/`. The primary `locations.lua` catalog contains only DU-provided, standard, and default locations. `locations-registry.lua` lists optional custom catalogs. Each custom module places keyed roots under `nodes`; each root's `parentId` refers to a standard or custom catalog node. Settlers-specific destinations belong in `locations-settlers.lua`. The high-level planet and satellite entries originate from the client atlas. Assigned Aphelia constructs are imported offline from `aphelia-construct-hierarchy.json`, which ARN does not read at runtime; the runtime atlas remains available for coordinate-conversion fallbacks. Every registered custom catalog is loaded defensively: a missing, invalid, or non-table module is skipped with one warning while the default catalog and other valid modules continue loading.
 
 ## What a location means
 
@@ -12,6 +12,12 @@ A `group` node is different: it only organizes the catalog hierarchy. It is not 
 
 For example, a market composed of several XL parking constructs is saved as one market location, not as every constituent construct. A large fly-in event can likewise be one location, with supporting details about its internal areas. A location may provide a bounding size or boundary later, but its coordinate remains the primary AR navigation anchor.
 
+
+### Derived group behavior
+
+A coordinate-less `location-group` is an organizational node first, but calculated bounds can give it a display centre and area ellipsoid. It may then render as one AR area when selected. A group with only one contributing descendant remains transparent by default. Groups cannot become current areas unless the persisted `Groups can become current area` setting is enabled.
+
+`areaRadius` is catalog input only. The runtime's current-area detection and ellipsoid drawing use the recursively calculated `boundsCenter` and `boundsRadiusX/Y/Z`, never a singular bounds-radius field.
 ## Hierarchy
 
 Locations normally form a bounded tree. Every node has a structural `type` and may contain children. Real-place nodes describe navigable space; `group` nodes only organize related children. A node without children is a leaf.
@@ -38,14 +44,14 @@ Such a catalog is technically a directed acyclic graph rather than a strict tree
 
 ## Hybrid catalog loading
 
-ARN uses inline standard trees plus registered custom attachments.
+ARN uses inline standard trees plus registered custom module roots.
 
 - Standard branches store their children inline as `children = { ... }`.
-- `locations-registry.lua` lists each optional custom module once.
-- Each registration maps a standard `parentId` to a named `sourceKey` returned by that custom module.
-- Registered children are combined with the standard parent's inline children during catalog initialization.
+- `locations-registry.lua` lists each optional custom module once, with a module name and optional source label.
+- A custom module returns `nodes = { key = { parentId = N, ... } }`; each root's parent may be standard or custom.
+- Registered roots are indexed before resolving parent IDs, so module order does not control hierarchy.
 
-For example, `{ parentId = 2, sourceKey = "alioth" }` attaches every node in the custom module's `alioth` list directly beneath standard Alioth. The key is only a table lookup and never becomes a runtime location node. The standard catalog contains no references to custom modules. The loader assigns `sourceId = 0` to standard nodes and sequential positive source IDs to successfully loaded registry modules. Inline descendants inherit their defining module's source ID. Registry `label` and `module` values are stored once as shared source metadata; runtime nodes retain only the numeric ID.
+For example, `construct_1116271 = { parentId = 2, ... }` attaches that root beneath standard Alioth. The root key organizes the file and never becomes a runtime location node. The standard catalog contains no references to custom modules. The loader assigns `sourceId = 0` to standard nodes and positive source IDs to registered modules. Inline descendants inherit their defining module's source ID. Registry `label` and `module` values are stored once as shared source metadata; runtime nodes retain only the numeric ID. Missing or ambiguous parents and unreachable roots produce warnings.
 
 ## Catalog entry
 
@@ -68,8 +74,9 @@ An entry may contain:
 - `description`: optional longer text shown by expanded AR details.
 - `excluded`: optional boolean. When `true`, catalog loading skips the entry and its complete descendant branch. No runtime targets, child indexes, bounds, AR objects, detailed-view rows, or active-location statistics are created for that branch.
 - `children`: optional inline sub-location list.
+- `parentId`: required on custom module roots; ID of the existing catalog node that contains the root.
 
-A `locations-registry.lua` registration contains `module`, plus an `attachments` list. Each attachment contains the standard node's `parentId` and the custom module's `sourceKey`.
+A `locations-registry.lua` registration contains `module` and an optional `label` used by the Source filter.
 
 A registered custom module may declare `disabled = { ids = {...}, paths = {...} }`. ARN combines these rules additively across every successfully loaded module before building the runtime catalog. IDs are preferred; normalized, case-insensitive full paths support ID-less nodes. A match skips the node and its complete descendant branch before indexing, bounds calculation, rendering, or detailed-view construction. Duplicate rules are harmless, registry order does not affect the result, and one module cannot re-enable a node disabled by another.
 
@@ -79,9 +86,9 @@ Imported Aphelia hierarchy records use `type = "construct"` unless a more specif
 
 Planet and satellite nodes must retain a world-space `::pos{0,0,x,y,z}` centre coordinate even when planet-relative coordinates are available. Their `id` must match `atlasBody.bodyId`; `radius` describes the surface, `atmosphereRadius` describes the atmosphere boundary, and `areaRadius` describes the catalog area. `atlasBody` remains separate because it carries both the system and body identities required for coordinate conversion. The catalog also returns a limited offline atlas when the full client atlas is unavailable. Its additional bodies support coordinate conversion without automatically becoming AR location nodes.
 
-Inline standard `children`, root-level `catalogModules`, and registry-driven custom attachments are implemented. Registered custom modules load during catalog initialization.
+Inline standard `children`, root-level `catalogModules`, and registry-driven custom roots are implemented. Registered custom modules load during catalog initialization.
 
-The current default catalog contains all 367 constructs assigned beneath the 21 planet and satellite records in `aphelia-construct-hierarchy.json`. All assigned records in this source revision are static constructs. Generic `Static construct` and `Space construct` labels are stored as empty strings so they do not duplicate type information in AR labels. The JSON's separate 72-construct `unparented` branch is intentionally not imported yet. The registry attaches Settlers lists to Alioth, Haven, and the Institutes construct by their standard source IDs. At Alioth, `Neon Abyss Parking` and `Settlers Honeycomb` are independent siblings of `Institutes`; only `Hadron Quantum Teleporter` remains an Institutes child. The custom Mission Alioth parking-waypoint group remains alongside the imported construct children. Haven restores two coordinate-less organizational children: `[01-10] Market Districts` contains Haven 01–10 with their existing descendants, while `[11-20] Markets only` contains Haven 11–20. Sanctuary follows the same structure: `[01-10] Market Districts` contains Sanctuary 01–10 with their Market, Shuttle, and UEF Store descendants, while `[11-20] Markets only` contains Sanctuary 11–20. Alioth Exchange groups its eight hall constructs beneath `Halls` and its four landing constructs beneath `Parking`; Center and Pillar remain direct children. Guardians of Alioth Odysseus Alpha groups its UEF Outpost Museums, Gallia Gemina Tour Palaces, and Outpost Museum stands, while its distinct landmarks remain direct children. The Settlers module contributes `Outposts` as another Haven group.
+The current default catalog contains all 367 constructs assigned beneath the 21 planet and satellite records in `aphelia-construct-hierarchy.json`. All assigned records in this source revision are static constructs. Generic `Static construct` and `Space construct` labels are stored as empty strings so they do not duplicate type information in AR labels. The JSON's separate 72-construct `unparented` branch is intentionally not imported yet. Settlers roots attach to Alioth, Haven, and the Institutes construct through their own `parentId` values. At Alioth, `Neon Abyss Parking` and `Settlers Honeycomb` are independent siblings of `Institutes`; only `Hadron Quantum Teleporter` remains an Institutes child. The custom Mission Alioth parking-waypoint group remains alongside the imported construct children. Haven restores two coordinate-less organizational children: `[01-10] Market Districts` contains Haven 01–10 with their existing descendants, while `[11-20] Markets only` contains Haven 11–20. Sanctuary follows the same structure: `[01-10] Market Districts` contains Sanctuary 01–10 with their Market, Shuttle, and UEF Store descendants, while `[11-20] Markets only` contains Sanctuary 11–20. Alioth Exchange groups its eight hall constructs beneath `Halls` and its four landing constructs beneath `Parking`; Center and Pillar remain direct children. Guardians of Alioth Odysseus Alpha groups its UEF Outpost Museums, Gallia Gemina Tour Palaces, and Outpost Museum stands, while its distinct landmarks remain direct children. The Settlers module contributes `Outposts` as another Haven group.
 
 ## Visibility principle
 
